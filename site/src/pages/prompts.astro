@@ -2,42 +2,11 @@
 import Base from "../layouts/Base.astro";
 import Nav from "../components/Nav.astro";
 ---
-<Base title="Prompts — Zlapp" description="The prompt archive for the Zlapp experiment, including what was not deposited.">
-  <Nav current="prompts" />
+<Base title="Prompts — Zlapp" noindex={true}>
+  <Nav />
   <main id="content" class="prose wrap">
-    <p class="kicker">Primary sources</p>
-    <h1>The prompts are part of the work.</h1>
-    <p>
-      The exhibition is meant to show a chain: instruction, then model-written prompt, then output — and, later, one shared prompt interpreted many ways.
-    </p>
-    <p>
-      In this master folder, the outputs arrived. The prompt texts did not.
-    </p>
-
-    <h2>What is missing</h2>
-    <ul>
-      <li>Each model’s self-generated Act I prompt</li>
-      <li>GPT-5.6 Sol’s shared Act II prompt</li>
-      <li>The synthesis instructions used in Act III</li>
-    </ul>
-    <p>
-      Those files were not among the HTML trees, and they are not embedded as recoverable documents inside the works. Substituting invented prompt text would falsify the archive. The gap is left visible.
-    </p>
-
-    <h2>What can still be read</h2>
-    <p>
-      Act I asked each model to write an instruction for a future self, then executed that instruction in a new session. The five surviving pages are Afterimage, primordium, Where Sound Cannot Go, A Study in Simulated Choice, and Lumina.
-    </p>
-    <p>
-      Act II gave one Sol-authored instruction to several models. The surviving family of works calls itself Frontier Choir / Light to Life. Comparison is the exhibit; ranking is not.
-    </p>
-    <p>
-      Act III asked models to encounter the others’ HTML and make a single rendition. Two rounds exist: Five Wills (from Act I) and the choir syntheses (from Act II).
-    </p>
-
-    <p class="note">
-      If the original prompt files are recovered, they belong in <code>/prompts</code> and in <code>data/exhibition.json</code> as <code>promptFile</code> paths. The works themselves should still not be edited.
-    </p>
-    <p><a class="btn" href="/">Return to the exhibition</a></p>
+    <h1>Prompts</h1>
+    <p>The prompt files were not in the archive. The works are.</p>
+    <p><a class="btn" href="/">Back</a></p>
   </main>
 </Base>

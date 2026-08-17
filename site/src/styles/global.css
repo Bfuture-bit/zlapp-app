@@ -125,10 +125,7 @@ a {
 }
 
 .hero {
-  min-height: 92svh;
-  display: grid;
-  align-content: end;
-  padding: 8rem var(--pad) 4.5rem;
+  padding: 2.5rem var(--pad) 0.5rem;
 }
 
 .kicker {
@@ -172,31 +169,44 @@ a {
 }
 
 .section {
-  padding: 5.5rem var(--pad) 2rem;
+  padding: 2.4rem var(--pad) 1.2rem;
+}
+
+.section:first-of-type {
+  padding-top: 1.4rem;
+}
+
+.section + .section {
   border-top: 1px solid var(--line);
 }
 
 .section header {
-  max-width: 42rem;
-  margin-bottom: 2.8rem;
+  display: flex;
+  align-items: baseline;
+  gap: 0.85rem;
+  margin-bottom: 1.1rem;
 }
 
-.act-no {
-  font-family: var(--serif);
-  font-weight: 300;
-  font-size: clamp(4rem, 14vw, 9rem);
-  line-height: 0.8;
-  color: color-mix(in srgb, var(--ink) 9%, transparent);
-  margin: 0 0 0.6rem;
+.section header .kicker {
+  margin: 0;
 }
 
 .section h2 {
-  margin: 0 0 1rem;
+  margin: 0;
   font-family: var(--serif);
   font-weight: 400;
-  font-size: clamp(1.8rem, 4vw, 2.7rem);
-  letter-spacing: -0.03em;
-  line-height: 1.12;
+  font-size: clamp(1.15rem, 2.4vw, 1.45rem);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.subhead {
+  margin: 1.8rem 0 0.85rem;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--faint);
 }
 
 .section p,
@@ -234,17 +244,17 @@ a {
 
 .work {
   display: grid;
-  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.2fr);
+  grid-template-columns: minmax(7.5rem, 0.7fr) minmax(0, 1.4fr);
   gap: 0;
   border: 1px solid var(--line);
   background: color-mix(in srgb, var(--bg-2) 70%, transparent);
-  min-height: 16rem;
+  min-height: 7.5rem;
   text-decoration: none;
   overflow: hidden;
 }
 
 .work:nth-child(even) {
-  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.05fr);
+  grid-template-columns: minmax(0, 1.4fr) minmax(7.5rem, 0.7fr);
 }
 
 .work:nth-child(even) .work-preview {
@@ -252,7 +262,7 @@ a {
 }
 
 .work-preview {
-  min-height: 16rem;
+  min-height: 7.5rem;
   background:
     radial-gradient(circle at 30% 20%, color-mix(in srgb, var(--c1, #c6b9a3) 22%, transparent), transparent 42%),
     radial-gradient(circle at 80% 80%, color-mix(in srgb, var(--c2, #8f8a82) 16%, transparent), transparent 46%),
@@ -270,11 +280,10 @@ a {
 }
 
 .work-copy {
-  padding: 1.4rem 1.5rem 1.3rem;
+  padding: 1.1rem 1.25rem;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  gap: 1.4rem;
+  justify-content: center;
 }
 
 .work-copy .who {
@@ -290,16 +299,9 @@ a {
   margin: 0;
   font-family: var(--serif);
   font-weight: 400;
-  font-size: clamp(1.35rem, 2.4vw, 1.85rem);
+  font-size: clamp(1.15rem, 2.2vw, 1.55rem);
   letter-spacing: -0.02em;
   line-height: 1.15;
-}
-
-.work-copy p {
-  margin: 0.7rem 0 0;
-  color: var(--muted);
-  font-size: 0.95rem;
-  font-weight: 300;
 }
 
 .enter {
@@ -517,12 +519,7 @@ a {
   }
 
   .work-preview {
-    min-height: 11rem;
-  }
-
-  .hero {
-    min-height: 86svh;
-    padding-top: 6.5rem;
+    min-height: 6.5rem;
   }
 
   .nav-links {

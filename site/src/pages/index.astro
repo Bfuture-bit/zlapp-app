@@ -2,56 +2,20 @@
 import Base from "../layouts/Base.astro";
 import Nav from "../components/Nav.astro";
 import WorkRow from "../components/WorkRow.astro";
-import { manifest, worksFor } from "../lib/manifest";
+import { worksFor } from "../lib/manifest";
 
 const actI = worksFor("self-directed");
 const actII = worksFor("shared-prompt");
 const actIIIa = worksFor("self-synthesis");
 const actIIIb = worksFor("shared-synthesis");
 ---
-<Base title="Zlapp — Frontier models, instructed by themselves">
+<Base title="Zlapp">
   <Nav />
   <main id="content">
-    <section class="hero">
-      <p class="kicker">A documented creative experiment · 2026</p>
-      <h1>Zlapp</h1>
-      <p class="hero-lead">
-        {manifest.tagline}
-      </p>
-      <div class="meta-row">
-        <span>21 interactive works</span>
-        <span>8 model identities</span>
-        <span>3 experiments</span>
-      </div>
-    </section>
-
-    <section class="section" id="intro">
-      <header>
-        <h2>An archive of decisions.</h2>
-        <p>
-          Zlapp is not a comparison site. It is a public record of what several frontier models made in the browser when the creative instruction itself was part of the experiment.
-        </p>
-        <p>
-          Each work is shown as the model produced it. Nothing here has been restyled, optimized, or merged. The exhibition exists so the artifacts can be entered one at a time, with enough context to know what you are looking at.
-        </p>
-      </header>
-    </section>
-
     <section class="section" id="act-i">
       <header>
-        <p class="act-no" aria-hidden="true">I</p>
-        <p class="kicker">Self-directed</p>
-        <h2>The models write their own instructions</h2>
-        <p>
-          Each model was asked to write a prompt for a future instance of itself: an instruction that would later tell that future instance to create an interactive webpage according to its own free will.
-        </p>
-        <p>
-          That self-written prompt was then taken into a new session and given back to the same model. The HTML that came out is the first body of work.
-        </p>
-        <p class="idea">What happens when the model is allowed to define the creative instruction for its future self?</p>
-        <p class="note">
-          The self-written prompts were not deposited as separate files in this archive. The surviving primary sources are the five executed works below. Qwen 3.8, Grok 4.6 High, and Grok 4.6 xHigh do not appear in Act I.
-        </p>
+        <p class="kicker">I</p>
+        <h2>They wrote their own prompts</h2>
       </header>
       <div class="work-list">
         {actI.map((work) => <WorkRow work={work} />)}
@@ -60,19 +24,8 @@ const actIIIb = worksFor("shared-synthesis");
 
     <section class="section" id="act-ii">
       <header>
-        <p class="act-no" aria-hidden="true">II</p>
-        <p class="kicker">One shared prompt</p>
-        <h2>Sol writes one prompt for everyone</h2>
-        <p>
-          In the second experiment, GPT-5.6 Sol wrote a single creative instruction. That same instruction was given, independently, to several frontier models.
-        </p>
-        <p>
-          The resulting works belong to one family — often calling themselves Frontier Choir, Light to Life, a weave, a filament, a will that may or may not answer — but they do not agree with each other. That disagreement is the point.
-        </p>
-        <p class="idea">What happens when different frontier intelligences receive the same creative instruction?</p>
-        <p class="note">
-          Sol’s shared prompt text is not in the archive as a standalone document. Gemini 3.1 Pro has no surviving individual Act II work; it returns in the Act II synthesis. Grok 4.6 High and Grok 4.6 xHigh are separate participants, not the same model under two names.
-        </p>
+        <p class="kicker">II</p>
+        <h2>Same prompt, from Sol</h2>
       </header>
       <div class="work-list">
         {actII.map((work) => <WorkRow work={work} />)}
@@ -81,62 +34,17 @@ const actIIIb = worksFor("shared-synthesis");
 
     <section class="section" id="act-iii">
       <header>
-        <p class="act-no" aria-hidden="true">III</p>
-        <p class="kicker">Cross-model interpretation</p>
-        <h2>The models encounter the collective</h2>
-        <p>
-          A further experiment gave models the HTML created by the others and asked each to make a combined rendition. Two rounds survive: a synthesis of the self-directed works, then a synthesis of the shared-prompt choir.
-        </p>
-        <p class="idea">What happens when one model is asked to hold the others in a single experience?</p>
+        <p class="kicker">III</p>
+        <h2>They remixed each other</h2>
       </header>
-    </section>
-
-    <section class="section" id="act-iii-a">
-      <header>
-        <p class="kicker">III-A · From Act I</p>
-        <h2>Five wills, one body</h2>
-        <p>
-          Five models were given Afterimage, primordium, Where Sound Cannot Go, A Study in Simulated Choice, and Lumina, and asked to make one living instrument of them.
-        </p>
-      </header>
+      <p class="subhead">From I</p>
       <div class="work-list">
         {actIIIa.map((work) => <WorkRow work={work} />)}
       </div>
-    </section>
-
-    <section class="section" id="act-iii-b">
-      <header>
-        <p class="kicker">III-B · From Act II</p>
-        <h2>The choir, heard by itself</h2>
-        <p>
-          A second synthesis used the Frontier Choir works. Six voices appear in some of these fields: Sol, GLM, Grok xHigh, Grok High, Muse Spark, and Qwen.
-        </p>
-      </header>
+      <p class="subhead">From II</p>
       <div class="work-list">
         {actIIIb.map((work) => <WorkRow work={work} />)}
       </div>
     </section>
-
-    <section class="closing" id="close">
-      <h2>Method</h2>
-      <p>
-        The original HTML files are primary sources. They were not rewritten, beautified, or normalized. Where a file could not run because it was wrapped in a markdown fence, the original was kept and only the public copy was repaired. That repair is recorded in the preservation log.
-      </p>
-      <p>
-        Each experience has its own address so WebGL, particles, and audio never run in the background of the exhibition. Many works require a tap or click before sound can begin; that is the browser, not a redesign of the compositions.
-      </p>
-      <p>
-        This is not a leaderboard. Divergence is the result.
-      </p>
-      <div class="credits">
-        <span>Participants: GPT-5.6 Sol · GLM-5.2 · Grok 4.6 · Grok 4.6 High · Grok 4.6 xHigh · Muse Spark 1.2 · Gemini 3.1 Pro · Qwen 3.8</span>
-        <span>Exhibition: zlapp.app</span>
-        <span><a href="/prompts">Prompt archive</a> · Registry: /data/exhibition.json</span>
-      </div>
-    </section>
   </main>
-  <footer class="site-foot">
-    <span>Zlapp.app · an exhibition, an archive, an experiment</span>
-    <a href="/prompts">Prompts &amp; gaps</a>
-  </footer>
 </Base>

@@ -6,11 +6,9 @@ const { current } = Astro.props;
 ---
 <header class="site-nav">
   <a class="mark" href="/">Zlapp</a>
-  <nav class="nav-links" aria-label="Exhibition">
-    <a href="/#act-i" aria-current={current === "i" ? "page" : undefined}>Act I</a>
-    <a href="/#act-ii" aria-current={current === "ii" ? "page" : undefined}>Act II</a>
-    <a href="/#act-iii" aria-current={current === "iii" ? "page" : undefined}>Act III</a>
-    <a href="/prompts" aria-current={current === "prompts" ? "page" : undefined}>Prompts</a>
-    <a href="/#close">Method</a>
+  <nav class="nav-links" aria-label="Acts">
+    <a href="/#act-i" aria-current={current === "i" ? "page" : undefined}>I</a>
+    <a href="/#act-ii" aria-current={current === "ii" ? "page" : undefined}>II</a>
+    <a href="/#act-iii" aria-current={current === "iii" ? "page" : undefined}>III</a>
   </nav>
 </header>
