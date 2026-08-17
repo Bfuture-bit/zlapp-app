@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 750" role="img" aria-label="AFTERIMAGE">
+  <rect width="1200" height="750" fill="#020307"/>
+  <circle cx="180" cy="140" r="220" fill="#a9c6ff" opacity="0.14"/>
+  <circle cx="980" cy="620" r="280" fill="#dce7ff" opacity="0.12"/>
+  <circle cx="640" cy="300" r="160" fill="#a9c6ff" opacity="0.08"/>
+  <rect x="64" y="64" width="1072" height="622" fill="none" stroke="#dce7ff" stroke-opacity="0.18" stroke-width="1"/>
+  <text x="88" y="120" fill="#dce7ff" fill-opacity="0.55" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="18" letter-spacing="4">GPT-5.6 SOL</text>
+  <text x="88" y="400" fill="#dce7ff" font-family="Georgia, 'Iowan Old Style', serif" font-size="54">AFTERIMAGE</text>
+  <text x="88" y="640" fill="#a9c6ff" fill-opacity="0.7" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="16" letter-spacing="3">sol-self</text>
+</svg>

@@ -1,0 +1,2818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>FRONTIER CHOIR — GPT-5.6 SOL</title>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/"
+  }
+}
+</script>
+
+<style>
+*{box-sizing:border-box}
+html,body{
+  margin:0;
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  background:#020203;
+  touch-action:none;
+  user-select:none;
+  -webkit-user-select:none;
+}
+body{
+  color:#f4efe4;
+  font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
+}
+canvas{
+  position:fixed;
+  inset:0;
+  width:100%;
+  height:100%;
+  display:block;
+}
+#gate{
+  position:fixed;
+  inset:0;
+  z-index:20;
+  display:grid;
+  place-items:center;
+  background:
+    radial-gradient(circle at 50% 48%,
+      rgba(27,30,34,.16) 0%,
+      rgba(4,4,5,.76) 48%,
+      rgba(1,1,2,.97) 100%);
+  transition:opacity 1.8s ease,visibility 1.8s ease;
+}
+#gate.hide{
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+}
+#enter{
+  appearance:none;
+  border:1px solid rgba(232,221,192,.20);
+  border-radius:100px;
+  padding:15px 19px 15px 23px;
+  background:rgba(255,255,255,.018);
+  color:rgba(244,238,218,.91);
+  letter-spacing:.38em;
+  font:500 10px/1 monospace;
+  cursor:pointer;
+  backdrop-filter:blur(8px);
+  box-shadow:
+    inset 0 0 0 1px rgba(135,215,226,.025),
+    0 0 34px rgba(203,174,112,.025);
+  transition:.35s ease;
+}
+#enter:hover,#enter:focus-visible{
+  outline:none;
+  transform:scale(1.04);
+  border-color:rgba(242,228,194,.38);
+  box-shadow:
+    inset 0 0 0 1px rgba(131,222,230,.06),
+    0 0 40px rgba(219,190,125,.05);
+}
+#mark{
+  position:fixed;
+  z-index:7;
+  left:max(17px,env(safe-area-inset-left));
+  bottom:max(16px,env(safe-area-inset-bottom));
+  font:500 8px/1 monospace;
+  letter-spacing:.25em;
+  color:rgba(224,230,225,.20);
+  opacity:0;
+  pointer-events:none;
+  transition:opacity 3s ease;
+}
+#guide{
+  position:fixed;
+  z-index:7;
+  left:50%;
+  bottom:max(22px,calc(env(safe-area-inset-bottom) + 10px));
+  transform:translateX(-50%);
+  white-space:nowrap;
+  font:500 8px/1 monospace;
+  letter-spacing:.18em;
+  color:rgba(226,234,229,.30);
+  opacity:0;
+  pointer-events:none;
+  transition:opacity 2.5s ease;
+}
+#mark.on,#guide.on{opacity:1}
+#mark.off,#guide.off{opacity:0}
+#touch{
+  position:fixed;
+  width:36px;
+  height:36px;
+  z-index:6;
+  border:1px solid rgba(205,234,232,.14);
+  border-radius:50%;
+  transform:translate(-50%,-50%);
+  opacity:0;
+  pointer-events:none;
+}
+#touch:after{
+  content:"";
+  position:absolute;
+  width:4px;
+  height:4px;
+  left:50%;
+  top:50%;
+  margin:-2px;
+  border-radius:50%;
+  background:rgba(239,216,160,.55);
+  box-shadow:0 0 12px rgba(233,200,124,.18);
+}
+@media(pointer:coarse){#touch{display:none}}
+</style>
+</head>
+
+<body>
+
+<div id="gate">
+  <button id="enter">ENTER</button>
+</div>
+
+<div id="mark">GPT-5.6 SOL</div>
+<div id="guide">TOUCH THE WEAVE · DRAG TO TRACE</div>
+<div id="touch"></div>
+
+<script type="module">
+
+import * as THREE from "three";
+import {EffectComposer} from "three/addons/postprocessing/EffectComposer.js";
+import {RenderPass} from "three/addons/postprocessing/RenderPass.js";
+import {UnrealBloomPass} from "three/addons/postprocessing/UnrealBloomPass.js";
+
+/* ==========================================================
+   CONFIG
+========================================================== */
+
+const coarse = matchMedia("(pointer:coarse)").matches;
+const mobile = coarse || Math.min(innerWidth,innerHeight) < 760;
+const portrait = innerHeight > innerWidth * 1.12;
+
+const PARTICLES = mobile ? 21000 : 48000;
+const MAX_EVENTS = 9;
+
+const FIELD_LENGTH = portrait ? 12.5 : 21.0;
+const FIELD_WIDTH  = portrait ? 2.3 : 3.05;
+
+const clock = new THREE.Clock();
+
+let time = 0;
+let entered = false;
+let entryTime = 0;
+
+let drawing = false;
+let lastTraceTime = -99;
+let lastTraceX = 0;
+let lastTraceY = 0;
+
+/* ==========================================================
+   WORLD
+========================================================== */
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x020203);
+scene.fog = new THREE.FogExp2(0x020203, portrait ? .026 : .017);
+
+const camera = new THREE.PerspectiveCamera(
+  portrait ? 58 : 50,
+  innerWidth / innerHeight,
+  .05,
+  120
+);
+
+camera.position.set(
+  0,
+  portrait ? 1.2 : 1.4,
+  portrait ? 18.5 : 22
+);
+
+const renderer = new THREE.WebGLRenderer({
+  antialias:false,
+  powerPreference:"high-performance"
+});
+
+renderer.setSize(innerWidth,innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio,mobile ? 1.4 : 1.7));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+
+/*
+  Deliberately low exposure.
+  Light should be discovered, not blasted at the visitor.
+*/
+renderer.toneMappingExposure = .66;
+
+document.body.prepend(renderer.domElement);
+
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene,camera));
+
+const bloom = new UnrealBloomPass(
+  new THREE.Vector2(innerWidth,innerHeight),
+  .42,
+  .58,
+  .91
+);
+
+/*
+  High bloom threshold:
+  only exceptional highlights bloom.
+*/
+bloom.threshold = .86;
+bloom.strength = mobile ? .38 : .43;
+bloom.radius = .48;
+
+composer.addPass(bloom);
+
+/* ==========================================================
+   EVENTS
+========================================================== */
+
+const eventU = new Float32Array(MAX_EVENTS).fill(-9);
+const eventV = new Float32Array(MAX_EVENTS).fill(0);
+const eventT = new Float32Array(MAX_EVENTS).fill(-999);
+const eventPower = new Float32Array(MAX_EVENTS).fill(0);
+
+let eventCursor = 0;
+
+const sharedEventUniforms = {
+  uEventU:{value:eventU},
+  uEventV:{value:eventV},
+  uEventT:{value:eventT},
+  uEventPower:{value:eventPower}
+};
+
+/* ==========================================================
+   DETERMINISTIC RANDOM
+========================================================== */
+
+function hash(n){
+  const x = Math.sin(n * 92.137 + 18.31) * 43758.5453;
+  return x - Math.floor(x);
+}
+
+/* ==========================================================
+   THE PHYSICAL LAW
+
+   A many-threaded field perpetually tests alternative curvature.
+
+   Some threads approach agreement.
+   Others remain unresolved.
+
+   Touch does not explode matter.
+
+   Touch creates a "question".
+
+   Ahead of the question:
+     possibilities widen.
+
+   Behind it:
+     many paths quietly align.
+
+   The resolved region remains warmer for a while.
+
+========================================================== */
+
+const LAW = `
+
+const float PI = 3.141592653589793;
+
+vec3 fieldLaw(
+  float u,
+  float lane,
+  float seed,
+  float depth,
+  float t,
+  out float certainty
+){
+
+  float x = u * uLength;
+
+  float physiology =
+      0.50
+    + 0.16 * sin(t * 0.29 + seed * 4.8)
+    + 0.10 * sin(t * 0.43 - seed * 6.2)
+    + 0.06 * sin(t * 0.71 + seed * 8.7);
+
+  float centerY =
+      0.66 * sin(u * 2.8 + t * 0.064)
+    + 0.25 * sin(u * 7.7 - t * 0.091)
+    + 0.11 * sin(u * 14.0 + t * 0.037);
+
+  float centerZ =
+      0.58 * cos(u * 3.4 - t * 0.052)
+    + 0.19 * sin(u * 9.1 + t * 0.074);
+
+  float logic =
+    0.5
+    + 0.5 * sin(
+        u * 8.0
+        + 0.85 * sin(u * 2.7 - t * 0.041)
+        + t * 0.031
+      );
+
+  certainty = pow(logic, 2.7);
+
+  float open =
+      0.48
+    + 0.52 * (1.0 - certainty);
+
+  float width =
+    uWidth
+    * open
+    * (0.93 + physiology * 0.11);
+
+  float phase =
+      lane * PI * 2.0
+    + u * 4.5
+    + 0.40 * sin(u * 5.2 - t * 0.055)
+    + seed * 0.65;
+
+  float filament =
+    lane
+    + 0.10 * sin(
+        u * 11.0
+        + seed * 7.0
+        - t * (0.09 + seed * 0.025)
+      );
+
+  float y =
+      centerY
+    + filament * width
+    + 0.12 * sin(phase * 2.0 + t * 0.08)
+      * (1.0 - abs(lane));
+
+  float arch =
+    sin(
+      (lane * 0.92
+      + 0.055 * sin(u * 3.0))
+      * PI
+    );
+
+  float z =
+      centerZ
+    + arch
+      * width
+      * (0.39 + 0.08 * sin(u * 4.8 + t * 0.043))
+    + (seed - 0.5) * (0.22 + depth * 0.62);
+
+  float twist =
+      u * 2.65
+    + 0.24 * sin(u * 4.5 - t * 0.04);
+
+  float cy = cos(twist);
+  float sy = sin(twist);
+
+  float yy = y - centerY;
+  float zz = z - centerZ;
+
+  float ry = yy * cy - zz * sy;
+  float rz = yy * sy + zz * cy;
+
+  return vec3(
+    x,
+    centerY + ry,
+    centerZ + rz
+  );
+}
+
+void questionLaw(
+  inout vec3 p,
+  float u,
+  float lane,
+  float certainty,
+  float t,
+  out float question,
+  out float resolve,
+  out float memory
+){
+
+  question = 0.0;
+  resolve = 0.0;
+  memory = 0.0;
+
+  for(int i=0;i<${MAX_EVENTS};i++){
+
+    float age = t - uEventT[i];
+
+    if(age > 0.0 && age < 36.0){
+
+      float d = u - uEventU[i];
+      float ad = abs(d);
+
+      float laneAffinity =
+        exp(
+          -pow(
+            (lane-uEventV[i]) * 1.55,
+            2.0
+          )
+        );
+
+      /*
+        A slow traveling front.
+        Not an explosion.
+      */
+      float frontier = age * 0.075;
+
+      float forward =
+        exp(
+          -pow(
+            (d-frontier) * 10.0,
+            2.0
+          )
+        )
+        * step(0.0,d);
+
+      float backward =
+        exp(
+          -pow(
+            (-d-frontier*0.57) * 12.0,
+            2.0
+          )
+        )
+        * step(d,0.0)
+        * 0.28;
+
+      float decay =
+        exp(-age * 0.052);
+
+      float q =
+        (forward + backward)
+        * decay
+        * uEventPower[i];
+
+      /*
+        Resolution lags slightly behind the frontier.
+      */
+      float r =
+        exp(
+          -pow(
+            (d-frontier+0.12) * 14.0,
+            2.0
+          )
+        )
+        * step(0.0,d)
+        * decay
+        * uEventPower[i];
+
+      /*
+        Memory stays where the visitor touched.
+      */
+      float m =
+        exp(-ad * 13.0)
+        * exp(-age * 0.033)
+        * laneAffinity
+        * uEventPower[i];
+
+      float centerY =
+          0.66 * sin(u * 2.8 + t * 0.064)
+        + 0.25 * sin(u * 7.7 - t * 0.091)
+        + 0.11 * sin(u * 14.0 + t * 0.037);
+
+      float centerZ =
+          0.58 * cos(u * 3.4 - t * 0.052)
+        + 0.19 * sin(u * 9.1 + t * 0.074);
+
+      vec2 yz = p.yz - vec2(centerY,centerZ);
+
+      /*
+        The question opens alternatives.
+      */
+      float spread =
+        1.0
+        + q * (0.24 + 0.20 * laneAffinity);
+
+      yz *= spread;
+
+      /*
+        Resolution gently pulls alternatives toward agreement.
+      */
+      yz *= 1.0 - r * 0.16;
+
+      float branch =
+        sin(
+          lane * 7.0
+          + age * 1.05
+          + float(i) * 0.81
+        );
+
+      yz +=
+        normalize(vec2(
+          sin(branch + 0.8),
+          cos(branch * 0.7)
+        ))
+        * q
+        * uWidth
+        * 0.17
+        * laneAffinity;
+
+      p.yz = vec2(centerY,centerZ) + yz;
+
+      question += q;
+      resolve += r;
+      memory += m;
+    }
+  }
+}
+
+`;
+
+/* ==========================================================
+   PARTICLE FIELD
+========================================================== */
+
+const geometry = new THREE.BufferGeometry();
+
+const position = new Float32Array(PARTICLES * 3);
+const aU = new Float32Array(PARTICLES);
+const aLane = new Float32Array(PARTICLES);
+const aSeed = new Float32Array(PARTICLES);
+const aDepth = new Float32Array(PARTICLES);
+const aClass = new Float32Array(PARTICLES);
+
+for(let i=0;i<PARTICLES;i++){
+
+  let u = hash(i + 1.3) * 2 - 1;
+
+  /*
+    Several quiet concentrations create structure,
+    without obvious nodes.
+  */
+  if(hash(i+50.1) < .29){
+    const locus =
+      Math.floor(hash(i+90.4)*8) / 7 * 2 - 1;
+
+    u = THREE.MathUtils.lerp(
+      u,
+      locus,
+      hash(i+155.2)*.29
+    );
+  }
+
+  let lane = hash(i+8.2)*2-1;
+
+  if(hash(i+77.7)<.24){
+    lane *= .24;
+  }
+
+  aU[i] = u;
+  aLane[i] = lane;
+  aSeed[i] = hash(i+31.8);
+  aDepth[i] = hash(i+83.9);
+  aClass[i] = hash(i+191.2);
+}
+
+geometry.setAttribute(
+  "position",
+  new THREE.BufferAttribute(position,3)
+);
+
+geometry.setAttribute(
+  "aU",
+  new THREE.BufferAttribute(aU,1)
+);
+
+geometry.setAttribute(
+  "aLane",
+  new THREE.BufferAttribute(aLane,1)
+);
+
+geometry.setAttribute(
+  "aSeed",
+  new THREE.BufferAttribute(aSeed,1)
+);
+
+geometry.setAttribute(
+  "aDepth",
+  new THREE.BufferAttribute(aDepth,1)
+);
+
+geometry.setAttribute(
+  "aClass",
+  new THREE.BufferAttribute(aClass,1)
+);
+
+const particleUniforms = {
+  uTime:{value:0},
+  uReveal:{value:.12},
+  uLength:{value:FIELD_LENGTH},
+  uWidth:{value:FIELD_WIDTH},
+  uPixelRatio:{value:renderer.getPixelRatio()},
+  ...sharedEventUniforms
+};
+
+const particleMaterial = new THREE.ShaderMaterial({
+
+  uniforms:particleUniforms,
+
+  transparent:true,
+  depthWrite:false,
+  blending:THREE.AdditiveBlending,
+
+  vertexShader:`
+
+  attribute float aU;
+  attribute float aLane;
+  attribute float aSeed;
+  attribute float aDepth;
+  attribute float aClass;
+
+  uniform float uTime;
+  uniform float uReveal;
+  uniform float uLength;
+  uniform float uWidth;
+  uniform float uPixelRatio;
+
+  uniform float uEventU[${MAX_EVENTS}];
+  uniform float uEventV[${MAX_EVENTS}];
+  uniform float uEventT[${MAX_EVENTS}];
+  uniform float uEventPower[${MAX_EVENTS}];
+
+  varying float vQuestion;
+  varying float vResolve;
+  varying float vMemory;
+  varying float vCertainty;
+  varying float vClass;
+  varying float vLane;
+  varying float vCurrent;
+
+  ${LAW}
+
+  void main(){
+
+    float certainty;
+
+    vec3 p =
+      fieldLaw(
+        aU,
+        aLane,
+        aSeed,
+        aDepth,
+        uTime,
+        certainty
+      );
+
+    float question;
+    float resolve;
+    float memory;
+
+    questionLaw(
+      p,
+      aU,
+      aLane,
+      certainty,
+      uTime,
+      question,
+      resolve,
+      memory
+    );
+
+    /*
+      Fine current moves through the field continuously.
+    */
+    float current =
+      pow(
+        max(
+          0.0,
+          .5 + .5*sin(
+            aU*49.0
+            - uTime*(.27 + .07*aSeed)
+            + aLane*4.0
+          )
+        ),
+        15.0
+      );
+
+    vec4 mv =
+      modelViewMatrix * vec4(p,1.0);
+
+    gl_Position =
+      projectionMatrix * mv;
+
+    float perspective =
+      clamp(
+        25.0 / max(3.0,-mv.z),
+        .32,
+        2.6
+      );
+
+    float size =
+      mix(
+        .72,
+        1.68,
+        pow(aClass,4.0)
+      );
+
+    size *=
+      1.0
+      + question*.78
+      + resolve*.55
+      + current*.28;
+
+    gl_PointSize =
+      uPixelRatio
+      * perspective
+      * size;
+
+    vQuestion = question;
+    vResolve = resolve;
+    vMemory = memory;
+    vCertainty = certainty;
+    vClass = aClass;
+    vLane = aLane;
+    vCurrent = current;
+  }
+
+  `,
+
+  fragmentShader:`
+
+  uniform float uReveal;
+
+  varying float vQuestion;
+  varying float vResolve;
+  varying float vMemory;
+  varying float vCertainty;
+  varying float vClass;
+  varying float vLane;
+  varying float vCurrent;
+
+  void main(){
+
+    vec2 q =
+      gl_PointCoord - .5;
+
+    float d =
+      length(q);
+
+    if(d>.5) discard;
+
+    float soft =
+      smoothstep(.5,.05,d);
+
+    float core =
+      smoothstep(.15,0.0,d);
+
+    /*
+      COLOR IS STATE.
+
+      Indigo/cyan:
+        unresolved possibility.
+
+      Bronze/amber:
+        convergence.
+
+      Pale gold:
+        temporary high certainty.
+
+      White is deliberately avoided.
+    */
+
+    vec3 deep =
+      vec3(.035,.12,.25);
+
+    vec3 blue =
+      vec3(.075,.40,.58);
+
+    vec3 cyan =
+      vec3(.10,.62,.67);
+
+    vec3 bronze =
+      vec3(.66,.39,.12);
+
+    vec3 gold =
+      vec3(.94,.69,.28);
+
+    vec3 color =
+      mix(
+        deep,
+        blue,
+        .34 + .28*vClass
+      );
+
+    color =
+      mix(
+        color,
+        cyan,
+        clamp(
+          vQuestion*.48
+          + vCurrent*.10,
+          0.0,
+          .72
+        )
+      );
+
+    color =
+      mix(
+        color,
+        bronze,
+        clamp(
+          vCertainty*.25
+          + vMemory*.30,
+          0.0,
+          .55
+        )
+      );
+
+    color =
+      mix(
+        color,
+        gold,
+        clamp(
+          vResolve*.40
+          + vMemory*.20,
+          0.0,
+          .44
+        )
+      );
+
+    float center =
+      pow(
+        max(0.0,1.0-abs(vLane)),
+        4.0
+      );
+
+    float alpha =
+      (
+        .055
+        + .20*pow(vClass,3.2)
+        + .055*center
+        + .09*vQuestion
+        + .07*vResolve
+        + .05*vMemory
+      )
+      * soft
+      * uReveal;
+
+    gl_FragColor =
+      vec4(
+        color * (
+          .46
+          + core*.38
+          + vQuestion*.18
+          + vResolve*.20
+        ),
+        alpha
+      );
+  }
+
+  `
+});
+
+const particleField =
+  new THREE.Points(
+    geometry,
+    particleMaterial
+  );
+
+scene.add(particleField);
+
+/* ==========================================================
+   THREADS
+========================================================== */
+
+const threadPos = [];
+const threadU = [];
+const threadLane = [];
+const threadSeed = [];
+
+const THREADS = mobile ? 28 : 48;
+const STEPS = mobile ? 130 : 220;
+
+for(let k=0;k<THREADS;k++){
+
+  const lane =
+    -1 + 2*k/(THREADS-1);
+
+  const seed =
+    hash(k*4.17+4);
+
+  for(let j=0;j<STEPS-1;j++){
+
+    const u0 =
+      -1 + 2*j/(STEPS-1);
+
+    const u1 =
+      -1 + 2*(j+1)/(STEPS-1);
+
+    threadPos.push(0,0,0,0,0,0);
+    threadU.push(u0,u1);
+    threadLane.push(lane,lane);
+    threadSeed.push(seed,seed);
+  }
+}
+
+const threadGeometry =
+  new THREE.BufferGeometry();
+
+threadGeometry.setAttribute(
+  "position",
+  new THREE.Float32BufferAttribute(threadPos,3)
+);
+
+threadGeometry.setAttribute(
+  "aU",
+  new THREE.Float32BufferAttribute(threadU,1)
+);
+
+threadGeometry.setAttribute(
+  "aLane",
+  new THREE.Float32BufferAttribute(threadLane,1)
+);
+
+threadGeometry.setAttribute(
+  "aSeed",
+  new THREE.Float32BufferAttribute(threadSeed,1)
+);
+
+const threadUniforms = {
+  uTime:{value:0},
+  uReveal:{value:.08},
+  uLength:{value:FIELD_LENGTH},
+  uWidth:{value:FIELD_WIDTH},
+  ...sharedEventUniforms
+};
+
+const threadMaterial =
+  new THREE.ShaderMaterial({
+
+  uniforms:threadUniforms,
+
+  transparent:true,
+  depthWrite:false,
+  blending:THREE.AdditiveBlending,
+
+  vertexShader:`
+
+  attribute float aU;
+  attribute float aLane;
+  attribute float aSeed;
+
+  uniform float uTime;
+  uniform float uReveal;
+  uniform float uLength;
+  uniform float uWidth;
+
+  uniform float uEventU[${MAX_EVENTS}];
+  uniform float uEventV[${MAX_EVENTS}];
+  uniform float uEventT[${MAX_EVENTS}];
+  uniform float uEventPower[${MAX_EVENTS}];
+
+  varying float vQuestion;
+  varying float vResolve;
+  varying float vMemory;
+  varying float vCertainty;
+  varying float vLane;
+
+  ${LAW}
+
+  void main(){
+
+    float certainty;
+
+    vec3 p =
+      fieldLaw(
+        aU,
+        aLane,
+        aSeed,
+        .04,
+        uTime,
+        certainty
+      );
+
+    float question;
+    float resolve;
+    float memory;
+
+    questionLaw(
+      p,
+      aU,
+      aLane,
+      certainty,
+      uTime,
+      question,
+      resolve,
+      memory
+    );
+
+    gl_Position =
+      projectionMatrix
+      * modelViewMatrix
+      * vec4(p,1.0);
+
+    vQuestion = question;
+    vResolve = resolve;
+    vMemory = memory;
+    vCertainty = certainty;
+    vLane = aLane;
+  }
+
+  `,
+
+  fragmentShader:`
+
+  uniform float uReveal;
+
+  varying float vQuestion;
+  varying float vResolve;
+  varying float vMemory;
+  varying float vCertainty;
+  varying float vLane;
+
+  void main(){
+
+    vec3 blue =
+      vec3(.04,.22,.31);
+
+    vec3 cyan =
+      vec3(.09,.50,.55);
+
+    vec3 amber =
+      vec3(.72,.46,.16);
+
+    vec3 c =
+      mix(
+        blue,
+        cyan,
+        clamp(
+          vQuestion*.38
+          + .14*vCertainty,
+          0.0,
+          .62
+        )
+      );
+
+    c =
+      mix(
+        c,
+        amber,
+        clamp(
+          vResolve*.40
+          + vMemory*.24,
+          0.0,
+          .48
+        )
+      );
+
+    float center =
+      pow(
+        max(0.0,1.0-abs(vLane)),
+        3.5
+      );
+
+    float alpha =
+      (
+        .028
+        + center*.014
+        + vQuestion*.055
+        + vResolve*.06
+        + vMemory*.035
+      )
+      * uReveal;
+
+    gl_FragColor =
+      vec4(
+        c*(
+          .55
+          + vQuestion*.16
+          + vResolve*.18
+        ),
+        alpha
+      );
+  }
+
+  `
+});
+
+const threads =
+  new THREE.LineSegments(
+    threadGeometry,
+    threadMaterial
+  );
+
+scene.add(threads);
+
+/* ==========================================================
+   DISTANT ATMOSPHERE
+========================================================== */
+
+const ATMOS_COUNT =
+  mobile ? 2500 : 5200;
+
+const atmosphereGeometry =
+  new THREE.BufferGeometry();
+
+const atmPosition =
+  new Float32Array(ATMOS_COUNT*3);
+
+const atmPhase =
+  new Float32Array(ATMOS_COUNT);
+
+const atmScale =
+  new Float32Array(ATMOS_COUNT);
+
+for(let i=0;i<ATMOS_COUNT;i++){
+
+  const r =
+    7 + Math.pow(hash(i+12),.6)*18;
+
+  const a =
+    hash(i+32)*Math.PI*2;
+
+  atmPosition[i*3] =
+    (hash(i+90)*2-1)*FIELD_LENGTH*1.35;
+
+  atmPosition[i*3+1] =
+    Math.sin(a)*r*.58;
+
+  atmPosition[i*3+2] =
+    Math.cos(a)*r - 7;
+
+  atmPhase[i] =
+    hash(i+120)*Math.PI*2;
+
+  atmScale[i] =
+    hash(i+170);
+}
+
+atmosphereGeometry.setAttribute(
+  "position",
+  new THREE.BufferAttribute(atmPosition,3)
+);
+
+atmosphereGeometry.setAttribute(
+  "aPhase",
+  new THREE.BufferAttribute(atmPhase,1)
+);
+
+atmosphereGeometry.setAttribute(
+  "aScale",
+  new THREE.BufferAttribute(atmScale,1)
+);
+
+const atmosphereMaterial =
+  new THREE.ShaderMaterial({
+
+  uniforms:{
+    uTime:{value:0},
+    uReveal:{value:0},
+    uPixelRatio:{value:renderer.getPixelRatio()}
+  },
+
+  transparent:true,
+  depthWrite:false,
+  blending:THREE.AdditiveBlending,
+
+  vertexShader:`
+
+  attribute float aPhase;
+  attribute float aScale;
+
+  uniform float uTime;
+  uniform float uReveal;
+  uniform float uPixelRatio;
+
+  varying float vA;
+
+  void main(){
+
+    vec3 p = position;
+
+    p.y +=
+      sin(
+        uTime*.016
+        + aPhase
+        + p.x*.018
+      )*.55;
+
+    p.z +=
+      cos(
+        uTime*.011
+        - aPhase
+      )*.32;
+
+    vec4 mv =
+      modelViewMatrix*vec4(p,1.0);
+
+    gl_Position =
+      projectionMatrix*mv;
+
+    gl_PointSize =
+      uPixelRatio
+      * mix(.42,1.25,pow(aScale,5.0))
+      * clamp(
+          17.0/max(3.0,-mv.z),
+          .28,
+          1.6
+        );
+
+    vA =
+      uReveal
+      * mix(
+          .008,
+          .036,
+          pow(aScale,4.0)
+        );
+  }
+
+  `,
+
+  fragmentShader:`
+
+  varying float vA;
+
+  void main(){
+
+    vec2 q =
+      gl_PointCoord-.5;
+
+    float d =
+      length(q);
+
+    if(d>.5)discard;
+
+    gl_FragColor =
+      vec4(
+        .07,
+        .19,
+        .22,
+        smoothstep(.5,0.0,d)*vA
+      );
+  }
+
+  `
+});
+
+const atmosphere =
+  new THREE.Points(
+    atmosphereGeometry,
+    atmosphereMaterial
+  );
+
+scene.add(atmosphere);
+
+/* ==========================================================
+   MEMORY RINGS
+========================================================== */
+
+const memoryMarks = [];
+
+for(let i=0;i<MAX_EVENTS;i++){
+
+  const group = new THREE.Group();
+
+  const ring =
+    new THREE.Mesh(
+      new THREE.TorusGeometry(
+        .16,
+        .007,
+        5,
+        48
+      ),
+      new THREE.MeshBasicMaterial({
+        color:0xd9a447,
+        transparent:true,
+        opacity:0,
+        depthWrite:false,
+        blending:THREE.AdditiveBlending
+      })
+    );
+
+  const ring2 =
+    new THREE.Mesh(
+      new THREE.TorusGeometry(
+        .29,
+        .004,
+        4,
+        56
+      ),
+      new THREE.MeshBasicMaterial({
+        color:0x54a8aa,
+        transparent:true,
+        opacity:0,
+        depthWrite:false,
+        blending:THREE.AdditiveBlending
+      })
+    );
+
+  ring2.rotation.x =
+    Math.PI/2;
+
+  group.add(ring,ring2);
+  group.visible=false;
+
+  scene.add(group);
+
+  memoryMarks.push({
+    group,
+    ring,
+    ring2
+  });
+}
+
+/* ==========================================================
+   CPU LAW
+========================================================== */
+
+function fieldCPU(
+  u,
+  lane,
+  seed=.5,
+  depth=.1,
+  t=time
+){
+
+  const physiology =
+      .50
+    + .16*Math.sin(t*.29+seed*4.8)
+    + .10*Math.sin(t*.43-seed*6.2)
+    + .06*Math.sin(t*.71+seed*8.7);
+
+  const x =
+    u*FIELD_LENGTH;
+
+  const centerY =
+      .66*Math.sin(u*2.8+t*.064)
+    + .25*Math.sin(u*7.7-t*.091)
+    + .11*Math.sin(u*14+t*.037);
+
+  const centerZ =
+      .58*Math.cos(u*3.4-t*.052)
+    + .19*Math.sin(u*9.1+t*.074);
+
+  const logic =
+    .5+.5*Math.sin(
+      u*8
+      +.85*Math.sin(u*2.7-t*.041)
+      +t*.031
+    );
+
+  const certainty =
+    Math.pow(logic,2.7);
+
+  const open =
+    .48+.52*(1-certainty);
+
+  const width =
+    FIELD_WIDTH
+    * open
+    * (.93+physiology*.11);
+
+  const phase =
+      lane*Math.PI*2
+    + u*4.5
+    + .4*Math.sin(u*5.2-t*.055)
+    + seed*.65;
+
+  const filament =
+    lane
+    +.10*Math.sin(
+      u*11
+      +seed*7
+      -t*(.09+seed*.025)
+    );
+
+  const y =
+      centerY
+    + filament*width
+    + .12*Math.sin(phase*2+t*.08)
+      *(1-Math.abs(lane));
+
+  const arch =
+    Math.sin(
+      (
+        lane*.92
+        +.055*Math.sin(u*3)
+      )*Math.PI
+    );
+
+  const z =
+      centerZ
+    + arch
+      * width
+      * (.39+.08*Math.sin(u*4.8+t*.043))
+    +(seed-.5)*(.22+depth*.62);
+
+  const twist =
+      u*2.65
+    + .24*Math.sin(u*4.5-t*.04);
+
+  const c =
+    Math.cos(twist);
+
+  const s =
+    Math.sin(twist);
+
+  const yy =
+    y-centerY;
+
+  const zz =
+    z-centerZ;
+
+  return new THREE.Vector3(
+    x,
+    centerY + yy*c-zz*s,
+    centerZ + yy*s+zz*c
+  );
+}
+
+/* ==========================================================
+   SCREEN → FIELD
+========================================================== */
+
+const raycaster =
+  new THREE.Raycaster();
+
+const ndc =
+  new THREE.Vector2();
+
+function pointerToField(x,y){
+
+  ndc.set(
+    x/innerWidth*2-1,
+    -(y/innerHeight*2-1)
+  );
+
+  raycaster.setFromCamera(
+    ndc,
+    camera
+  );
+
+  /*
+    Intersect with a broad central plane.
+    This makes touch behavior predictable and friendly.
+  */
+  const origin =
+    raycaster.ray.origin;
+
+  const dir =
+    raycaster.ray.direction;
+
+  const denom =
+    Math.abs(dir.z)<.0001
+      ? -.0001
+      : dir.z;
+
+  const k =
+    (0-origin.z)/denom;
+
+  const px =
+    origin.x+dir.x*k;
+
+  const py =
+    origin.y+dir.y*k;
+
+  const u =
+    THREE.MathUtils.clamp(
+      px/FIELD_LENGTH,
+      -.96,
+      .96
+    );
+
+  const center =
+    fieldCPU(u,0,.5,.1,time);
+
+  const lane =
+    THREE.MathUtils.clamp(
+      (py-center.y)/(FIELD_WIDTH*.85),
+      -.9,
+      .9
+    );
+
+  return {u,lane};
+}
+
+/* ==========================================================
+   AUDIO
+========================================================== */
+
+let audio = null;
+
+function createImpulse(ctx,seconds=5.7){
+
+  const length =
+    Math.floor(ctx.sampleRate*seconds);
+
+  const buffer =
+    ctx.createBuffer(
+      2,
+      length,
+      ctx.sampleRate
+    );
+
+  for(let ch=0;ch<2;ch++){
+
+    const out =
+      buffer.getChannelData(ch);
+
+    let low=0;
+
+    for(let i=0;i<length;i++){
+
+      const n =
+        Math.random()*2-1;
+
+      low =
+        low*.945+n*.055;
+
+      const high =
+        n-low;
+
+      const x =
+        i/length;
+
+      out[i] =
+          low
+          * Math.pow(1-x,2.3)
+          * .67
+
+        + high
+          * Math.pow(1-x,7.2)
+          * .12;
+    }
+  }
+
+  return buffer;
+}
+
+function createPadVoice(
+  ctx,
+  destination,
+  frequency,
+  pan,
+  targetGain,
+  brightness
+){
+
+  const bus =
+    ctx.createGain();
+
+  const filter =
+    ctx.createBiquadFilter();
+
+  const panner =
+    ctx.createStereoPanner();
+
+  bus.gain.value=.0001;
+
+  filter.type="lowpass";
+  filter.frequency.value=1250;
+  filter.Q.value=.18;
+
+  panner.pan.value=pan;
+
+  bus.connect(filter);
+  filter.connect(panner);
+  panner.connect(destination);
+
+  /*
+    Mostly fundamental.
+    Upper partials are intentionally modest.
+  */
+  const ratios=[
+    1,
+    2.001,
+    3.002,
+    4.99,
+    6.98
+  ];
+
+  const amplitudes=[
+    1,
+    .115*brightness,
+    .040*brightness,
+    .010*brightness,
+    .003*brightness
+  ];
+
+  ratios.forEach((ratio,i)=>{
+
+    const osc =
+      ctx.createOscillator();
+
+    const gain =
+      ctx.createGain();
+
+    osc.type="sine";
+    osc.frequency.value=
+      frequency*ratio;
+
+    osc.detune.value =
+      i===0
+        ? 0
+        : (i%2?1:-1)*(0.7+i*.28);
+
+    gain.gain.value =
+      amplitudes[i];
+
+    osc.connect(gain);
+    gain.connect(bus);
+    osc.start();
+  });
+
+  return {
+    bus,
+    filter,
+    panner,
+    targetGain
+  };
+}
+
+function initializeAudio(){
+
+  if(audio)return audio;
+
+  const AudioContext =
+    window.AudioContext
+    || window.webkitAudioContext;
+
+  const ctx =
+    new AudioContext();
+
+  const master =
+    ctx.createGain();
+
+  master.gain.value=.0001;
+
+  const compressor =
+    ctx.createDynamicsCompressor();
+
+  compressor.threshold.value=-22;
+  compressor.knee.value=20;
+  compressor.ratio.value=2;
+  compressor.attack.value=.06;
+  compressor.release.value=1.1;
+
+  const lowpass =
+    ctx.createBiquadFilter();
+
+  lowpass.type="lowpass";
+  lowpass.frequency.value=5200;
+  lowpass.Q.value=.12;
+
+  master.connect(lowpass);
+  lowpass.connect(compressor);
+  compressor.connect(ctx.destination);
+
+  const dry =
+    ctx.createGain();
+
+  dry.gain.value=.67;
+
+  const reverb =
+    ctx.createConvolver();
+
+  reverb.buffer =
+    createImpulse(ctx,5.8);
+
+  const wetFilter =
+    ctx.createBiquadFilter();
+
+  wetFilter.type="lowpass";
+  wetFilter.frequency.value=3200;
+
+  const wet =
+    ctx.createGain();
+
+  wet.gain.value=.24;
+
+  const world =
+    ctx.createGain();
+
+  world.gain.value=1;
+
+  world.connect(dry);
+  world.connect(reverb);
+
+  dry.connect(master);
+
+  reverb.connect(wetFilter);
+  wetFilter.connect(wet);
+  wet.connect(master);
+
+  /*
+    Harmonic world:
+
+    D — A — E — G
+
+    Open fifths / suspended fourth territory.
+    No major/minor declaration.
+  */
+
+  const voices=[
+    createPadVoice(ctx,world,55.00,-.48,.018,.54),
+    createPadVoice(ctx,world,82.41, .34,.012,.42),
+    createPadVoice(ctx,world,110.00,-.16,.008,.32),
+    createPadVoice(ctx,world,146.83, .48,.0045,.25)
+  ];
+
+  /*
+    A barely-audible moving "air" layer.
+  */
+
+  const noiseBuffer =
+    ctx.createBuffer(
+      1,
+      ctx.sampleRate*3,
+      ctx.sampleRate
+    );
+
+  const data =
+    noiseBuffer.getChannelData(0);
+
+  let brown=0;
+
+  for(let i=0;i<data.length;i++){
+
+    const white=
+      Math.random()*2-1;
+
+    brown =
+      (brown+.025*white)/1.025;
+
+    data[i]=brown*2.2;
+  }
+
+  const noise =
+    ctx.createBufferSource();
+
+  noise.buffer=noiseBuffer;
+  noise.loop=true;
+
+  const noiseFilter =
+    ctx.createBiquadFilter();
+
+  noiseFilter.type="bandpass";
+  noiseFilter.frequency.value=590;
+  noiseFilter.Q.value=.18;
+
+  const noiseGain =
+    ctx.createGain();
+
+  noiseGain.gain.value=.0038;
+
+  const noisePan =
+    ctx.createStereoPanner();
+
+  noise.connect(noiseFilter);
+  noiseFilter.connect(noiseGain);
+  noiseGain.connect(noisePan);
+  noisePan.connect(world);
+
+  noise.start();
+
+  /*
+    Gentle stereo depth.
+  */
+
+  const delayL =
+    ctx.createDelay(.8);
+
+  const delayR =
+    ctx.createDelay(.8);
+
+  delayL.delayTime.value=.31;
+  delayR.delayTime.value=.43;
+
+  const feedbackL =
+    ctx.createGain();
+
+  const feedbackR =
+    ctx.createGain();
+
+  feedbackL.gain.value=.12;
+  feedbackR.gain.value=.10;
+
+  const delayBus =
+    ctx.createGain();
+
+  delayBus.gain.value=.15;
+
+  world.connect(delayL);
+  world.connect(delayR);
+
+  delayL.connect(feedbackL);
+  feedbackL.connect(delayR);
+
+  delayR.connect(feedbackR);
+  feedbackR.connect(delayL);
+
+  delayL.connect(delayBus);
+  delayR.connect(delayBus);
+
+  delayBus.connect(master);
+
+  const now =
+    ctx.currentTime;
+
+  master.gain.setValueAtTime(
+    .0001,
+    now
+  );
+
+  master.gain.exponentialRampToValueAtTime(
+    mobile ? .105 : .12,
+    now+7
+  );
+
+  voices.forEach((v,i)=>{
+
+    v.bus.gain.setValueAtTime(
+      .0001,
+      now
+    );
+
+    v.bus.gain.exponentialRampToValueAtTime(
+      v.targetGain,
+      now+5.5+i*1.15
+    );
+  });
+
+  audio={
+    ctx,
+    master,
+    world,
+    wet,
+    wetFilter,
+    voices,
+    noiseFilter,
+    noiseGain,
+    noisePan,
+    lastEvent:-99
+  };
+
+  return audio;
+}
+
+/* ==========================================================
+   THE "HEIGHTENING" SOUND
+
+   Interaction does not trigger a beep.
+
+   It creates a slow harmonic ascent:
+
+       origin
+       fifth
+       suspended ninth
+
+   The spectrum opens as the visual possibilities open,
+   then settles into a warmer consonance.
+
+========================================================== */
+
+function soundQuestion(u,lane,power){
+
+  if(!audio)return;
+
+  const ctx=audio.ctx;
+  const now=ctx.currentTime;
+
+  if(now-audio.lastEvent<.14)return;
+  audio.lastEvent=now;
+
+  const modalRatios=[
+    1,
+    9/8,
+    4/3,
+    3/2,
+    5/3,
+    2
+  ];
+
+  const n =
+    THREE.MathUtils.clamp(
+      Math.floor(
+        ((u+1)*.5)
+        * modalRatios.length
+      ),
+      0,
+      modalRatios.length-1
+    );
+
+  const root =
+    73.42 * modalRatios[n];
+
+  const bus =
+    ctx.createGain();
+
+  const filter =
+    ctx.createBiquadFilter();
+
+  const pan =
+    ctx.createStereoPanner();
+
+  bus.gain.setValueAtTime(
+    .0001,
+    now
+  );
+
+  bus.gain.exponentialRampToValueAtTime(
+    .013*power,
+    now+.48
+  );
+
+  bus.gain.exponentialRampToValueAtTime(
+    .009*power,
+    now+2.4
+  );
+
+  bus.gain.exponentialRampToValueAtTime(
+    .0001,
+    now+7.4
+  );
+
+  filter.type="lowpass";
+
+  filter.frequency.setValueAtTime(
+    620,
+    now
+  );
+
+  filter.frequency.exponentialRampToValueAtTime(
+    2100,
+    now+2.2
+  );
+
+  filter.frequency.exponentialRampToValueAtTime(
+    980,
+    now+6.6
+  );
+
+  pan.pan.value =
+    THREE.MathUtils.clamp(
+      u*.60 + lane*.08,
+      -.72,
+      .72
+    );
+
+  bus.connect(filter);
+  filter.connect(pan);
+  pan.connect(audio.world);
+
+  /*
+    Three voices unfold at different rates.
+
+    Each one is additive rather than a naked oscillator.
+  */
+
+  const voices=[
+    {
+      start:root,
+      end:root*1.5,
+      delay:0,
+      level:1
+    },
+    {
+      start:root*1.5,
+      end:root*2,
+      delay:.34,
+      level:.50
+    },
+    {
+      start:root*2,
+      end:root*2.25,
+      delay:.78,
+      level:.25
+    }
+  ];
+
+  voices.forEach((voice,vi)=>{
+
+    const partials=[
+      [1,1],
+      [2.002,.12],
+      [3.004,.038],
+      [5.01,.008]
+    ];
+
+    partials.forEach(([ratio,amp],pi)=>{
+
+      const osc =
+        ctx.createOscillator();
+
+      const gain =
+        ctx.createGain();
+
+      osc.type="sine";
+
+      const begin =
+        now+voice.delay;
+
+      osc.frequency.setValueAtTime(
+        voice.start*ratio,
+        begin
+      );
+
+      osc.frequency.exponentialRampToValueAtTime(
+        voice.end*ratio,
+        begin+2.85
+      );
+
+      osc.detune.value =
+        pi===0
+          ? 0
+          : (pi%2?1:-1)
+            *(.6+pi*.3);
+
+      gain.gain.value=
+        amp*voice.level;
+
+      osc.connect(gain);
+      gain.connect(bus);
+
+      osc.start(begin);
+      osc.stop(now+7.6);
+    });
+  });
+
+  /*
+    A quiet breath follows the harmonic rise.
+  */
+
+  const breathLength =
+    Math.floor(ctx.sampleRate*2.7);
+
+  const breathBuffer =
+    ctx.createBuffer(
+      1,
+      breathLength,
+      ctx.sampleRate
+    );
+
+  const breathData =
+    breathBuffer.getChannelData(0);
+
+  let smooth=0;
+
+  for(let i=0;i<breathData.length;i++){
+
+    const w=Math.random()*2-1;
+    smooth=smooth*.91+w*.09;
+
+    const x=i/breathData.length;
+
+    breathData[i]=
+      smooth
+      * Math.sin(Math.PI*x)
+      * .22;
+  }
+
+  const breath =
+    ctx.createBufferSource();
+
+  const breathFilter =
+    ctx.createBiquadFilter();
+
+  const breathGain =
+    ctx.createGain();
+
+  const breathPan =
+    ctx.createStereoPanner();
+
+  breath.buffer=
+    breathBuffer;
+
+  breathFilter.type="bandpass";
+  breathFilter.frequency.value=1050;
+  breathFilter.Q.value=.28;
+
+  breathGain.gain.value=.008*power;
+
+  breathPan.pan.value=
+    -pan.pan.value*.55;
+
+  breath.connect(breathFilter);
+  breathFilter.connect(breathGain);
+  breathGain.connect(breathPan);
+  breathPan.connect(audio.world);
+
+  breath.start(now+.28);
+}
+
+/* ==========================================================
+   VISUAL EVENT
+========================================================== */
+
+function addQuestion(x,y,power=1,sonic=true){
+
+  if(!entered)return;
+
+  const p =
+    pointerToField(x,y);
+
+  const i =
+    eventCursor%MAX_EVENTS;
+
+  eventCursor++;
+
+  eventU[i]=p.u;
+  eventV[i]=p.lane;
+  eventT[i]=time;
+  eventPower[i]=
+    THREE.MathUtils.clamp(
+      power,
+      .42,
+      1.15
+    );
+
+  memoryMarks[i].group.visible=true;
+
+  if(sonic){
+    soundQuestion(
+      p.u,
+      p.lane,
+      power
+    );
+  }
+}
+
+/* ==========================================================
+   ENTRY
+========================================================== */
+
+const gate =
+  document.getElementById("gate");
+
+const enterButton =
+  document.getElementById("enter");
+
+const mark =
+  document.getElementById("mark");
+
+const guide =
+  document.getElementById("guide");
+
+const cursor =
+  document.getElementById("touch");
+
+async function begin(){
+
+  if(entered)return;
+
+  entered=true;
+  entryTime=time;
+
+  const a=initializeAudio();
+
+  try{
+    await a.ctx.resume();
+  }catch{}
+
+  gate.classList.add("hide");
+
+  setTimeout(()=>{
+    mark.classList.add("on");
+  },500);
+
+  setTimeout(()=>{
+    mark.classList.add("off");
+  },6500);
+
+  setTimeout(()=>{
+    guide.classList.add("on");
+  },1600);
+
+  setTimeout(()=>{
+    guide.classList.add("off");
+  },10000);
+}
+
+enterButton.addEventListener(
+  "click",
+  begin
+);
+
+enterButton.addEventListener(
+  "pointerdown",
+  e=>e.stopPropagation()
+);
+
+/* ==========================================================
+   POINTER
+========================================================== */
+
+renderer.domElement.addEventListener(
+  "pointermove",
+  e=>{
+
+    if(!coarse){
+
+      cursor.style.left=
+        e.clientX+"px";
+
+      cursor.style.top=
+        e.clientY+"px";
+
+      cursor.style.opacity=
+        entered ? ".72" : "0";
+    }
+
+    if(drawing && entered){
+
+      const distance =
+        Math.hypot(
+          e.clientX-lastTraceX,
+          e.clientY-lastTraceY
+        );
+
+      if(
+        time-lastTraceTime>.16
+        && distance>18
+      ){
+
+        addQuestion(
+          e.clientX,
+          e.clientY,
+          .58,
+          true
+        );
+
+        lastTraceTime=time;
+        lastTraceX=e.clientX;
+        lastTraceY=e.clientY;
+      }
+    }
+  },
+  {passive:true}
+);
+
+renderer.domElement.addEventListener(
+  "pointerdown",
+  e=>{
+
+    if(!entered)return;
+
+    drawing=true;
+
+    lastTraceTime=time;
+    lastTraceX=e.clientX;
+    lastTraceY=e.clientY;
+
+    addQuestion(
+      e.clientX,
+      e.clientY,
+      1,
+      true
+    );
+
+    try{
+      renderer.domElement.setPointerCapture(
+        e.pointerId
+      );
+    }catch{}
+  }
+);
+
+function releasePointer(e){
+
+  drawing=false;
+
+  try{
+    renderer.domElement.releasePointerCapture(
+      e.pointerId
+    );
+  }catch{}
+}
+
+renderer.domElement.addEventListener(
+  "pointerup",
+  releasePointer
+);
+
+renderer.domElement.addEventListener(
+  "pointercancel",
+  releasePointer
+);
+
+/* ==========================================================
+   SPONTANEOUS LIFE
+========================================================== */
+
+let spontaneousClock=0;
+let nextSpontaneous=7+Math.random()*7;
+
+function spontaneous(dt){
+
+  if(!entered)return;
+
+  spontaneousClock+=dt;
+
+  if(spontaneousClock>nextSpontaneous){
+
+    spontaneousClock=0;
+
+    nextSpontaneous=
+      8+Math.random()*12;
+
+    /*
+      Low-energy autonomous questions.
+      Visible, but never competing with the visitor.
+    */
+
+    const i =
+      eventCursor%MAX_EVENTS;
+
+    eventCursor++;
+
+    eventU[i] =
+      Math.sin(
+        time*.103
+        +Math.sin(time*.031)*1.7
+      )*.72;
+
+    eventV[i] =
+      Math.sin(time*.171)*.32;
+
+    eventT[i]=time;
+
+    eventPower[i]=
+      .15+Math.random()*.08;
+
+    memoryMarks[i].group.visible=true;
+  }
+}
+
+/* ==========================================================
+   MEMORY MARKS
+========================================================== */
+
+function updateMemory(){
+
+  for(let i=0;i<MAX_EVENTS;i++){
+
+    const age=
+      time-eventT[i];
+
+    const mark=
+      memoryMarks[i];
+
+    if(
+      age<0
+      || age>38
+      || eventU[i]<-2
+    ){
+
+      mark.group.visible=false;
+      continue;
+    }
+
+    mark.group.visible=true;
+
+    const p =
+      fieldCPU(
+        eventU[i],
+        eventV[i],
+        .5,
+        .1,
+        time
+      );
+
+    mark.group.position.copy(p);
+
+    const p0 =
+      fieldCPU(
+        Math.max(-1,eventU[i]-.003),
+        eventV[i],
+        .5,
+        .1,
+        time
+      );
+
+    const p1 =
+      fieldCPU(
+        Math.min(1,eventU[i]+.003),
+        eventV[i],
+        .5,
+        .1,
+        time
+      );
+
+    const tangent =
+      p1.sub(p0).normalize();
+
+    mark.group.quaternion.setFromUnitVectors(
+      new THREE.Vector3(0,0,1),
+      tangent
+    );
+
+    const born =
+      THREE.MathUtils.smoothstep(
+        age,
+        0,
+        .8
+      );
+
+    const decay =
+      Math.exp(-age*.047)
+      * eventPower[i];
+
+    mark.ring.material.opacity =
+      .16*born*decay;
+
+    mark.ring2.material.opacity =
+      .075*born*decay;
+
+    mark.ring.rotation.z =
+      time*.24+i*.7;
+
+    mark.ring2.rotation.z =
+      -time*.17-i*.34;
+
+    const scale =
+      1
+      +age*.008
+      +.04*Math.sin(time*.8+i);
+
+    mark.group.scale.setScalar(scale);
+  }
+}
+
+/* ==========================================================
+   CAMERA
+
+   A calm observer.
+
+   It never rushes the visitor.
+========================================================== */
+
+const desiredCamera =
+  new THREE.Vector3();
+
+const lookTarget =
+  new THREE.Vector3();
+
+function updateCamera(dt){
+
+  const elapsed =
+    entered
+      ? Math.max(0,time-entryTime)
+      : 0;
+
+  let distance =
+    portrait ? 18.5 : 22;
+
+  let targetX=0;
+  let targetY=.25;
+
+  if(entered){
+
+    if(elapsed<14){
+
+      const q =
+        THREE.MathUtils.smoothstep(
+          elapsed,
+          0,
+          14
+        );
+
+      distance =
+        THREE.MathUtils.lerp(
+          portrait?17.5:20,
+          portrait?18.4:21.5,
+          q
+        );
+
+      targetX =
+        THREE.MathUtils.lerp(
+          -FIELD_LENGTH*.06,
+          FIELD_LENGTH*.05,
+          q
+        );
+    }
+
+    else if(elapsed<31){
+
+      const q =
+        THREE.MathUtils.smoothstep(
+          elapsed,
+          14,
+          31
+        );
+
+      distance =
+        THREE.MathUtils.lerp(
+          portrait?18.4:21.5,
+          portrait?20.0:24.5,
+          q
+        );
+
+      targetX =
+        THREE.MathUtils.lerp(
+          FIELD_LENGTH*.05,
+          FIELD_LENGTH*.13,
+          q
+        );
+
+      targetY=
+        .25+.42*Math.sin(q*Math.PI);
+    }
+
+    else if(elapsed<48){
+
+      const q =
+        THREE.MathUtils.smoothstep(
+          elapsed,
+          31,
+          48
+        );
+
+      distance =
+        THREE.MathUtils.lerp(
+          portrait?20:24.5,
+          portrait?21.5:27,
+          q
+        );
+
+      targetX =
+        THREE.MathUtils.lerp(
+          FIELD_LENGTH*.13,
+          -FIELD_LENGTH*.07,
+          q
+        );
+    }
+
+    else{
+
+      distance =
+        (portrait?20.4:25.4)
+        +Math.sin(
+          (elapsed-48)*.027
+        )*(portrait?.8:1.5);
+
+      targetX =
+        Math.sin(
+          (elapsed-48)*.021
+        )
+        *FIELD_LENGTH*.055;
+
+      targetY =
+        .28
+        +Math.sin(
+          (elapsed-48)*.033
+        )*.32;
+    }
+  }
+
+  desiredCamera.set(
+    targetX
+      +Math.sin(time*.014)*.16,
+
+    1.15
+      +Math.sin(time*.021)*.18,
+
+    distance
+  );
+
+  camera.position.lerp(
+    desiredCamera,
+    1-Math.exp(-1.35*dt)
+  );
+
+  lookTarget.set(
+    targetX*.24,
+    targetY,
+    0
+  );
+
+  camera.lookAt(lookTarget);
+}
+
+/* ==========================================================
+   AUDIO LIFE
+========================================================== */
+
+function updateAudio(){
+
+  if(
+    !audio
+    || audio.ctx.state!=="running"
+  )return;
+
+  const now=
+    audio.ctx.currentTime;
+
+  const life =
+      .50
+    + .16*Math.sin(time*.29+.7)
+    + .10*Math.sin(time*.43-1.9)
+    + .06*Math.sin(time*.71+2.2);
+
+  const horizon =
+    .5+.5*Math.sin(
+      time*.049
+      +.7*Math.sin(time*.017)
+    );
+
+  audio.voices.forEach((v,i)=>{
+
+    const pulse =
+      .78
+      +life*.22
+      +.06*Math.sin(
+        time*(.037+i*.009)
+        +i*1.5
+      );
+
+    v.bus.gain.setTargetAtTime(
+      v.targetGain*pulse,
+      now,
+      1.3
+    );
+
+    v.filter.frequency.setTargetAtTime(
+      900
+      +horizon*850
+      +life*240,
+      now,
+      2.0
+    );
+
+    v.panner.pan.setTargetAtTime(
+      Math.sin(
+        time*(.016+i*.004)
+        +i*1.8
+      )*(.14+i*.045),
+      now,
+      2.8
+    );
+  });
+
+  audio.noiseFilter.frequency.setTargetAtTime(
+    460+life*250,
+    now,
+    2.3
+  );
+
+  audio.noisePan.pan.setTargetAtTime(
+    Math.sin(time*.021)*.28,
+    now,
+    2.8
+  );
+
+  audio.wet.gain.setTargetAtTime(
+    .21+horizon*.055,
+    now,
+    3
+  );
+
+  audio.wetFilter.frequency.setTargetAtTime(
+    2700+horizon*900,
+    now,
+    2.7
+  );
+}
+
+/* ==========================================================
+   RESIZE
+========================================================== */
+
+function resize(){
+
+  camera.aspect =
+    innerWidth/innerHeight;
+
+  camera.updateProjectionMatrix();
+
+  renderer.setPixelRatio(
+    Math.min(
+      devicePixelRatio,
+      mobile?1.4:1.7
+    )
+  );
+
+  renderer.setSize(
+    innerWidth,
+    innerHeight
+  );
+
+  composer.setSize(
+    innerWidth,
+    innerHeight
+  );
+
+  particleUniforms
+    .uPixelRatio
+    .value =
+      renderer.getPixelRatio();
+
+  atmosphereMaterial
+    .uniforms
+    .uPixelRatio
+    .value =
+      renderer.getPixelRatio();
+}
+
+addEventListener(
+  "resize",
+  resize,
+  {passive:true}
+);
+
+/* ==========================================================
+   LOOP
+========================================================== */
+
+function animate(){
+
+  requestAnimationFrame(animate);
+
+  const dt =
+    Math.min(
+      clock.getDelta(),
+      .05
+    );
+
+  time+=dt;
+
+  const targetReveal =
+    entered ? 1 : .24;
+
+  particleUniforms.uTime.value =
+    time;
+
+  threadUniforms.uTime.value =
+    time;
+
+  atmosphereMaterial.uniforms.uTime.value =
+    time;
+
+  particleUniforms.uReveal.value +=
+    (
+      targetReveal
+      -particleUniforms.uReveal.value
+    )
+    *(1-Math.exp(-(entered?.65:.17)*dt));
+
+  threadUniforms.uReveal.value +=
+    (
+      targetReveal*.84
+      -threadUniforms.uReveal.value
+    )
+    *(1-Math.exp(-(entered?.55:.15)*dt));
+
+  const atmosphereTarget =
+    entered ? .72 : .08;
+
+  atmosphereMaterial
+    .uniforms
+    .uReveal
+    .value +=
+      (
+        atmosphereTarget
+        -atmosphereMaterial
+          .uniforms
+          .uReveal
+          .value
+      )
+      *(1-Math.exp(-.32*dt));
+
+  /*
+    Extremely slow atmospheric motion.
+  */
+  atmosphere.rotation.x =
+    Math.sin(time*.006)*.025;
+
+  atmosphere.rotation.y =
+    Math.sin(time*.009)*.03;
+
+  const life =
+      .50
+    + .16*Math.sin(time*.29+.7)
+    + .10*Math.sin(time*.43-1.9)
+    + .06*Math.sin(time*.71+2.2);
+
+  /*
+    Brightness varies only subtly.
+    There is no white-out state.
+  */
+  renderer.toneMappingExposure =
+    .61+life*.075;
+
+  bloom.strength =
+    (mobile?.34:.39)
+    +life*.055;
+
+  updateCamera(dt);
+  updateMemory();
+  spontaneous(dt);
+  updateAudio();
+
+  composer.render();
+}
+
+animate();
+
+</script>
+</body>
+</html>

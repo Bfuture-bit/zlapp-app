@@ -1,0 +1,1183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+<title>AFTERIMAGE</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #020307;
+  }
+  body {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    cursor: none;
+    user-select: none;
+    touch-action: none;
+  }
+  canvas {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  #veil {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(circle at 50% 45%, transparent 0%, rgba(0,0,0,.08) 38%, rgba(0,0,0,.68) 100%);
+    mix-blend-mode: multiply;
+  }
+  #grain {
+    position: fixed;
+    inset: -30%;
+    pointer-events: none;
+    opacity: .055;
+    background-image:
+      repeating-radial-gradient(circle at 17% 31%, rgba(255,255,255,.8) 0 0.55px, transparent .7px 3px);
+    background-size: 5px 5px;
+    animation: grain 0.16s steps(2) infinite;
+    mix-blend-mode: screen;
+  }
+  @keyframes grain {
+    0%   { transform: translate(0,0); }
+    25%  { transform: translate(1.5%, -1%); }
+    50%  { transform: translate(-1%, 1.5%); }
+    75%  { transform: translate(.5%, .5%); }
+    100% { transform: translate(0,0); }
+  }
+
+  #hint {
+    position: fixed;
+    left: 50%;
+    bottom: 8vh;
+    transform: translateX(-50%);
+    color: rgba(220,231,255,.42);
+    font-size: 10px;
+    letter-spacing: .3em;
+    white-space: nowrap;
+    pointer-events: none;
+    transition: opacity 2.5s ease;
+    text-transform: uppercase;
+  }
+
+  #word {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%,-50%);
+    color: rgba(236,242,255,0);
+    font-size: clamp(13px, 1.15vw, 18px);
+    letter-spacing: .72em;
+    text-transform: uppercase;
+    pointer-events: none;
+    text-shadow:
+      0 0 18px rgba(160,190,255,.32),
+      0 0 60px rgba(100,130,255,.1);
+    transition: color 3s ease, letter-spacing 7s ease, filter 4s ease;
+  }
+
+  #word.visible {
+    color: rgba(236,242,255,.32);
+    letter-spacing: .48em;
+  }
+
+  #flash {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0;
+    background: radial-gradient(circle at var(--x,50%) var(--y,50%),
+      rgba(255,255,255,.15),
+      rgba(160,190,255,.04) 12%,
+      transparent 42%);
+  }
+
+  @media (pointer: coarse) {
+    body { cursor: default; }
+    #hint { font-size: 9px; letter-spacing: .18em; }
+  }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="veil"></div>
+<div id="grain"></div>
+<div id="word"></div>
+<div id="flash"></div>
+<div id="hint">touch the dark</div>
+
+<script>
+(() => {
+  "use strict";
+
+  const canvas = document.getElementById("c");
+  const ctx = canvas.getContext("2d", { alpha: false });
+  const hint = document.getElementById("hint");
+  const wordEl = document.getElementById("word");
+  const flash = document.getElementById("flash");
+
+  let W = innerWidth;
+  let H = innerHeight;
+  let DPR = Math.min(devicePixelRatio || 1, 2);
+
+  const TAU = Math.PI * 2;
+  const clamp = (v,a,b) => Math.max(a, Math.min(b,v));
+  const lerp = (a,b,t) => a + (b-a)*t;
+  const rand = (a=1,b=null) => {
+    if (b === null) return Math.random()*a;
+    return a + Math.random()*(b-a);
+  };
+
+  function resize() {
+    W = innerWidth;
+    H = innerHeight;
+    DPR = Math.min(devicePixelRatio || 1, 2);
+
+    canvas.width = Math.floor(W * DPR);
+    canvas.height = Math.floor(H * DPR);
+    canvas.style.width = W + "px";
+    canvas.style.height = H + "px";
+
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    rebuildStars();
+  }
+
+  const pointer = {
+    x: W/2,
+    y: H/2,
+    tx: W/2,
+    ty: H/2,
+    lastX: W/2,
+    lastY: H/2,
+    speed: 0,
+    down: false,
+    active: false,
+    still: 0,
+    pressure: 0
+  };
+
+  let worldTime = 0;
+  let awakened = false;
+  let interactionCount = 0;
+  let silence = 0;
+  let phase = 0;
+  let hueDrift = 0;
+  let pulse = 0;
+  let memory = [];
+  let rings = [];
+  let motes = [];
+  let stars = [];
+  let filaments = [];
+  let blooms = [];
+  let glyphs = [];
+  let lastTime = performance.now();
+
+  const words = [
+    "remain",
+    "between",
+    "almost",
+    "listen",
+    "elsewhere",
+    "becoming",
+    "again",
+    "here"
+  ];
+
+  let wordIndex = 0;
+  let wordVisibleUntil = 0;
+
+  function rebuildStars() {
+    stars.length = 0;
+    const area = W * H;
+    const count = Math.floor(clamp(area / 6200, 110, 340));
+
+    for (let i=0; i<count; i++) {
+      const depth = Math.pow(Math.random(), .62);
+      stars.push({
+        x: Math.random()*W,
+        y: Math.random()*H,
+        px: Math.random()*W,
+        py: Math.random()*H,
+        depth,
+        r: lerp(.25, 1.25, depth),
+        a: rand(.08,.65),
+        seed: Math.random()*1000
+      });
+    }
+  }
+
+  class Mote {
+    constructor(x,y,energy=1) {
+      this.x = x;
+      this.y = y;
+      const a = Math.random()*TAU;
+      const s = rand(.04, .8) * energy;
+      this.vx = Math.cos(a)*s;
+      this.vy = Math.sin(a)*s;
+      this.life = rand(4,14);
+      this.maxLife = this.life;
+      this.r = rand(.25,1.4);
+      this.seed = rand(1000);
+      this.energy = energy;
+    }
+    update(dt) {
+      const dx = pointer.x - this.x;
+      const dy = pointer.y - this.y;
+      const d2 = dx*dx + dy*dy + 600;
+      const f = 900 / d2;
+      const swirl = Math.sin(worldTime*.19 + this.seed)*.035;
+
+      this.vx += (-dy*f*.00016 + dx*f*.000045) * dt*60;
+      this.vy += ( dx*f*.00016 + dy*f*.000045) * dt*60;
+
+      this.vx += Math.cos(this.seed + worldTime*.27)*swirl*dt;
+      this.vy += Math.sin(this.seed*.7 + worldTime*.22)*swirl*dt;
+
+      this.vx *= Math.pow(.996, dt*60);
+      this.vy *= Math.pow(.996, dt*60);
+
+      this.x += this.vx * dt*60;
+      this.y += this.vy * dt*60;
+      this.life -= dt;
+
+      if (this.x < -30) this.x = W+30;
+      if (this.x > W+30) this.x = -30;
+      if (this.y < -30) this.y = H+30;
+      if (this.y > H+30) this.y = -30;
+    }
+    draw() {
+      const t = clamp(this.life/this.maxLife,0,1);
+      const fade = Math.sin(Math.min(1,(1-t)*5)*Math.PI*.5) * Math.pow(t,.7);
+      const breath = .7 + .3*Math.sin(worldTime*.8 + this.seed);
+      const a = fade*.34*breath*this.energy;
+
+      ctx.beginPath();
+      ctx.arc(this.x,this.y,this.r*(.8+this.energy*.4),0,TAU);
+      ctx.fillStyle = `rgba(${175+phase*18},${200+phase*8},255,${a})`;
+      ctx.fill();
+    }
+  }
+
+  class Ring {
+    constructor(x,y,strength=1, reverse=false) {
+      this.x=x;
+      this.y=y;
+      this.r=2;
+      this.life=1;
+      this.strength=strength;
+      this.reverse=reverse;
+      this.maxR=Math.min(W,H)*rand(.18,.55)*strength;
+    }
+    update(dt) {
+      const speed = this.reverse ? 55 : 115;
+      this.r += speed*dt*(.6+this.strength*.5);
+      this.life -= dt*(this.reverse ? .35 : .5);
+    }
+    draw() {
+      if (this.life<=0) return;
+      const a = Math.pow(this.life,2)*.16*this.strength;
+      ctx.beginPath();
+      ctx.arc(this.x,this.y,this.r,0,TAU);
+      ctx.strokeStyle=`rgba(180,205,255,${a})`;
+      ctx.lineWidth=.5 + this.life*.8;
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.arc(this.x,this.y,this.r*.965,0,TAU);
+      ctx.strokeStyle=`rgba(255,255,255,${a*.22})`;
+      ctx.lineWidth=.3;
+      ctx.stroke();
+    }
+  }
+
+  class Bloom {
+    constructor(x,y,strength=1) {
+      this.x=x;
+      this.y=y;
+      this.life=1;
+      this.strength=strength;
+      this.seed=rand(1000);
+      this.petals=Math.floor(rand(5,11));
+      this.rotation=rand(TAU);
+    }
+    update(dt) {
+      this.life-=dt*.19;
+      this.rotation+=dt*.018;
+    }
+    draw() {
+      const l=clamp(this.life,0,1);
+      const growth=(1-l)*140*this.strength;
+      const a=Math.pow(l,2)*.055;
+      ctx.save();
+      ctx.translate(this.x,this.y);
+      ctx.rotate(this.rotation);
+
+      for(let i=0;i<this.petals;i++){
+        const ang=i/this.petals*TAU;
+        const r=growth*(.75+.25*Math.sin(this.seed+i*5.1));
+        const x=Math.cos(ang)*r*.38;
+        const y=Math.sin(ang)*r*.38;
+
+        ctx.beginPath();
+        ctx.ellipse(
+          x,y,
+          4 + growth*.09,
+          1 + growth*.018,
+          ang,
+          0,TAU
+        );
+        ctx.strokeStyle=`rgba(142,184,255,${a})`;
+        ctx.lineWidth=.45;
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+  }
+
+  function seedMemory(x,y,weight=1) {
+    memory.push({
+      x,y,
+      age:0,
+      weight,
+      seed:Math.random()*1000
+    });
+    if (memory.length > 40) memory.shift();
+  }
+
+  function createFilament(x,y) {
+    const len = rand(80,210);
+    const angle = rand(TAU);
+    const points=[];
+    const n=12;
+    for(let i=0;i<n;i++){
+      const t=i/(n-1);
+      points.push({
+        x: x + Math.cos(angle)*len*(t-.5) + rand(-8,8),
+        y: y + Math.sin(angle)*len*(t-.5) + rand(-8,8)
+      });
+    }
+    filaments.push({
+      points,
+      life:1,
+      seed:rand(1000)
+    });
+    if(filaments.length>18) filaments.shift();
+  }
+
+  function makeGlyph(x,y) {
+    const arms = Math.floor(rand(3,7));
+    const points = [];
+    for(let i=0;i<arms;i++){
+      const a = (i/arms)*TAU + rand(-.3,.3);
+      const r = rand(12,34);
+      points.push({
+        x: Math.cos(a)*r,
+        y: Math.sin(a)*r
+      });
+    }
+    glyphs.push({
+      x,y,
+      points,
+      life:1,
+      seed:rand(1000),
+      rot:rand(TAU)
+    });
+    if(glyphs.length>12) glyphs.shift();
+  }
+
+  // ─────────────────────────────────────────────
+  // AUDIO
+  // ─────────────────────────────────────────────
+
+  let audio = null;
+  let master = null;
+  let verb = null;
+  let delay = null;
+  let feedback = null;
+  let droneNodes = [];
+  let audioReady = false;
+
+  const scaleSets = [
+    [0, 2, 7, 9, 14],
+    [0, 3, 7, 10, 14],
+    [0, 5, 7, 12, 17],
+    [0, 2, 5, 9, 12],
+    [0, 4, 7, 11, 14]
+  ];
+
+  function impulseResponse(ctxA, seconds=5, decay=3.4) {
+    const rate = ctxA.sampleRate;
+    const len = rate * seconds;
+    const impulse = ctxA.createBuffer(2,len,rate);
+
+    for(let ch=0;ch<2;ch++){
+      const d=impulse.getChannelData(ch);
+      for(let i=0;i<len;i++){
+        const t=i/len;
+        const early =
+          i < rate*.08
+            ? (Math.random()<.008 ? rand(-1,1)*.22 : 0)
+            : 0;
+        d[i]=(Math.random()*2-1)*Math.pow(1-t,decay)*.34 + early;
+      }
+    }
+    return impulse;
+  }
+
+  async function awakenAudio() {
+    if(audioReady){
+      if(audio.state==="suspended") await audio.resume();
+      return;
+    }
+
+    audio = new (window.AudioContext || window.webkitAudioContext)();
+
+    master = audio.createGain();
+    master.gain.value = .0001;
+
+    const compressor = audio.createDynamicsCompressor();
+    compressor.threshold.value = -18;
+    compressor.knee.value = 24;
+    compressor.ratio.value = 5;
+    compressor.attack.value = .02;
+    compressor.release.value = .8;
+
+    verb = audio.createConvolver();
+    verb.buffer = impulseResponse(audio,6,4);
+
+    const verbGain = audio.createGain();
+    verbGain.gain.value=.6;
+
+    delay = audio.createDelay(2);
+    delay.delayTime.value=.53;
+
+    feedback=audio.createGain();
+    feedback.gain.value=.24;
+
+    const delayGain=audio.createGain();
+    delayGain.gain.value=.17;
+
+    delay.connect(feedback);
+    feedback.connect(delay);
+    delay.connect(delayGain);
+
+    verb.connect(verbGain);
+    verbGain.connect(compressor);
+    delayGain.connect(compressor);
+    master.connect(compressor);
+    compressor.connect(audio.destination);
+
+    master.gain.exponentialRampToValueAtTime(.31,audio.currentTime+2.4);
+
+    createDrone();
+
+    audioReady=true;
+  }
+
+  function createDrone() {
+    const now=audio.currentTime;
+    const root=43.65;
+
+    const partials = [
+      [1,.020],
+      [1.5,.012],
+      [2,.010],
+      [2.25,.006],
+      [3,.004]
+    ];
+
+    partials.forEach(([ratio,vol],i)=>{
+      const osc=audio.createOscillator();
+      const gain=audio.createGain();
+      const filter=audio.createBiquadFilter();
+
+      osc.type = i===0 ? "sine" : "triangle";
+      osc.frequency.value=root*ratio;
+      osc.detune.value=rand(-5,5);
+
+      filter.type="lowpass";
+      filter.frequency.value=260+i*90;
+      filter.Q.value=.4;
+
+      gain.gain.value=.0001;
+      gain.gain.exponentialRampToValueAtTime(vol,now+rand(4,9));
+
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(master);
+      gain.connect(verb);
+
+      osc.start();
+      droneNodes.push({osc,gain,filter,ratio});
+    });
+
+    const lfo=audio.createOscillator();
+    const lg=audio.createGain();
+    lfo.frequency.value=.035;
+    lg.gain.value=35;
+    lfo.connect(lg);
+    droneNodes.forEach(n=>lg.connect(n.filter.frequency));
+    lfo.start();
+  }
+
+  function harmonicFrequency(index, octave=0) {
+    const scale=scaleSets[Math.floor(phase)%scaleSets.length];
+    const semitone=scale[((index%scale.length)+scale.length)%scale.length];
+    const oct=Math.floor(index/scale.length)+octave;
+    return 110*Math.pow(2,(semitone+oct*12)/12);
+  }
+
+  function tone(x,y,intensity=1) {
+    if(!audioReady) return;
+
+    const now=audio.currentTime;
+    const nx=clamp(x/W,0,1);
+    const ny=clamp(y/H,0,1);
+
+    const idx=Math.floor(nx*9)+Math.floor((1-ny)*4);
+    const freq=harmonicFrequency(idx-4, -1);
+
+    const osc=audio.createOscillator();
+    const osc2=audio.createOscillator();
+    const gain=audio.createGain();
+    const gain2=audio.createGain();
+    const filter=audio.createBiquadFilter();
+    const pan=audio.createStereoPanner();
+
+    osc.type = interactionCount%5===0 ? "triangle" : "sine";
+    osc.frequency.setValueAtTime(freq,now);
+
+    osc2.type="sine";
+    osc2.frequency.value=freq*2.002;
+
+    pan.pan.value=nx*2-1;
+    filter.type="lowpass";
+    filter.frequency.setValueAtTime(500+2400*(1-ny),now);
+    filter.Q.value=.7;
+
+    const v=.03*clamp(intensity,.4,1.6);
+    gain.gain.setValueAtTime(.0001,now);
+    gain.gain.exponentialRampToValueAtTime(v,now+.06);
+    gain.gain.exponentialRampToValueAtTime(.0001,now+3.8);
+
+    gain2.gain.setValueAtTime(.0001,now);
+    gain2.gain.exponentialRampToValueAtTime(v*.14,now+.15);
+    gain2.gain.exponentialRampToValueAtTime(.0001,now+5.6);
+
+    osc.connect(filter);
+    filter.connect(gain);
+    osc2.connect(gain2);
+    gain.connect(pan);
+    gain2.connect(pan);
+    pan.connect(master);
+    pan.connect(verb);
+    pan.connect(delay);
+
+    osc.start(now);
+    osc2.start(now);
+    osc.stop(now+4);
+    osc2.stop(now+6);
+  }
+
+  function whisperTone() {
+    if(!audioReady) return;
+
+    const now=audio.currentTime;
+    const idx=Math.floor(rand(0,9))-4;
+    const freq=harmonicFrequency(idx,0);
+
+    const osc=audio.createOscillator();
+    const g=audio.createGain();
+    const p=audio.createStereoPanner();
+
+    osc.type="sine";
+    osc.frequency.value=freq;
+    p.pan.value=rand(-.8,.8);
+
+    g.gain.setValueAtTime(.0001,now);
+    g.gain.exponentialRampToValueAtTime(.008,now+1.8);
+    g.gain.exponentialRampToValueAtTime(.0001,now+7);
+
+    osc.connect(g);
+    g.connect(p);
+    p.connect(master);
+    p.connect(verb);
+
+    osc.start();
+    osc.stop(now+7.2);
+  }
+
+  function lowPulse() {
+    if(!audioReady) return;
+
+    const now=audio.currentTime;
+    const o=audio.createOscillator();
+    const g=audio.createGain();
+
+    o.type="sine";
+    o.frequency.setValueAtTime(58,now);
+    o.frequency.exponentialRampToValueAtTime(38,now+2.1);
+
+    g.gain.setValueAtTime(.0001,now);
+    g.gain.exponentialRampToValueAtTime(.045,now+.18);
+    g.gain.exponentialRampToValueAtTime(.0001,now+2.3);
+
+    o.connect(g);
+    g.connect(master);
+    g.connect(verb);
+    o.start();
+    o.stop(now+2.4);
+  }
+
+  // ─────────────────────────────────────────────
+  // INTERACTION
+  // ─────────────────────────────────────────────
+
+  function updatePointer(x,y) {
+    pointer.tx=x;
+    pointer.ty=y;
+    pointer.active=true;
+  }
+
+  function activate(x,y,intensity=1) {
+    awakened=true;
+    interactionCount++;
+    silence=0;
+    hint.style.opacity="0";
+
+    seedMemory(x,y,intensity);
+
+    rings.push(new Ring(x,y,intensity));
+    if(interactionCount%3===0) blooms.push(new Bloom(x,y,intensity));
+    if(interactionCount%5===0) createFilament(x,y);
+    if(interactionCount%9===0) makeGlyph(x,y);
+
+    for(let i=0;i<28;i++) {
+      motes.push(new Mote(x+rand(-8,8),y+rand(-8,8),rand(.5,1.4)*intensity));
+    }
+
+    if(motes.length>1000) motes.splice(0,motes.length-1000);
+
+    pulse=Math.min(1.8,pulse+.6*intensity);
+
+    flash.style.setProperty("--x",(x/W*100)+"%");
+    flash.style.setProperty("--y",(y/H*100)+"%");
+    flash.animate(
+      [{opacity:.28},{opacity:0}],
+      {duration:1000,easing:"cubic-bezier(.15,.8,.25,1)"}
+    );
+
+    tone(x,y,intensity);
+
+    if(interactionCount%7===0){
+      phase=(phase+1)%5;
+      lowPulse();
+    }
+  }
+
+  function handleDown(e) {
+    pointer.down=true;
+    pointer.pressure=1;
+    const p=e.touches ? e.touches[0] : e;
+    const x=p.clientX, y=p.clientY;
+
+    updatePointer(x,y);
+    awakenAudio().then(()=>activate(x,y,1));
+  }
+
+  function handleMove(e) {
+    const p=e.touches ? e.touches[0] : e;
+    updatePointer(p.clientX,p.clientY);
+
+    if(pointer.down && Math.random()<.09){
+      seedMemory(p.clientX,p.clientY,.28);
+      if(audioReady && Math.random()<.055) tone(p.clientX,p.clientY,.35);
+    }
+  }
+
+  function handleUp() {
+    pointer.down=false;
+    pointer.pressure=0;
+  }
+
+  addEventListener("pointermove", handleMove, {passive:true});
+  addEventListener("pointerdown", handleDown, {passive:true});
+  addEventListener("pointerup", handleUp, {passive:true});
+  addEventListener("pointercancel", handleUp, {passive:true});
+
+  addEventListener("touchstart", handleDown, {passive:true});
+  addEventListener("touchmove", handleMove, {passive:true});
+  addEventListener("touchend", handleUp, {passive:true});
+
+  addEventListener("keydown", async e=>{
+    await awakenAudio();
+    awakened=true;
+    hint.style.opacity="0";
+
+    if(e.code==="Space"){
+      e.preventDefault();
+      phase=(phase+1)%5;
+      pulse=1.6;
+      lowPulse();
+
+      const cx=W/2+rand(-W*.12,W*.12);
+      const cy=H/2+rand(-H*.12,H*.12);
+      rings.push(new Ring(cx,cy,1.4,true));
+      blooms.push(new Bloom(cx,cy,1.3));
+
+      for(let i=0;i<90;i++) motes.push(new Mote(cx,cy,rand(.3,1.5)));
+    } else {
+      const x=rand(W*.2,W*.8);
+      const y=rand(H*.2,H*.8);
+      activate(x,y,.7);
+    }
+  });
+
+  document.addEventListener("visibilitychange",()=>{
+    if(document.hidden && audioReady) audio.suspend();
+  });
+
+  // ─────────────────────────────────────────────
+  // DRAWING
+  // ─────────────────────────────────────────────
+
+  function background() {
+    const cx = W*.5 + Math.sin(worldTime*.033)*W*.12;
+    const cy = H*.46 + Math.cos(worldTime*.027)*H*.09;
+
+    const bg=ctx.createRadialGradient(
+      cx,cy,0,
+      cx,cy,Math.max(W,H)*.8
+    );
+
+    const p=phase%5;
+    const colors=[
+      ["#070b16","#020308","#000103"],
+      ["#0b0916","#030208","#010103"],
+      ["#051014","#020506","#010202"],
+      ["#10080d","#050205","#010102"],
+      ["#090d13","#020407","#010102"]
+    ][p];
+
+    bg.addColorStop(0,colors[0]);
+    bg.addColorStop(.42,colors[1]);
+    bg.addColorStop(1,colors[2]);
+
+    ctx.fillStyle=bg;
+    ctx.fillRect(0,0,W,H);
+
+    const breathing=.5+.5*Math.sin(worldTime*.13);
+    const aura=ctx.createRadialGradient(
+      pointer.x,pointer.y,0,
+      pointer.x,pointer.y,
+      180+pointer.speed*3
+    );
+    aura.addColorStop(0,`rgba(90,125,190,${.018 + breathing*.009 + pulse*.012})`);
+    aura.addColorStop(.35,`rgba(70,100,170,${.008 + pulse*.006})`);
+    aura.addColorStop(1,"rgba(0,0,0,0)");
+    ctx.fillStyle=aura;
+    ctx.fillRect(0,0,W,H);
+  }
+
+  function drawStars(dt) {
+    for(const s of stars){
+      const dx=(pointer.x-W/2)*s.depth*.0024;
+      const dy=(pointer.y-H/2)*s.depth*.0024;
+
+      const driftX=Math.sin(worldTime*.011+s.seed)*6*s.depth;
+      const driftY=Math.cos(worldTime*.009+s.seed*.7)*5*s.depth;
+
+      s.px=lerp(s.px,s.x-dx+driftX,dt*2);
+      s.py=lerp(s.py,s.y-dy+driftY,dt*2);
+
+      const twinkle=.62+.38*Math.sin(worldTime*(.18+s.depth*.22)+s.seed);
+      const alpha=s.a*twinkle*(.42+.58*s.depth);
+
+      ctx.beginPath();
+      ctx.arc(s.px,s.py,s.r,0,TAU);
+      ctx.fillStyle=`rgba(190,211,255,${alpha})`;
+      ctx.fill();
+
+      if(s.depth>.82 && twinkle>.92){
+        ctx.beginPath();
+        ctx.moveTo(s.px-3*s.depth,s.py);
+        ctx.lineTo(s.px+3*s.depth,s.py);
+        ctx.moveTo(s.px,s.py-3*s.depth);
+        ctx.lineTo(s.px,s.py+3*s.depth);
+        ctx.strokeStyle=`rgba(200,220,255,${alpha*.16})`;
+        ctx.lineWidth=.4;
+        ctx.stroke();
+      }
+    }
+  }
+
+  function drawMemories() {
+    const alive=[];
+
+    for(const m of memory){
+      m.age += .0035;
+      const life=Math.max(0,1-m.age);
+      if(life<=0) continue;
+      alive.push(m);
+
+      const breathe=.5+.5*Math.sin(worldTime*.31+m.seed);
+      const radius=18 + m.age*170 + breathe*5;
+      const a=Math.pow(life,1.7)*.025*m.weight;
+
+      const g=ctx.createRadialGradient(m.x,m.y,0,m.x,m.y,radius);
+      g.addColorStop(0,`rgba(145,181,255,${a*.8})`);
+      g.addColorStop(.3,`rgba(110,145,230,${a*.28})`);
+      g.addColorStop(1,"rgba(0,0,0,0)");
+      ctx.fillStyle=g;
+      ctx.fillRect(m.x-radius,m.y-radius,radius*2,radius*2);
+    }
+
+    memory=alive;
+  }
+
+  function drawConnections() {
+    if(memory.length<2) return;
+
+    ctx.lineWidth=.35;
+
+    for(let i=0;i<memory.length;i++){
+      const a=memory[i];
+
+      for(let j=i+1;j<memory.length;j++){
+        const b=memory[j];
+        const dx=a.x-b.x;
+        const dy=a.y-b.y;
+        const d=Math.hypot(dx,dy);
+
+        if(d<220){
+          const alpha=(1-d/220)*.035*(1-a.age)*(1-b.age);
+          ctx.beginPath();
+          ctx.moveTo(a.x,a.y);
+
+          const mx=(a.x+b.x)/2 + Math.sin(a.seed+b.seed)*d*.08;
+          const my=(a.y+b.y)/2 + Math.cos(a.seed-b.seed)*d*.08;
+
+          ctx.quadraticCurveTo(mx,my,b.x,b.y);
+          ctx.strokeStyle=`rgba(149,186,255,${alpha})`;
+          ctx.stroke();
+        }
+      }
+    }
+  }
+
+  function drawFilaments(dt) {
+    const keep=[];
+
+    for(const f of filaments){
+      f.life-=dt*.055;
+      if(f.life<=0) continue;
+      keep.push(f);
+
+      ctx.beginPath();
+
+      f.points.forEach((p,i)=>{
+        const n=Math.sin(worldTime*.4+f.seed+i*.8);
+        const x=p.x+n*4;
+        const y=p.y+Math.cos(worldTime*.31+f.seed+i)*4;
+
+        if(i===0) ctx.moveTo(x,y);
+        else ctx.lineTo(x,y);
+      });
+
+      ctx.strokeStyle=`rgba(155,190,255,${f.life*.045})`;
+      ctx.lineWidth=.6;
+      ctx.stroke();
+    }
+
+    filaments=keep;
+  }
+
+  function drawGlyphs(dt) {
+    const keep=[];
+
+    for(const g of glyphs){
+      g.life-=dt*.035;
+      g.rot+=dt*.018;
+
+      if(g.life<=0) continue;
+      keep.push(g);
+
+      ctx.save();
+      ctx.translate(g.x,g.y);
+      ctx.rotate(g.rot);
+
+      ctx.beginPath();
+      g.points.forEach((p,i)=>{
+        if(i===0) ctx.moveTo(p.x,p.y);
+        else ctx.lineTo(p.x,p.y);
+      });
+      ctx.closePath();
+
+      ctx.strokeStyle=`rgba(200,218,255,${g.life*.075})`;
+      ctx.lineWidth=.55;
+      ctx.stroke();
+
+      for(const p of g.points){
+        ctx.beginPath();
+        ctx.arc(p.x,p.y,.8,0,TAU);
+        ctx.fillStyle=`rgba(230,240,255,${g.life*.17})`;
+        ctx.fill();
+      }
+
+      ctx.restore();
+    }
+
+    glyphs=keep;
+  }
+
+  function drawPointer() {
+    if(!pointer.active) return;
+
+    const speed=pointer.speed;
+    const r=5+Math.min(speed*.16,18)+pointer.pressure*5;
+    const a=.2+Math.min(speed*.008,.18);
+
+    ctx.beginPath();
+    ctx.arc(pointer.x,pointer.y,r,0,TAU);
+    ctx.strokeStyle=`rgba(226,236,255,${a})`;
+    ctx.lineWidth=.55;
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(pointer.x,pointer.y,1.1,0,TAU);
+    ctx.fillStyle="rgba(245,248,255,.72)";
+    ctx.fill();
+
+    if(pointer.still>2){
+      const rr=20+Math.sin(worldTime*.6)*3;
+      ctx.beginPath();
+      ctx.arc(pointer.x,pointer.y,rr,0,TAU);
+      ctx.strokeStyle=`rgba(175,205,255,${Math.min((pointer.still-2)*.025,.08)})`;
+      ctx.lineWidth=.45;
+      ctx.stroke();
+    }
+  }
+
+  function drawBreathingField() {
+    const t=worldTime*.05;
+    const count=7;
+
+    ctx.save();
+    ctx.globalCompositeOperation="screen";
+
+    for(let i=0;i<count;i++){
+      const a=t+i*TAU/count;
+      const radius=Math.min(W,H)*(.18+.06*Math.sin(t*.7+i));
+      const x=W/2 + Math.cos(a*.73+i)*W*.22;
+      const y=H/2 + Math.sin(a*.51+i)*H*.18;
+      const size=radius*(1+.15*Math.sin(t+i*3));
+
+      const g=ctx.createRadialGradient(x,y,0,x,y,size);
+      g.addColorStop(0,`rgba(75,100,160,${.006+pulse*.003})`);
+      g.addColorStop(.4,"rgba(40,65,120,.003)");
+      g.addColorStop(1,"rgba(0,0,0,0)");
+
+      ctx.fillStyle=g;
+      ctx.fillRect(x-size,y-size,size*2,size*2);
+    }
+
+    ctx.restore();
+  }
+
+  function drawCentralPresence() {
+    const born = awakened ? 1 : .35;
+    const stillness=clamp(pointer.still/8,0,1);
+    const breath=.5+.5*Math.sin(worldTime*.18);
+    const x=W*.5 + Math.sin(worldTime*.021)*W*.025;
+    const y=H*.48 + Math.cos(worldTime*.018)*H*.018;
+    const r=Math.min(W,H)*(.07 + breath*.015 + stillness*.035);
+
+    ctx.save();
+    ctx.globalCompositeOperation="screen";
+
+    const g=ctx.createRadialGradient(x,y,0,x,y,r*3.5);
+    g.addColorStop(0,`rgba(205,222,255,${.013*born + stillness*.009})`);
+    g.addColorStop(.14,`rgba(120,160,235,${.011*born})`);
+    g.addColorStop(.5,`rgba(55,85,160,${.004*born})`);
+    g.addColorStop(1,"rgba(0,0,0,0)");
+    ctx.fillStyle=g;
+    ctx.fillRect(x-r*4,y-r*4,r*8,r*8);
+
+    const arcs=5;
+    for(let i=0;i<arcs;i++){
+      const rr=r*(.55+i*.34);
+      const start=worldTime*(.008+i*.003)+i*1.3;
+      const length=Math.PI*(.24+.13*Math.sin(worldTime*.1+i));
+
+      ctx.beginPath();
+      ctx.arc(x,y,rr,start,start+length);
+      ctx.strokeStyle=`rgba(170,200,255,${.018 + stillness*.018})`;
+      ctx.lineWidth=.4;
+      ctx.stroke();
+    }
+
+    ctx.restore();
+  }
+
+  function emergence(dt) {
+    if(!awakened) return;
+
+    silence += dt;
+
+    if(pointer.still > 4 && Math.random() < dt*.7){
+      const a=rand(TAU);
+      const r=rand(25,95);
+      const x=pointer.x+Math.cos(a)*r;
+      const y=pointer.y+Math.sin(a)*r;
+
+      motes.push(new Mote(x,y,.35));
+      seedMemory(x,y,.12);
+
+      if(pointer.still>7 && Math.random()<.06) {
+        whisperTone();
+      }
+    }
+
+    if(silence > 12 && Math.random() < dt*.08){
+      const x=rand(W*.15,W*.85);
+      const y=rand(H*.15,H*.85);
+      blooms.push(new Bloom(x,y,.35));
+      silence=8;
+    }
+
+    if(silence>18 && performance.now()>wordVisibleUntil){
+      wordEl.textContent=words[wordIndex++%words.length];
+      wordEl.classList.add("visible");
+      wordVisibleUntil=performance.now()+4500;
+
+      setTimeout(()=>{
+        wordEl.classList.remove("visible");
+      },3300);
+    }
+
+    if(Math.random()<dt*.55 && motes.length<700){
+      const edge=Math.floor(rand(4));
+      let x,y;
+
+      if(edge===0){x=rand(W); y=-10;}
+      if(edge===1){x=W+10; y=rand(H);}
+      if(edge===2){x=rand(W); y=H+10;}
+      if(edge===3){x=-10; y=rand(H);}
+
+      motes.push(new Mote(x,y,.25));
+    }
+  }
+
+  function update(dt) {
+    worldTime += dt;
+    pulse *= Math.pow(.35,dt);
+
+    const prevX=pointer.x;
+    const prevY=pointer.y;
+
+    pointer.x=lerp(pointer.x,pointer.tx,1-Math.pow(.00001,dt));
+    pointer.y=lerp(pointer.y,pointer.ty,1-Math.pow(.00001,dt));
+
+    const dist=Math.hypot(pointer.x-prevX,pointer.y-prevY);
+    pointer.speed=lerp(pointer.speed,dist/Math.max(dt,.001),.08);
+
+    const rawMove=Math.hypot(pointer.tx-pointer.lastX,pointer.ty-pointer.lastY);
+
+    if(rawMove<1.4){
+      pointer.still+=dt;
+    } else {
+      pointer.still=Math.max(0,pointer.still-dt*3);
+    }
+
+    pointer.lastX=pointer.tx;
+    pointer.lastY=pointer.ty;
+
+    emergence(dt);
+
+    for(const m of motes) m.update(dt);
+    motes=motes.filter(m=>m.life>0);
+
+    for(const r of rings) r.update(dt);
+    rings=rings.filter(r=>r.life>0);
+
+    for(const b of blooms) b.update(dt);
+    blooms=blooms.filter(b=>b.life>0);
+
+    if(audioReady && droneNodes.length){
+      const now=audio.currentTime;
+      const still=clamp(pointer.still/8,0,1);
+      droneNodes.forEach((n,i)=>{
+        const target=220+i*90 + still*220 + phase*18;
+        n.filter.frequency.setTargetAtTime(target,now,2.5);
+      });
+    }
+  }
+
+  function draw(dt) {
+    background();
+    drawBreathingField();
+    drawStars(dt);
+    drawCentralPresence();
+    drawMemories();
+    drawConnections();
+    drawFilaments(dt);
+
+    ctx.save();
+    ctx.globalCompositeOperation="screen";
+
+    for(const b of blooms) b.draw();
+    for(const r of rings) r.draw();
+    for(const m of motes) m.draw();
+
+    ctx.restore();
+
+    drawGlyphs(dt);
+    drawPointer();
+
+    const vignette=ctx.createRadialGradient(
+      W/2,H/2,Math.min(W,H)*.1,
+      W/2,H/2,Math.max(W,H)*.75
+    );
+    vignette.addColorStop(0,"rgba(0,0,0,0)");
+    vignette.addColorStop(.65,"rgba(0,0,0,.05)");
+    vignette.addColorStop(1,"rgba(0,0,0,.64)");
+    ctx.fillStyle=vignette;
+    ctx.fillRect(0,0,W,H);
+  }
+
+  function frame(now) {
+    const dt=Math.min((now-lastTime)/1000,.033);
+    lastTime=now;
+
+    update(dt);
+    draw(dt);
+
+    requestAnimationFrame(frame);
+  }
+
+  resize();
+
+  // A small amount of life exists before the visitor arrives.
+  for(let i=0;i<55;i++){
+    motes.push(
+      new Mote(
+        W*.5+rand(-W*.15,W*.15),
+        H*.48+rand(-H*.12,H*.12),
+        rand(.1,.28)
+      )
+    );
+  }
+
+  addEventListener("resize",resize);
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

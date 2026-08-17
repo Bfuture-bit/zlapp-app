@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 750" role="img" aria-label="AEOLIA — FREE WILL">
+  <rect width="1200" height="750" fill="#020408"/>
+  <circle cx="180" cy="140" r="220" fill="#d2e0ff" opacity="0.14"/>
+  <circle cx="980" cy="620" r="280" fill="#b4c4e8" opacity="0.12"/>
+  <circle cx="640" cy="300" r="160" fill="#d2e0ff" opacity="0.08"/>
+  <rect x="64" y="64" width="1072" height="622" fill="none" stroke="#b4c4e8" stroke-opacity="0.18" stroke-width="1"/>
+  <text x="88" y="120" fill="#b4c4e8" fill-opacity="0.55" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="18" letter-spacing="4">MUSE SPARK 1.2</text>
+  <text x="88" y="400" fill="#b4c4e8" font-family="Georgia, 'Iowan Old Style', serif" font-size="54">AEOLIA — FREE WILL</text>
+  <text x="88" y="640" fill="#d2e0ff" fill-opacity="0.7" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="16" letter-spacing="3">muse-spark-shared</text>
+</svg>

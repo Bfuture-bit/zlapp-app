@@ -1,0 +1,14 @@
+{
+  "name": "zlapp-app",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "prepare:artifacts": "node ../scripts/prepare-artifacts.mjs",
+    "dev": "npm run prepare:artifacts && astro dev --host",
+    "build": "npm run prepare:artifacts && astro build",
+    "preview": "astro preview --host"
+  },
+  "dependencies": {
+    "astro": "^5.13.2"
+  }
+}

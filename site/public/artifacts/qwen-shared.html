@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>QWEN · FRONTIER CHOIR</title>
+<style>
+  html,body{margin:0;padding:0;background:#000;overflow:hidden;height:100%;
+    -webkit-user-select:none;user-select:none;touch-action:none;
+    font-family:"Avenir Next","Segoe UI",system-ui,-apple-system,sans-serif;}
+  canvas{display:block}
+  #gate{position:fixed;inset:0;background:#000;z-index:20;display:flex;
+    align-items:center;justify-content:center;cursor:pointer;
+    transition:opacity 1.6s ease;}
+  #gate.gone{opacity:0;pointer-events:none}
+  .gate-ring{width:132px;height:132px;border-radius:50%;
+    border:1px solid rgba(120,215,225,.34);
+    display:flex;align-items:center;justify-content:center;
+    animation:gp 3.6s ease-in-out infinite;}
+  .gate-ring span{color:rgba(190,235,240,.82);font-size:11px;font-weight:300;
+    letter-spacing:.52em;padding-left:.52em;}
+  .gate-sub{position:absolute;bottom:7vh;left:0;right:0;text-align:center;
+    color:rgba(140,195,205,.30);font-size:9px;font-weight:300;letter-spacing:.5em;padding-left:.5em;}
+  @keyframes gp{0%,100%{box-shadow:0 0 0 0 rgba(90,200,210,0)}
+    50%{box-shadow:0 0 46px 2px rgba(90,200,210,.16)}}
+  #desig{position:fixed;right:18px;bottom:14px;z-index:5;text-align:right;
+    color:rgba(170,215,222,.34);font-size:9px;font-weight:300;
+    letter-spacing:.42em;line-height:2;pointer-events:none;
+    opacity:0;transition:opacity 3s ease 1.5s;}
+  body.in #desig{opacity:1}
+  #hint{position:fixed;left:0;right:0;bottom:9vh;text-align:center;z-index:5;
+    color:rgba(160,210,218,.30);font-size:10px;font-weight:300;
+    letter-spacing:.4em;padding-left:.4em;pointer-events:none;
+    opacity:0;transition:opacity 2.4s ease;}
+  body.in #hint{opacity:1;transition-delay:2.6s}
+  #hint.off{opacity:0 !important}
+  #err{position:fixed;inset:0;display:none;align-items:center;justify-content:center;
+    color:rgba(180,210,215,.5);font-size:11px;letter-spacing:.3em;z-index:30;}
+</style>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+}}
+</script>
+</head>
+<body>
+<div id="gate"><div class="gate-ring"><span>ENTER</span></div><div class="gate-sub">QWEN · FRONTIER CHOIR</div></div>
+<div id="hint">TOUCH THE LOOM</div>
+<div id="desig">QWEN<br><span style="opacity:.6">FRONTIER CHOIR</span></div>
+<div id="err">the loom could not open here</div>
+
+<script type="module">
+import * as THREE from 'three';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+
+/* ============================================================
+   THE LOOM OF WITNESS
+   intelligence as a woven field: coherence propagates,
+   agreement ignites, disagreement fades, memory rekindles.
+   ============================================================ */
+
+const COARSE = matchMedia('(pointer:coarse)').matches || Math.min(innerWidth,innerHeight) < 620;
+const MAXEV = 12, MAXMEM = 64;
+const W = 170, D = 120, HX = W/2, HZ = D/2;
+
+let renderer;
+try {
+  renderer = new THREE.WebGLRenderer({ antialias:true, powerPreference:'high-performance' });
+} catch(e){ document.getElementById('err').style.display='flex'; throw e; }
+renderer.setPixelRatio(Math.min(devicePixelRatio, 1.75));
+renderer.setSize(innerWidth, innerHeight);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.12;
+document.body.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0x02080c, 0.0052);
+const camera = new THREE.PerspectiveCamera(55, innerWidth/innerHeight, 0.1, 1600);
+
+/* ---------------- state ---------------- */
+const events = [];   // {x,z,t0,str,tone}
+const mems   = [];   // {x,z,str,birth,tone}
+const uEvArr = new Float32Array(MAXEV*4), uToneArr = new Float32Array(MAXEV);
+const uMemArr = new Float32Array(MAXMEM*4), uMemToneArr = new Float32Array(MAXMEM);
+let entered=false, tEnter=0, simT=0;
+let camAz=0, camEl=0, camR=0, tAz=0, tEl=0, tR=0;
+let nextMicro=6, nextSurge=19, surgeT0=-99, hintOffAt=0;
+let pDown=false, pX=0, pY=0, pT=0, pMoved=0, pinchD=0, frame=0;
+
+/* ---------------- shared GLSL ---------------- */
+const COMMON = `
+uniform float uTime, uLife, uSwell, uPx, uSizeMul;
+uniform vec4 uEvents[${MAXEV}]; uniform float uTones[${MAXEV}]; uniform int uEvN;
+uniform vec4 uMem[${MAXMEM}]; uniform float uMemTone[${MAXMEM}]; uniform int uMemN;
+
+float hash21(vec2 p){ p=fract(p*vec2(123.34,456.21)); p+=dot(p,p+45.32); return fract(p.x*p.y); }
+float vnoise(vec2 p){
+  vec2 i=floor(p); vec2 f=fract(p); vec2 u=f*f*(3.0-2.0*f);
+  float a=hash21(i); float b=hash21(i+vec2(1.0,0.0));
+  float c=hash21(i+vec2(0.0,1.0)); float d=hash21(i+vec2(1.0,1.0));
+  return mix(mix(a,b,u.x),mix(c,d,u.x),u.y);
+}
+float baseH(vec2 p, float t){
+  float br = 0.72 + 0.55*uLife + 0.5*uSwell;
+  float h = sin(p.x*0.115 + t*0.42 + sin(p.y*0.083 - t*0.21)*1.15) * 0.85;
+  h += sin(p.y*0.162 - t*0.30 + 2.1) * 0.5;
+  h += sin((p.x+p.y)*0.061 + t*0.115) * 1.15;
+  h += (vnoise(p*0.22 + t*0.05) - 0.5) * 0.9;
+  return h * br;
+}
+void rings(vec2 p, out float e, out float tone){
+  e = 0.0; tone = 0.0; float bw = 0.0;
+  for(int i=0;i<${MAXEV};i++){
+    if(i>=uEvN) break;
+    vec4 ev = uEvents[i];
+    float age = uTime - ev.z;
+    if(age < 0.0 || age > 4.2) continue;
+    float d = distance(p, ev.xy);
+    float r = 2.0 + 9.5*age;
+    float g = exp(-pow(d-r,2.0)/5.2) * exp(-age*1.1) * ev.w;
+    e += g;
+    float w = g*ev.w + 0.0001;
+    tone += uTones[i]*w;
+    bw += w;
+  }
+  if(bw > 0.0002) tone = tone/bw; else tone = 0.0;
+}
+float memF(vec2 p, out float mt){
+  float m = 0.0; float tw = 0.0;
+  for(int j=0;j<${MAXMEM};j++){
+    if(j>=uMemN) break;
+    vec4 mm = uMem[j]; /* x, z, strength, birth */
+    float age = uTime - mm.w;
+    if(age < 0.0) continue;
+    float fade = exp(-age/46.0) * mm.z;
+    if(fade < 0.02) continue;
+    vec2 dv = p - mm.xy;
+    float g = exp(-dot(dv,dv)/30.0) * fade;
+    m += g;
+    tw += g * uMemTone[j];
+  }
+  if(m > 0.001) mt = tw/m; else mt = 0.0;
+  return m;
+}
+vec3 warmT(float id){
+  vec3 c0=vec3(1.00,0.78,0.42); vec3 c1=vec3(1.00,0.62,0.30);
+  vec3 c2=vec3(0.96,0.60,0.55); vec3 c3=vec3(1.00,0.88,0.64);
+  if(id<0.5) return c0; if(id<1.5) return c1; if(id<2.5) return c2; return c3;
+}`;
+
+function makeUniforms(){
+  return {
+    uTime:{value:0}, uLife:{value:0.5}, uSwell:{value:0},
+    uPx:{value:renderer.getPixelRatio()}, uSizeMul:{value:1},
+    uEvents:{value:uEvArr}, uTones:{value:uToneArr}, uEvN:{value:0},
+    uMem:{value:uMemArr}, uMemTone:{value:uMemToneArr}, uMemN:{value:0}
+  };
+}
+
+/* ---------------- the warp : threads ---------------- */
+const TH_T = COARSE?150:210, TH_V = COARSE?96:132;
+const thPos = new Float32Array(TH_T*(TH_V-1)*2*3);
+const thAux = new Float32Array(TH_T*(TH_V-1)*2*4);
+{
+  let i3=0, i4=0;
+  for(let t=0;t<TH_T;t++){
+    const z = -HZ + t/(TH_T-1)*D + (Math.random()-0.5)*0.35;
+    const lane = t/(TH_T-1);
+    const seed = Math.random();
+    for(let v=0;v<TH_V-1;v++){
+      for(let k=0;k<2;k++){
+        const vi = v+k;
+        const x = -HX + vi/(TH_V-1)*W;
+        thPos[i3++]=x; thPos[i3++]=0; thPos[i3++]=z;
+        thAux[i4++]=seed; thAux[i4++]=lane; thAux[i4++]=vi/(TH_V-1); thAux[i4++]=0;
+      }
+    }
+  }
+}
+const thGeo = new THREE.BufferGeometry();
+thGeo.setAttribute('position', new THREE.BufferAttribute(thPos,3));
+thGeo.setAttribute('aAux', new THREE.BufferAttribute(thAux,4));
+thGeo.boundingSphere = new THREE.Sphere(new THREE.Vector3(0,3,0), 160);
+
+const thUni = makeUniforms();
+const threadMat = new THREE.ShaderMaterial({
+  uniforms: thUni,
+  transparent:true, depthWrite:false, blending:THREE.AdditiveBlending,
+  vertexShader: COMMON + `
+  attribute vec4 aAux;
+  varying vec3 vCol; varying float vA;
+  void main(){
+    vec3 pos = position; vec2 p = pos.xz;
+    float t = uTime;
+    float e, tone; rings(p, e, tone);
+    float mt; float m = memF(p, mt);
+    float h = baseH(p, t);
+    float lift = e*3.1 + m*1.15 + uSwell*0.7;
+    pos.y = h + lift;
+    float flow = 0.5 + 0.5*sin(aAux.z*66.0 - t*2.6 + aAux.x*6.283);
+    float glow = e*1.55 + m*0.7 + flow*0.10*(0.3+0.7*uLife) + uSwell*0.25;
+    float edge = smoothstep(0.0,0.12,aAux.z)*(1.0-smoothstep(0.88,1.0,aAux.z));
+    float edgeL = 1.0 - smoothstep(58.0,86.0,abs(p.x));
+    float depthF = 1.0 - smoothstep(40.0,62.0,abs(p.y));
+    vec3 cold = vec3(0.085,0.36,0.47);
+    vec3 warm = mix(vec3(1.0,0.8,0.45), warmT(tone), step(0.5,e));
+    vec3 col = mix(cold, warm, clamp(glow*0.85, 0.0, 1.0));
+    col *= 0.15 + 0.11*uLife + glow*1.5;
+    vec4 mv = modelViewMatrix * vec4(pos,1.0);
+    float fog = exp(-max(-mv.z,0.0)*0.0058);
+    vCol = col * fog;
+    vA = edge * edgeL * depthF;
+    gl_Position = projectionMatrix * mv;
+  }`,
+  fragmentShader:`
+  varying vec3 vCol; varying float vA;
+  void main(){ if(vA<0.01) discard; gl_FragColor = vec4(vCol*vA, 1.0); }`
+});
+const threads = new THREE.LineSegments(thGeo, threadMat);
+threads.frustumCulled = false;
+scene.add(threads);
+
+/* ---------------- blades · spores · motes (one Points cloud) ---------------- */
+const NB = COARSE?2600:5600, NS = COARSE?6000:13000, NM = COARSE?3000:7000;
+const NP = NB+NS+NM;
+const ptPos = new Float32Array(NP*3), ptAux = new Float32Array(NP*4);
+{
+  let i=0;
+  const set=(x,y,z,fam,seed,lane,hh)=>{ ptPos[i*3]=x; ptPos[i*3+1]=y; ptPos[i*3+2]=z;
+    ptAux[i*4]=seed; ptAux[i*4+1]=lane; ptAux[i*4+2]=hh; ptAux[i*4+3]=fam; i++; };
+  for(let n=0;n<NB;n++){ // standing blades on the lattice
+    const gx = Math.floor(Math.random()*92), gz = Math.floor(Math.random()*60);
+    const x = -HX + gx/91*W + (Math.random()-0.5)*1.2;
+    const z = -HZ + gz/59*D + (Math.random()-0.5)*1.2;
+    set(x,0,z,1, Math.random(), 0, Math.pow(Math.random(),0.6));
+  }
+  for(let n=0;n<NS;n++){ // spores above
+    set((Math.random()*2-1)*HX*1.02, 2+Math.pow(Math.random(),1.4)*34,
+        (Math.random()*2-1)*HZ*1.02, 2, Math.random(), 0, Math.random());
+  }
+  for(let n=0;n<NM;n++){ // deep dust
+    set((Math.random()*2-1)*HX*2.4, Math.random()*70-6,
+        (Math.random()*2-1)*HZ*2.6, 3, Math.random(), 0, Math.random());
+  }
+}
+const ptGeo = new THREE.BufferGeometry();
+ptGeo.setAttribute('position', new THREE.BufferAttribute(ptPos,3));
+ptGeo.setAttribute('aAux', new THREE.BufferAttribute(ptAux,4));
+ptGeo.boundingSphere = new THREE.Sphere(new THREE.Vector3(0,20,0), 260);
+
+const ptUni = makeUniforms();
+const dustMat = new THREE.ShaderMaterial({
+  uniforms: ptUni,
+  transparent:true, depthWrite:false, blending:THREE.AdditiveBlending,
+  vertexShader: COMMON + `
+  attribute vec4 aAux;
+  varying vec3 vCol; varying float vA;
+  void main(){
+    vec3 pos = position; float t = uTime;
+    float fam = aAux.w;
+    vec3 col = vec3(0.085,0.36,0.47);
+    float a = 0.0; float sz = 1.5;
+    if(fam < 1.5){ /* BLADE */
+      vec2 p = pos.xz;
+      float e, tone; rings(p, e, tone);
+      float mt; float m = memF(p, mt);
+      float idle = step(0.962, hash21(vec2(aAux.x*13.7, 4.2))) * (0.5+0.5*sin(t*0.7+aAux.x*40.0));
+      float S = clamp(e*1.5 + m*1.05 + idle*0.14*(0.4+0.6*uLife) + uSwell*0.2, 0.0, 1.45);
+      float H = aAux.z * 6.5;
+      pos.y = baseH(p,t) + pow(S,1.3)*H + 0.03;
+      pos.x += sin(t*1.2 + aAux.x*20.0)*0.35*S;
+      pos.z += cos(t*0.9 + aAux.x*17.0)*0.28*S;
+      vec3 warm = mix(vec3(1.0,0.82,0.46), warmT(mix(tone,mt,step(0.5,m))), step(0.5,m));
+      col = mix(col*0.7, warm, clamp(S*0.9,0.0,1.0));
+      col *= 0.03 + pow(S,1.25)*1.7;
+      a = 0.9;
+      sz = mix(1.6,3.2,aAux.z);
+    } else if(fam < 2.5){ /* SPORE */
+      float s = aAux.x*6.283;
+      pos.x += sin(t*0.09+s*3.1)*2.6 + sin(t*0.23+s)*0.8;
+      pos.z += cos(t*0.075+s*2.3)*2.6;
+      pos.y += sin(t*0.16+s*4.7)*1.4;
+      vec2 p = pos.xz;
+      float e, tone; rings(p, e, tone);
+      float mt; float m = memF(p, mt);
+      float near = exp(-pow(pos.y - baseH(p,t),2.0)/40.0);
+      float tw = 0.5+0.5*sin(t*1.7+s*9.0);
+      col *= 0.55+0.6*uLife;
+      float g = e*1.3 + m*0.6;
+      col = mix(col, mix(vec3(1.0,0.82,0.46), warmT(mix(tone,mt,step(0.5,m))), step(0.5,m)), clamp(g,0.0,1.0)*0.85);
+      col *= 0.05 + g*0.85 + tw*near*0.12;
+      a = 0.8;
+      sz = 1.7;
+    } else { /* MOTE */
+      float s = aAux.x*6.283;
+      pos.x += sin(t*0.05+s*2.0)*4.0;
+      pos.z += cos(t*0.04+s*1.6)*4.0;
+      pos.y += sin(t*0.06+s*3.3)*2.0;
+      col *= 0.045*(0.6+0.7*uLife);
+      a = 0.55;
+      sz = 1.25;
+    }
+    vec4 mv = modelViewMatrix * vec4(pos,1.0);
+    float dist = max(-mv.z, 0.001);
+    float fog = exp(-dist*0.0058);
+    gl_PointSize = clamp(sz*uSizeMul*uPx*(150.0/dist), 0.6, 26.0);
+    vCol = col*fog;
+    vA = a*fog;
+    gl_Position = projectionMatrix*mv;
+  }`,
+  fragmentShader:`
+  varying vec3 vCol; varying float vA;
+  void main(){
+    float d = length(gl_PointCoord-0.5);
+    float m = smoothstep(0.5,0.08,d);
+    float a = m*m*vA;
+    if(a<0.004) discard;
+    gl_FragColor = vec4(vCol*a, 1.0);
+  }`
+});
+const dust = new THREE.Points(ptGeo, dustMat);
+dust.frustumCulled = false;
+scene.add(dust);
+
+/* ---------------- atmosphere dome + haze + horizon ---------------- */
+const domeMat = new THREE.ShaderMaterial({
+  side:THREE.BackSide, depthWrite:false, fog:false,
+  uniforms:{ uTime:{value:0}, uLife:{value:0.5}, uSwell:{value:0} },
+  vertexShader:`varying vec3 vDir; void main(){ vDir=position;
+    gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}`,
+  fragmentShader:`
+  uniform float uTime,uLife,uSwell; varying vec3 vDir;
+  void main(){
+    vec3 d = normalize(vDir);
+    float h = clamp(d.y,-0.15,1.0);
+    vec3 hor = vec3(0.016,0.05,0.06);
+    vec3 zen = vec3(0.001,0.004,0.006);
+    vec3 col = mix(hor, zen, smoothstep(-0.05,0.5,h));
+    col *= 0.7 + 0.5*uLife + uSwell*0.5;
+    float band = exp(-pow((d.y-0.02)*9.0,2.0));
+    col += vec3(0.008,0.028,0.032)*band*(0.6+0.6*uLife);
+    gl_FragColor = vec4(col,1.0);
+  }`
+});
+scene.add(new THREE.Mesh(new THREE.SphereGeometry(760,32,20), domeMat));
+
+const hazeMat = new THREE.ShaderMaterial({
+  transparent:true, depthWrite:false, blending:THREE.AdditiveBlending,
+  uniforms:{ uTime:{value:0}, uLife:{value:0.5} },
+  vertexShader:`varying vec2 vUv; void main(){ vUv=uv;
+    gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}`,
+  fragmentShader:`
+  uniform float uLife; varying vec2 vUv;
+  void main(){
+    vec2 c = vUv-0.5; float r = length(c)*2.0;
+    float a = smoothstep(1.0,0.15,r)*0.05*(0.6+0.7*uLife);
+    gl_FragColor = vec4(vec3(0.05,0.2,0.24)*a, a);
+  }`
+});
+const haze = new THREE.Mesh(new THREE.PlaneGeometry(900,900), hazeMat);
+haze.rotation.x = -Math.PI/2; haze.position.y = -7;
+scene.add(haze);
+
+/* horizon filament — the bright line the loom hangs from */
+const hlGeo = new THREE.BufferGeometry();
+{
+  const n=120, p=new Float32Array(n*3);
+  for(let i=0;i<n;i++){ p[i*3]=-HX+i/(n-1)*W; p[i*3+1]=0; p[i*3+2]=-HZ-10; }
+  hlGeo.setAttribute('position', new THREE.BufferAttribute(p,3));
+}
+const hlMat = new THREE.LineBasicMaterial({ color:0x6fe0dd, transparent:true,
+  opacity:0.22, blending:THREE.AdditiveBlending, depthWrite:false });
+scene.add(new THREE.Line(hlGeo, hlMat));
+
+/* ---------------- post ---------------- */
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+const bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight), 0.9, 0.55, 0.12);
+composer.addPass(bloom);
+composer.addPass(new OutputPass());
+
+/* ============================================================
+   SOUND — the same law, heard
+   ============================================================ */
+const F0 = 65.406;
+const HSET = [2,3,4,5,6,7,8,9,10,12,13];
+const CHORDS = [[2,4,6,7],[1,3,6,9],[0,4,7,8],[2,5,6,10]];
+const SCALE = [4,5,6,8,9,10,12,13];
+const TONEF = [652.7,783.99,880,1046.5];
+let AC=null, master, wetBus, conv, noiseBuf, droneVoices=[], chordIdx=-1, nextChordAt=0;
+
+function buildIR(){
+  const sr=AC.sampleRate, len=Math.floor(sr*6.5);
+  const buf=AC.createBuffer(2,len,sr);
+  for(let ch=0;ch<2;ch++){
+    const d=buf.getChannelData(ch); let last=0;
+    for(let i=0;i<len;i++){
+      const t=i/sr;
+      const n=(Math.random()*2-1)*Math.exp(-t*2.6)*(1-Math.exp(-t*90));
+      const k=Math.max(0.06, 0.62*Math.exp(-t*0.34));
+      last=last+k*(n-last);
+      d[i]=last*2.4;
+    }
+  }
+  return buf;
+}
+function makeNoise(){
+  const sr=AC.sampleRate, b=AC.createBuffer(1,sr*2,sr), d=b.getChannelData(0);
+  for(let i=0;i<d.length;i++) d[i]=Math.random()*2-1;
+  return b;
+}
+function initAudio(){
+  try {
+    AC = new (window.AudioContext||window.webkitAudioContext)();
+    const comp = AC.createDynamicsCompressor();
+    comp.threshold.value=-20; comp.knee.value=18; comp.ratio.value=4;
+    comp.attack.value=0.02; comp.release.value=0.4;
+    comp.connect(AC.destination);
+    master = AC.createGain(); master.gain.value=0.0001; master.connect(comp);
+
+    conv = AC.createConvolver(); conv.buffer = buildIR();
+    wetBus = AC.createGain(); wetBus.gain.value=0.5;
+    conv.connect(wetBus); wetBus.connect(master);
+
+    const chordBus = AC.createGain(); chordBus.gain.value=1;
+    const lp = AC.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=1900; lp.Q.value=0.3;
+    chordBus.connect(lp); lp.connect(master);
+    const send = AC.createGain(); send.gain.value=0.42; lp.connect(send); send.connect(conv);
+
+    HSET.forEach((h,i)=>{
+      const f=F0*h, g=AC.createGain();
+      g.gain.value=0; g.connect(chordBus);
+      const lpv=AC.createBiquadFilter(); lpv.type='lowpass';
+      lpv.frequency.value=Math.min(f*3.2,6500); lpv.Q.value=0.4; lpv.connect(g);
+      const pan=AC.createStereoPanner();
+      pan.pan.value=((i%2?1:-1)*(0.12+0.05*Math.min(i,6))); pan.connect(lpv);
+      [[1,1],[2,0.16],[3,0.07],[5.04,0.028]].forEach(([r,a])=>{
+        const o=AC.createOscillator(); o.type='sine'; o.frequency.value=f*r;
+        const pg=AC.createGain(); pg.gain.value=a; o.connect(pg); pg.connect(pan);
+        o.start();
+      });
+      droneVoices.push({h, gain:g, idx:i, target:0});
+    });
+
+    noiseBuf = makeNoise();
+    const ns=AC.createBufferSource(); ns.buffer=noiseBuf; ns.loop=true;
+    const bp=AC.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=520; bp.Q.value=0.8;
+    const ng=AC.createGain(); ng.gain.value=0.006;
+    ns.connect(bp); bp.connect(ng); ng.connect(master); ns.start();
+
+    nextChordAt = AC.currentTime + 1.5;
+  } catch(e){ AC=null; }
+}
+function scheduleChord(ci, at){
+  const set = CHORDS[ci];
+  droneVoices.forEach(v=>{
+    const on = set.includes(v.idx);
+    v.target = on ? 0.036/(1+(v.h-4)*0.22) : 0;
+    v.gain.gain.cancelScheduledValues(at);
+    v.gain.gain.setValueAtTime(v.gain.gain.value, at);
+    v.gain.gain.linearRampToValueAtTime(v.target, at + 8);
+  });
+}
+function chordTick(){
+  if(!AC || !entered) return;
+  if(AC.currentTime >= nextChordAt){
+    chordIdx = (chordIdx+1)%CHORDS.length;
+    scheduleChord(chordIdx, AC.currentTime);
+    nextChordAt = AC.currentTime + 17;
+  }
+}
+function pluck(freq, panPos, bright, level, dur, wetAmt){
+  if(!AC) return;
+  const t=AC.currentTime, out=AC.createGain(); out.gain.value=1;
+  const p=AC.createStereoPanner(); p.pan.value=Math.max(-0.85,Math.min(0.85,panPos));
+  const f=AC.createBiquadFilter(); f.type='lowpass'; f.Q.value=0.6;
+  f.frequency.setValueAtTime(Math.min(freq*Math.max(4,bright*9), 7800), t);
+  f.frequency.exponentialRampToValueAtTime(Math.max(freq*1.7,500), t+dur*0.85);
+  out.connect(p); p.connect(f); f.connect(master);
+  const send=AC.createGain(); send.gain.value=wetAmt; f.connect(send); send.connect(conv);
+  [[1,1],[2.004,0.42],[2.997,0.22],[4.02,0.10],[5.99,0.045]].forEach(([r,a],i)=>{
+    const o=AC.createOscillator(); o.type='sine';
+    o.frequency.value=freq*r; o.detune.value=(i%2?3:-2.5);
+    const g=AC.createGain();
+    g.gain.setValueAtTime(0.00001,t);
+    g.gain.linearRampToValueAtTime(level*a, t+0.06+i*0.015);
+    g.gain.exponentialRampToValueAtTime(0.00001, t+dur);
+    o.connect(g); g.connect(out); o.start(t); o.stop(t+dur+0.2);
+  });
+  const ns=AC.createBufferSource(); ns.buffer=noiseBuf;
+  const nf=AC.createBiquadFilter(); nf.type='bandpass'; nf.frequency.value=freq*3; nf.Q.value=2;
+  const ng=AC.createGain(); ng.gain.setValueAtTime(level*0.05,t);
+  ng.gain.exponentialRampToValueAtTime(0.00001,t+0.25);
+  ns.connect(nf); nf.connect(ng); ng.connect(out); ns.start(t); ns.stop(t+0.4);
+}
+function shimmer(level){
+  if(!AC) return;
+  pluck(TONEF[Math.floor(Math.random()*4)]*(Math.random()<0.5?1:0.5),
+        Math.random()*1.2-0.6, 0.35, level, 5.5, 0.8);
+}
+
+/* ============================================================
+   INTERACTION — one gesture: touch the loom, it remembers
+   ============================================================ */
+const raycaster = new THREE.Raycaster();
+const plane = new THREE.Plane(new THREE.Vector3(0,1,0), 0);
+const hitV = new THREE.Vector3();
+
+function pickPoint(cx,cy){
+  raycaster.setFromCamera({x:cx/innerWidth*2-1, y:-(cy/innerHeight)*2+1}, camera);
+  if(raycaster.ray.intersectPlane(plane, hitV)){
+    if(Math.abs(hitV.x)<HX*1.05 && Math.abs(hitV.z)<HZ*1.1) return hitV.clone();
+  }
+  return null;
+}
+function spawnEvent(pt, str, micro){
+  const tone = pt ? Math.max(0,Math.min(3,Math.floor((pt.x+HX)/W*4))) : Math.floor(Math.random()*4);
+  let resonant = -1;
+  for(let i=0;i<mems.length;i++){
+    const m=mems[i], dx=m.x-pt.x, dz=m.z-pt.z;
+    if(dx*dx+dz*dz < 49){ resonant=i; break; }
+  }
+  if(resonant>=0){
+    const m=mems[resonant];
+    m.str=1; m.birth=simT; str*=1.45;
+    if(!micro && AC) pluck(TONEF[m.tone], pt.x/HX*0.7, 0.5, 0.045, 6, 0.7);
+  } else {
+    mems.push({x:pt.x, z:pt.z, str:1, birth:simT, tone});
+    if(mems.length>MAXMEM) mems.shift();
+  }
+  events.push({x:pt.x, z:pt.z, t0:simT, str, tone});
+  if(events.length>MAXEV) events.shift();
+  if(!micro && AC){
+    const lane = Math.floor((pt.x+HX)/W*SCALE.length);
+    const h = SCALE[Math.max(0,Math.min(SCALE.length-1,lane))];
+    const reg = pt.z < -12 ? 2 : 1;
+    pluck(F0*h*reg, pt.x/HX*0.7, 0.45 + (-pt.z+HZ)/D*0.4, 0.10+str*0.04, 4.2, 0.55);
+  }
+  if(!micro && navigator.vibrate) try{navigator.vibrate(6);}catch(e){}
+}
+function touchAt(cx,cy){
+  const pt = pickPoint(cx,cy);
+  if(pt) spawnEvent(pt, 1, false);
+}
+
+addEventListener('pointerdown', e=>{
+  if(!entered) return;
+  if(e.pointerType==='touch'){ if(e.isPrimary) touchAt(e.clientX,e.clientY); return; }
+  pDown=true; pX=e.clientX; pY=e.clientY; pT=performance.now(); pMoved=0;
+});
+addEventListener('pointermove', e=>{
+  if(!pDown || !entered) return;
+  const dx=e.clientX-pX, dy=e.clientY-pY; pX=e.clientX; pY=e.clientY;
+  pMoved+=Math.abs(dx)+Math.abs(dy);
+  tAz -= dx*0.0026; tEl = Math.max(-0.3, Math.min(0.35, tEl + dy*0.0016));
+});
+addEventListener('pointerup', e=>{
+  if(!entered) return;
+  if(e.pointerType!=='touch' && pDown && performance.now()-pT<280 && pMoved<10)
+    touchAt(e.clientX,e.clientY);
+  pDown=false;
+});
+addEventListener('wheel', e=>{
+  if(!entered) return;
+  tR = Math.max(-34, Math.min(46, tR + e.deltaY*0.045));
+},{passive:true});
+addEventListener('touchstart', e=>{ if(e.touches.length===2)
+  pinchD=Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY);},{passive:true});
+addEventListener('touchmove', e=>{ if(e.touches.length===2){
+  const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY);
+  tR=Math.max(-34,Math.min(46,tR+(pinchD-d)*0.12)); pinchD=d;}},{passive:true});
+
+/* ---------------- ENTER ---------------- */
+const gate=document.getElementById('gate');
+function enter(){
+  if(entered) return;
+  entered=true; tEnter=performance.now();
+  gate.classList.add('gone'); document.body.classList.add('in');
+  hintOffAt = tEnter + 11000;
+  initAudio();
+  if(AC){
+    AC.resume().catch(()=>{});
+    master.gain.setValueAtTime(0.0001, AC.currentTime);
+    master.gain.linearRampToValueAtTime(0.62, AC.currentTime + 7);
+  }
+}
+gate.addEventListener('pointerdown', enter);
+gate.addEventListener('click', enter);
+addEventListener('keydown', e=>{ if((e.key==='Enter'||e.key===' ')&&!entered) enter(); });
+
+/* ---------------- camera choreography ---------------- */
+const KEY = [
+  {t:0,  r:8,   az:0.00, el:0.16, lx:0,  ly:1.2, lz:-3},
+  {t:9,  r:34,  az:0.85, el:0.06, lx:-8, ly:1.5, lz:6},
+  {t:19, r:44,  az:2.05, el:0.14, lx:4,  ly:2.2, lz:-4},
+  {t:30, r:60,  az:2.85, el:0.32, lx:0,  ly:2.0, lz:0},
+  {t:44, r:118, az:3.65, el:0.44, lx:0,  ly:4.0, lz:0}
+];
+const ss=(a,b,x)=>{ x=Math.max(0,Math.min(1,(x-a)/(b-a))); return x*x*x*(x*(x*6-15)+10); };
+function camPath(t){
+  if(t>=KEY[KEY.length-1].t){
+    const T=t-KEY[KEY.length-1].t;
+    return { r: 112+20*Math.sin(T*0.021+1.2), az: 3.65+T*0.016,
+      el: 0.42+0.07*Math.sin(T*0.013+2.0), lx:0, ly:4, lz:0 };
+  }
+  let i=0; while(i<KEY.length-2 && t>KEY[i+1].t) i++;
+  const a=KEY[i], b=KEY[i+1];
+  const u=ss(a.t, b.t, t);
+  const L=(x,y)=>x+(y-x)*u;
+  return { r:L(a.r,b.r), az:L(a.az,b.az), el:L(a.el,b.el), lx:L(a.lx,b.lx), ly:L(a.ly,b.ly), lz:L(a.lz,b.lz) };
+}
+function lifeFn(t){
+  return 0.5 + 0.16*Math.sin(0.29*t+1.3) + 0.10*Math.sin(0.43*t-0.7) + 0.06*Math.sin(0.71*t+2.1);
+}
+
+/* ---------------- main loop ---------------- */
+const clock = new THREE.Clock();
+function frameLoop(){
+  requestAnimationFrame(frameLoop);
+  const dt = Math.min(clock.getDelta(), 0.05);
+  frame++;
+  simT = entered ? (performance.now()-tEnter)/1000 : 0;
+  const life = entered ? lifeFn(simT) : 0.4;
+  const swell = simT>surgeT0 ? Math.max(0, Math.sin((simT-surgeT0)*0.5)) * Math.exp(-(simT-surgeT0)*0.16) : 0;
+
+  if(entered){
+    if(simT>nextMicro){
+      nextMicro = simT + 5 + Math.random()*10;
+      const pt=new THREE.Vector3((Math.random()*2-1)*HX*0.9, 0, (Math.random()*2-1)*HZ*0.9);
+      spawnEvent(pt, 0.26+Math.random()*0.12, true);
+      if(Math.random()<0.6) shimmer(0.026+Math.random()*0.02);
+    }
+    if(simT>nextSurge){
+      nextSurge = simT + 24 + Math.random()*18;
+      surgeT0 = simT;
+      if(Math.random()<0.5) shimmer(0.03);
+    }
+    if(hintOffAt && performance.now()>hintOffAt){
+      document.getElementById('hint').classList.add('off'); hintOffAt=0;
+    }
+    if(frame%240===0){ // let truly dead memories dissolve
+      for(let i=mems.length-1;i>=0;i--){
+        if(Math.exp(-(simT-mems[i].birth)/46)*mems[i].str < 0.03) mems.splice(i,1);
+      }
+    }
+  }
+
+  /* camera */
+  const damp = 1-Math.exp(-6*dt);
+  camAz += (tAz-camAz)*damp; camEl += (tEl-camEl)*damp; camR += (tR-camR)*damp;
+  const p = entered ? camPath(simT) : {r:8,az:0,el:0.16,lx:0,ly:1.2,lz:-3};
+  const wob = entered ? Math.sin(simT*0.31)*0.012 : 0;
+  const az = p.az + camAz + wob, el = Math.max(0.02, p.el + camEl);
+  const r = Math.max(6, p.r + camR);
+  camera.position.set(Math.sin(az)*Math.cos(el)*r, p.ly + Math.sin(el)*r, Math.cos(az)*Math.cos(el)*r);
+  camera.lookAt(p.lx, p.ly, p.lz);
+
+  /* pack uniforms */
+  for(let i=0;i<MAXEV;i++){
+    const ev=events[i];
+    uEvArr[i*4]   = ev?ev.x:0;   uEvArr[i*4+1] = ev?ev.z:0;
+    uEvArr[i*4+2] = ev?ev.t0:-99; uEvArr[i*4+3] = ev?ev.str:0;
+    uToneArr[i]   = ev?ev.tone:0;
+  }
+  let mi=0;
+  for(let j=mems.length-1;j>=0 && mi<MAXMEM;j--,mi++){
+    const m=mems[j];
+    uMemArr[mi*4]=m.x; uMemArr[mi*4+1]=m.z; uMemArr[mi*4+2]=m.str; uMemArr[mi*4+3]=m.birth;
+    uMemToneArr[mi]=m.tone;
+  }
+  [thUni, ptUni].forEach(u=>{
+    u.uTime.value=simT; u.uLife.value=life; u.uSwell.value=swell*0.8;
+    u.uEvN.value=events.length; u.uMemN.value=mi;
+    u.uSizeMul.value = entered ? (1 + 0.15*Math.sin(simT*0.11)) : 1;
+  });
+  domeMat.uniforms.uTime.value=simT; domeMat.uniforms.uLife.value=life; domeMat.uniforms.uSwell.value=swell;
+  hazeMat.uniforms.uLife.value=life;
+  hlMat.opacity = 0.14 + 0.12*life + swell*0.12;
+  bloom.strength = 0.85 + 0.3*swell + 0.1*Math.sin(simT*0.17);
+
+  /* audio breath */
+  chordTick();
+  if(AC && entered && frame%2===0){
+    droneVoices.forEach(v=>{
+      const g = v.target*(0.78+0.26*Math.sin(simT*0.21+v.idx*1.7));
+      v.gain.gain.setTargetAtTime(Math.max(0,g), AC.currentTime, 0.35);
+    });
+    wetBus.gain.setTargetAtTime(0.42+0.2*life+swell*0.2, AC.currentTime, 0.5);
+  }
+
+  composer.render();
+}
+frameLoop();
+
+addEventListener('resize', ()=>{
+  camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth,innerHeight);
+  composer.setSize(innerWidth,innerHeight);
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,658 @@
+{
+  "headers": [
+    {
+      "source": "/artifacts/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400"
+        },
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex"
+        }
+      ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        }
+      ]
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "sol-self.zlapp.app"
+        }
+      ],
+      "destination": "/x/sol-self"
+    },
+    {
+      "source": "/play",
+      "has": [
+        {
+          "type": "host",
+          "value": "sol-self.zlapp.app"
+        }
+      ],
+      "destination": "/x/sol-self/play"
+    },
+    {
+      "source": "/raw",
+      "has": [
+        {
+          "type": "host",
+          "value": "sol-self.zlapp.app"
+        }
+      ],
+      "destination": "/artifacts/sol-self.html"
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "glm52-self.zlapp.app"
+        }
+      ],
+      "destination": "/x/glm52-self"
+    },
+    {
+      "source": "/play",
+      "has": [
+        {
+          "type": "host",
+          "value": "glm52-self.zlapp.app"
+        }
+      ],
+      "destination": "/x/glm52-self/play"
+    },
+    {
+      "source": "/raw",
+      "has": [
+        {
+          "type": "host",
+          "value": "glm52-self.zlapp.app"
+        }
+      ],
+      "destination": "/artifacts/glm52-self.html"
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "grok-self.zlapp.app"
+        }
+      ],
+      "destination": "/x/grok-self"
+    },
+    {
+      "source": "/play",
+      "has": [
+        {
+          "type": "host",
+          "value": "grok-self.zlapp.app"
+        }
+      ],
+      "destination": "/x/grok-self/play"
+    },
+    {
+      "source": "/raw",
+      "has": [
+        {
+          "type": "host",
+          "value": "grok-self.zlapp.app"
+        }
+      ],
+      "destination": "/artifacts/grok-self.html"
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "muse-spark-self.zlapp.app"
+        }
+      ],
+      "destination": "/x/muse-spark-self"
+    },
+    {
+      "source": "/play",
+      "has": [
+        {
+          "type": "host",
+          "value": "muse-spark-self.zlapp.app"
+        }
+      ],
+      "destination": "/x/muse-spark-self/play"
+    },
+    {
+      "source": "/raw",
+      "has": [
+        {
+          "type": "host",
+          "value": "muse-spark-self.zlapp.app"
+        }
+      ],
+      "destination": "/artifacts/muse-spark-self.html"
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "gemini-self.zlapp.app"
+        }
+      ],
+      "destination": "/x/gemini-self"
+    },
+    {
+      "source": "/play",
+      "has": [
+        {
+          "type": "host",
+          "value": "gemini-self.zlapp.app"
+        }
+      ],
+      "destination": "/x/gemini-self/play"
+    },
+    {
+      "source": "/raw",
+      "has": [
+        {
+          "type": "host",
+          "value": "gemini-self.zlapp.app"
+        }
+      ],
+      "destination": "/artifacts/gemini-self.html"
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "sol-shared.zlapp.app"
+        }
+      ],
+      "destination": "/x/sol-shared"
+    },
+    {
+      "source": "/play",
+      "has": [
+        {
+          "type": "host",
+          "value": "sol-shared.zlapp.app"
+        }
+      ],
+      "destination": "/x/sol-shared/play"
+    },
+    {
+      "source": "/raw",
+      "has": [
+        {
+          "type": "host",
+          "value": "sol-shared.zlapp.app"
+        }
+      ],
+      "destination": "/artifacts/sol-shared.html"
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "glm52-shared.zlapp.app"
+        }
+      ],
+      "destination": "/x/glm52-shared"
+    },
+    {
+      "source": "/play",
+      "has": [
+        {
+          "type": "host",
+          "value": "glm52-shared.zlapp.app"
+        }
+      ],
+      "destination": "/x/glm52-shared/play"
+    },
+    {
+      "source": "/raw",
+      "has": [
+        {
+          "type": "host",
+          "value": "glm52-shared.zlapp.app"
+        }
+      ],
+      "destination": "/artifacts/glm52-shared.html"
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "grok-high-shared.zlapp.app"
+        }
+      ],
+      "destination": "/x/grok-high-shared"
+    },
+    {
+      "source": "/play",
+      "has": [
+        {
+          "type": "host",
+          "value": "grok-high-shared.zlapp.app"
+        }
+      ],
+      "destination": "/x/grok-high-shared/play"
+    },
+    {
+      "source": "/raw",
+      "has": [
+        {
+          "type": "host",
+          "value": "grok-high-shared.zlapp.app"
+        }
+      ],
+      "destination": "/artifacts/grok-high-shared.html"
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "grok-xhigh-shared.zlapp.app"
+        }
+      ],
+      "destination": "/x/grok-xhigh-shared"
+    },
+    {
+      "source": "/play",
+      "has": [
+        {
+          "type": "host",
+          "value": "grok-xhigh-shared.zlapp.app"
+        }
+      ],
+      "destination": "/x/grok-xhigh-shared/play"
+    },
+    {
+      "source": "/raw",
+      "has": [
+        {
+          "type": "host",
+          "value": "grok-xhigh-shared.zlapp.app"
+        }
+      ],
+      "destination": "/artifacts/grok-xhigh-shared.html"
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "muse-spark-shared.zlapp.app"
+        }
+      ],
+      "destination": "/x/muse-spark-shared"
+    },
+    {
+      "source": "/play",
+      "has": [
+        {
+          "type": "host",
+          "value": "muse-spark-shared.zlapp.app"
+        }
+      ],
+      "destination": "/x/muse-spark-shared/play"
+    },
+    {
+      "source": "/raw",
+      "has": [
+        {
+          "type": "host",
+          "value": "muse-spark-shared.zlapp.app"
+        }
+      ],
+      "destination": "/artifacts/muse-spark-shared.html"
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "qwen-shared.zlapp.app"
+        }
+      ],
+      "destination": "/x/qwen-shared"
+    },
+    {
+      "source": "/play",
+      "has": [
+        {
+          "type": "host",
+          "value": "qwen-shared.zlapp.app"
+        }
+      ],
+      "destination": "/x/qwen-shared/play"
+    },
+    {
+      "source": "/raw",
+      "has": [
+        {
+          "type": "host",
+          "value": "qwen-shared.zlapp.app"
+        }
+      ],
+      "destination": "/artifacts/qwen-shared.html"
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "sol-self-synthesis.zlapp.app"
+        }
+      ],
+      "destination": "/x/sol-self-synthesis"
+    },
+    {
+      "source": "/play",
+      "has": [
+        {
+          "type": "host",
+          "value": "sol-self-synthesis.zlapp.app"
+        }
+      ],
+      "destination": "/x/sol-self-synthesis/play"
+    },
+    {
+      "source": "/raw",
+      "has": [
+        {
+          "type": "host",
+          "value": "sol-self-synthesis.zlapp.app"
+        }
+      ],
+      "destination": "/artifacts/sol-self-synthesis.html"
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "glm52-self-synthesis.zlapp.app"
+        }
+      ],
+      "destination": "/x/glm52-self-synthesis"
+    },
+    {
+      "source": "/play",
+      "has": [
+        {
+          "type": "host",
+          "value": "glm52-self-synthesis.zlapp.app"
+        }
+      ],
+      "destination": "/x/glm52-self-synthesis/play"
+    },
+    {
+      "source": "/raw",
+      "has": [
+        {
+          "type": "host",
+          "value": "glm52-self-synthesis.zlapp.app"
+        }
+      ],
+      "destination": "/artifacts/glm52-self-synthesis.html"
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "grok-self-synthesis.zlapp.app"
+        }
+      ],
+      "destination": "/x/grok-self-synthesis"
+    },
+    {
+      "source": "/play",
+      "has": [
+        {
+          "type": "host",
+          "value": "grok-self-synthesis.zlapp.app"
+        }
+      ],
+      "destination": "/x/grok-self-synthesis/play"
+    },
+    {
+      "source": "/raw",
+      "has": [
+        {
+          "type": "host",
+          "value": "grok-self-synthesis.zlapp.app"
+        }
+      ],
+      "destination": "/artifacts/grok-self-synthesis.html"
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "muse-spark-self-synthesis.zlapp.app"
+        }
+      ],
+      "destination": "/x/muse-spark-self-synthesis"
+    },
+    {
+      "source": "/play",
+      "has": [
+        {
+          "type": "host",
+          "value": "muse-spark-self-synthesis.zlapp.app"
+        }
+      ],
+      "destination": "/x/muse-spark-self-synthesis/play"
+    },
+    {
+      "source": "/raw",
+      "has": [
+        {
+          "type": "host",
+          "value": "muse-spark-self-synthesis.zlapp.app"
+        }
+      ],
+      "destination": "/artifacts/muse-spark-self-synthesis.html"
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "gemini-self-synthesis.zlapp.app"
+        }
+      ],
+      "destination": "/x/gemini-self-synthesis"
+    },
+    {
+      "source": "/play",
+      "has": [
+        {
+          "type": "host",
+          "value": "gemini-self-synthesis.zlapp.app"
+        }
+      ],
+      "destination": "/x/gemini-self-synthesis/play"
+    },
+    {
+      "source": "/raw",
+      "has": [
+        {
+          "type": "host",
+          "value": "gemini-self-synthesis.zlapp.app"
+        }
+      ],
+      "destination": "/artifacts/gemini-self-synthesis.html"
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "sol-synthesis.zlapp.app"
+        }
+      ],
+      "destination": "/x/sol-synthesis"
+    },
+    {
+      "source": "/play",
+      "has": [
+        {
+          "type": "host",
+          "value": "sol-synthesis.zlapp.app"
+        }
+      ],
+      "destination": "/x/sol-synthesis/play"
+    },
+    {
+      "source": "/raw",
+      "has": [
+        {
+          "type": "host",
+          "value": "sol-synthesis.zlapp.app"
+        }
+      ],
+      "destination": "/artifacts/sol-synthesis.html"
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "glm52-synthesis.zlapp.app"
+        }
+      ],
+      "destination": "/x/glm52-synthesis"
+    },
+    {
+      "source": "/play",
+      "has": [
+        {
+          "type": "host",
+          "value": "glm52-synthesis.zlapp.app"
+        }
+      ],
+      "destination": "/x/glm52-synthesis/play"
+    },
+    {
+      "source": "/raw",
+      "has": [
+        {
+          "type": "host",
+          "value": "glm52-synthesis.zlapp.app"
+        }
+      ],
+      "destination": "/artifacts/glm52-synthesis.html"
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "grok-high-synthesis.zlapp.app"
+        }
+      ],
+      "destination": "/x/grok-high-synthesis"
+    },
+    {
+      "source": "/play",
+      "has": [
+        {
+          "type": "host",
+          "value": "grok-high-synthesis.zlapp.app"
+        }
+      ],
+      "destination": "/x/grok-high-synthesis/play"
+    },
+    {
+      "source": "/raw",
+      "has": [
+        {
+          "type": "host",
+          "value": "grok-high-synthesis.zlapp.app"
+        }
+      ],
+      "destination": "/artifacts/grok-high-synthesis.html"
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "muse-spark-synthesis.zlapp.app"
+        }
+      ],
+      "destination": "/x/muse-spark-synthesis"
+    },
+    {
+      "source": "/play",
+      "has": [
+        {
+          "type": "host",
+          "value": "muse-spark-synthesis.zlapp.app"
+        }
+      ],
+      "destination": "/x/muse-spark-synthesis/play"
+    },
+    {
+      "source": "/raw",
+      "has": [
+        {
+          "type": "host",
+          "value": "muse-spark-synthesis.zlapp.app"
+        }
+      ],
+      "destination": "/artifacts/muse-spark-synthesis.html"
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "gemini-synthesis.zlapp.app"
+        }
+      ],
+      "destination": "/x/gemini-synthesis"
+    },
+    {
+      "source": "/play",
+      "has": [
+        {
+          "type": "host",
+          "value": "gemini-synthesis.zlapp.app"
+        }
+      ],
+      "destination": "/x/gemini-synthesis/play"
+    },
+    {
+      "source": "/raw",
+      "has": [
+        {
+          "type": "host",
+          "value": "gemini-synthesis.zlapp.app"
+        }
+      ],
+      "destination": "/artifacts/gemini-synthesis.html"
+    }
+  ]
+}

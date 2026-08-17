@@ -1,0 +1,69 @@
+---
+import {
+  manifest,
+  workBySlug,
+  modelById,
+  experienceHref,
+  artifactHref,
+} from "../../../lib/manifest";
+
+export function getStaticPaths() {
+  return manifest.works.map((work) => ({
+    params: { slug: work.publicSlug },
+  }));
+}
+
+const { slug } = Astro.params;
+const work = workBySlug(slug!);
+if (!work) throw new Error(`Unknown work: ${slug}`);
+const model = modelById(work.model);
+const home = "/";
+---
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{work.title} — {model.name}</title>
+    <meta name="robots" content="noindex" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <style>
+      html, body { margin: 0; height: 100%; background: #000; }
+      iframe { position: fixed; inset: 0; width: 100%; height: 100%; border: 0; background: #000; }
+      .return-pill {
+        position: fixed;
+        top: max(0.7rem, env(safe-area-inset-top));
+        left: max(0.7rem, env(safe-area-inset-left));
+        z-index: 50;
+        display: inline-flex;
+        align-items: center;
+        min-height: 2.1rem;
+        padding: 0.35rem 0.75rem;
+        border: 1px solid rgba(239, 234, 226, 0.18);
+        background: rgba(12, 11, 10, 0.62);
+        color: #efeae2;
+        text-decoration: none;
+        font: 500 0.64rem/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        backdrop-filter: blur(10px);
+      }
+    </style>
+  </head>
+  <body class="play-stage">
+    <a class="return-pill" href={home}>← Exhibition</a>
+    <iframe
+      src={artifactHref(work.publicSlug)}
+      title={`${work.title} by ${model.name}`}
+      allow="autoplay; fullscreen; accelerometer; gyroscope"
+      allowfullscreen
+    ></iframe>
+    <noscript>
+      <p style="color:#ccc;padding:2rem;font-family:sans-serif">
+        This experience needs JavaScript. You can also open the
+        <a href={artifactHref(work.publicSlug)} style="color:#fff">original file</a>
+        or return to the <a href={experienceHref(work.publicSlug)} style="color:#fff">launch page</a>.
+      </p>
+    </noscript>
+  </body>
+</html>

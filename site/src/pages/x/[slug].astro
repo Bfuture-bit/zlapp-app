@@ -1,0 +1,59 @@
+---
+import Base from "../../layouts/Base.astro";
+import Nav from "../../components/Nav.astro";
+import {
+  manifest,
+  workBySlug,
+  modelById,
+  experimentById,
+  experienceHref,
+  artifactHref,
+  previewHref,
+} from "../../lib/manifest";
+
+export function getStaticPaths() {
+  return manifest.works.map((work) => ({
+    params: { slug: work.publicSlug },
+  }));
+}
+
+const { slug } = Astro.params;
+const work = workBySlug(slug!);
+if (!work) throw new Error(`Unknown work: ${slug}`);
+const model = modelById(work.model);
+const experiment = experimentById(work.experiment);
+---
+<Base
+  title={`${work.title} — ${model.name} · Zlapp`}
+  description={`${model.name}, ${experiment.title}. ${work.hint}`}
+>
+  <div class="launch">
+    <Nav />
+    <main id="content" class="launch-main">
+      <p class="kicker">Act {experiment.act} · {experiment.short} · {model.name}</p>
+      <h1>{work.title}</h1>
+      <p class="hero-lead">{work.hint}</p>
+      <p class="note">
+        {work.generationMethod}
+        {work.servedEdit === "strip-markdown-fence"
+          ? " The public copy has a markdown fence removed so the file can run; the original is preserved."
+          : " This is the original HTML, unmodified."}
+        {work.audio !== "none"
+          ? " Sound starts only after you enter and interact, as the work itself requires."
+          : ""}
+      </p>
+      <div class="actions">
+        <a class="btn primary" href={experienceHref(work.publicSlug, true)}>Enter experience</a>
+        <a class="btn" href={artifactHref(work.publicSlug)}>Open as its own page</a>
+        <a class="btn" href={`/#act-${experiment.act.toLowerCase().startsWith("iii") ? "iii" : experiment.act.toLowerCase()}`}>Return to exhibition</a>
+      </div>
+      <div class="work-preview" style={`--c0:${work.palette[0]};--c1:${work.palette[1]};--c2:${work.palette[2]};margin-top:2.8rem;min-height:14rem;max-width:42rem;position:relative`} aria-hidden="true">
+        <img src={previewHref(work.publicSlug)} alt="" width="1200" height="750" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" />
+      </div>
+    </main>
+    <footer class="site-foot">
+      <span>{work.publicSlug}.zlapp.app · /x/{work.publicSlug}</span>
+      <span>{work.engine}{work.audio !== "none" ? ` · ${work.audio}` : ""}</span>
+    </footer>
+  </div>
+</Base>

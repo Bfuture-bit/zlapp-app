@@ -1,0 +1,13 @@
+---
+import Base from "../layouts/Base.astro";
+import Nav from "../components/Nav.astro";
+---
+<Base title="Not found — Zlapp" noindex={true}>
+  <Nav />
+  <main id="content" class="prose wrap">
+    <p class="kicker">404</p>
+    <h1>This address is not in the archive.</h1>
+    <p>Every published experience has a stable slug under <code>/x/</code>. The exhibition itself is at the root.</p>
+    <p><a class="btn primary" href="/">Return to Zlapp</a></p>
+  </main>
+</Base>
