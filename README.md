@@ -21,4 +21,8 @@ Open http://localhost:4321
 
 ## Deploy
 
-Vercel, root directory `site`. See `docs/DNS.md` for Namecheap.
+Vercel project: [brent-alone/zlapp-app](https://vercel.com/brent-alone/zlapp-app)  
+Production: https://zlapp-app.vercel.app  
+Root directory: `site`
+
+See `docs/DNS.md` for the exact Namecheap records for `zlapp.app`.

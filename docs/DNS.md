@@ -1,47 +1,39 @@
 # Connecting zlapp.app to Vercel
 
-Do not enter DNS values from memory. After the project is created, Vercel shows the exact records on the domain card. Copy those.
+Project: [brent-alone/zlapp-app](https://vercel.com/brent-alone/zlapp-app)  
+Live now: https://zlapp-app.vercel.app  
+Domains attached: `zlapp.app`, `www.zlapp.app`, `*.zlapp.app`
 
-## 1. Deploy the site
+Root directory is `site`. Framework is Astro.
 
-1. Push this repository to GitHub (or GitLab / Bitbucket).
-2. In Vercel: **Add New Project** → import the repo.
-3. Set **Root Directory** to `site`.
-4. Framework preset should detect Astro. Build command is `npm run build`. Output directory is `dist`.
-5. Deploy once so the project exists.
+The records below were read from this project’s Vercel domain card on 16 August 2026. If the dashboard later shows different values, use the dashboard.
 
-## 2. Add domains in Vercel
+## Namecheap DNS
 
-In the project: **Settings → Domains**. Add, in this order:
-
-1. `zlapp.app`
-2. `www.zlapp.app` (Vercel will offer to redirect www ↔ apex; keep **apex `zlapp.app` as the primary**)
-3. `*.zlapp.app` (wildcard, for experience subdomains such as `sol-self.zlapp.app`)
-
-When you add each domain, Vercel displays the records it wants. **Those dashboard values override anything written below.**
-
-## 3. Namecheap DNS
-
-Registrar: Namecheap, domain `zlapp.app`.
+Registrar: Namecheap, domain `zlapp.app`. Nameservers can stay as Namecheap (`dns1.registrar-servers.com` / `dns2.registrar-servers.com`).
 
 Open **Domain List → zlapp.app → Advanced DNS**.
 
-Remove any old A / CNAME / URL-redirect records that still point at previous hosting. Leave Namecheap nameservers unless you are deliberately moving DNS.
+Remove any old A / CNAME / URL-redirect records for `@`, `www`, or `*` that still point at previous hosting.
 
-Then add what Vercel’s domain card shows. Typical shape (verify before saving):
+Add these records:
 
 | Type | Host | Value | TTL |
 |---|---|---|---|
-| **A** | `@` | The IPv4 on the Vercel domain card for `zlapp.app`. Often `76.76.21.21`, but use the card. | Automatic |
-| **CNAME** | `www` | The CNAME target on the Vercel card for `www.zlapp.app`. Often a `*.vercel-dns.com` host, not a generic guess. | Automatic |
-| **CNAME** | `*` | The CNAME target Vercel shows after you add `*.zlapp.app`. | Automatic |
+| **A** | `@` | `216.198.79.1` | Automatic |
+| **A** | `@` | `64.29.17.1` | Automatic |
+| **CNAME** | `www` | `4d8d7de639915175.vercel-dns-017.com.` | Automatic |
+| **CNAME** | `*` | `4d8d7de639915175.vercel-dns-017.com.` | Automatic |
 
-Notes:
+Do not put a CNAME on `@`. Apex domains use the two A records.
 
-- Apex domains cannot use a CNAME. That is why `@` is an A record.
-- The wildcard CNAME is what makes `sol-self.zlapp.app`, `glm52-shared.zlapp.app`, and the rest resolve.
-- If Vercel also shows an **AAAA** record, add it exactly as shown.
-- If the domain card asks for a **TXT** verification record first, add that and wait until the domain shows as verified.
+After saving, Vercel will issue SSL when the records propagate. Check with:
+
+```text
+npx vercel domains verify zlapp.app
+npx vercel domains verify www.zlapp.app
+npx vercel domains verify "*.zlapp.app"
+```
 
 ## 4. Confirm
 
