@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CODEX VIVARIUM — One Living Engine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #060509;
+  --fg: #e8e4d8;
+  --fg-dim: #8a8478;
+  --muted: #4a4650;
+  --border: rgba(255,255,255,0.08);
+  --border-bright: rgba(255,255,255,0.16);
+  --c-loom: #d4a45a;
+  --c-crucible: #e85d3a;
+  --c-mycel: #4dd4b0;
+  --c-astrolabe: #b8c8d8;
+  --c-choir: #e88a9a;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: 'Space Grotesk', sans-serif;
+  min-height: 100vh;
+  overflow: hidden; /* Fullscreen experience */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 50%, rgba(20,16,10,0.5), transparent 70%),
+    radial-gradient(ellipse 50% 40% at 50% 0%, rgba(212,164,90,0.05), transparent 70%);
+  pointer-events: none;
+}
+
+.layout {
+  position: relative; z-index: 1;
+  width: 100%;
+  max-width: 1200px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ─── Header ─── */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+
+.page-header::after {
+  content: ''; position: absolute; bottom: -1px; left: 0;
+  width: 80px; height: 1px;
+  background: linear-gradient(90deg, var(--c-loom), transparent);
+}
+
+.title-block .eyebrow {
+  font-size: 10px; letter-spacing: 0.4em;
+  text-transform: uppercase; color: var(--fg-dim);
+  font-weight: 600;
+}
+
+.title-block h1 {
+  font-family: 'Cinzel', serif;
+  font-size: 28px; font-weight: 900;
+  letter-spacing: 0.1em; margin-top: 4px; line-height: 1;
+  background: linear-gradient(135deg, #e8e4d8 30%, #8a8478);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.title-block .subtitle {
+  font-size: 11px; color: var(--fg-dim);
+  margin-top: 6px; max-width: 400px; line-height: 1.4;
+}
+
+.live-stats { display: flex; gap: 20px; align-items: center; }
+
+.stat { text-align: right; }
+
+.stat-label {
+  font-size: 9px; letter-spacing: 0.3em;
+  text-transform: uppercase; color: var(--muted); font-weight: 600;
+}
+
+.stat-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 16px; font-weight: 500;
+  color: var(--fg); margin-top: 2px;
+}
+
+.heartbeat {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--c-mycel);
+  box-shadow: 0 0 12px var(--c-mycel);
+  animation: beat 1.8s ease-in-out infinite;
+}
+
+@keyframes beat {
+  0%,100% { opacity: 0.3; transform: scale(0.7); }
+  50% { opacity: 1; transform: scale(1.3); }
+}
+
+.mute-btn {
+  background: rgba(255,255,255,0.04); border: 1px solid var(--border-bright);
+  color: var(--fg-dim); padding: 5px 11px; font-size: 9px;
+  letter-spacing: 0.2em; text-transform: uppercase; cursor: pointer;
+  border-radius: 2px; font-family: inherit; transition: all 0.2s;
+}
+.mute-btn:hover { color: var(--fg); border-color: var(--fg-dim); }
+.mute-btn.muted { color: var(--c-crucible); border-color: rgba(232,93,58,0.4); }
+
+/* ─── The Vivarium Card (Single Container) ─── */
+.vivarium {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  max-height: 70vh;
+  background: #050407;
+  border: 1px solid var(--border-bright);
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 
+    0 0 0 1px rgba(0,0,0,0.5),
+    0 20px 60px -20px rgba(0,0,0,0.8),
+    inset 0 0 120px rgba(0,0,0,0.8);
+  cursor: crosshair;
+}
+
+/* Ornamental corners */
+.vivarium::before, .vivarium::after {
+  content: ''; position: absolute; width: 24px; height: 24px;
+  border: 1px solid var(--c-loom); opacity: 0.4;
+  pointer-events: none; z-index: 10;
+}
+.vivarium::before { top: 8px; left: 8px; border-right: none; border-bottom: none; }
+.vivarium::after { bottom: 8px; right: 8px; border-left: none; border-top: none; }
+
+#vivariumCanvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* ─── HUD Overlays ─── */
+.hud {
+  position: absolute;
+  pointer-events: none;
+  z-index: 5;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.hud-top-left {
+  top: 16px; left: 16px;
+  display: flex; flex-direction: column; gap: 6px;
+}
+
+.hud-label {
+  font-size: 8px; letter-spacing: 0.3em;
+  text-transform: uppercase; color: var(--muted);
+  margin-bottom: 4px; font-weight: 600;
+}
+
+.climate-readout {
+  display: flex; gap: 12px; flex-wrap: wrap;
+  background: rgba(8,6,12,0.7);
+  backdrop-filter: blur(4px);
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+}
+
+.climate-param { display: flex; align-items: center; gap: 5px; }
+.climate-name { font-size: 8px; color: var(--muted); width: 28px; text-transform: uppercase; letter-spacing: 0.1em; }
+.climate-bar { width: 40px; height: 3px; background: rgba(255,255,255,0.05); border-radius: 2px; overflow: hidden; }
+.climate-fill { height: 100%; border-radius: 2px; transition: width 0.5s ease; }
+
+.hud-top-right {
+  top: 16px; right: 16px;
+  text-align: right;
+}
+
+.hud-instruction {
+  font-size: 10px; color: var(--fg-dim);
+  letter-spacing: 0.1em; font-style: italic;
+  background: rgba(8,6,12,0.7);
+  backdrop-filter: blur(4px);
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+}
+
+.hud-bottom {
+  bottom: 16px; left: 16px; right: 16px;
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 16px;
+}
+
+.signal-log {
+  background: rgba(8,6,12,0.75);
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--border);
+  padding: 8px 12px;
+  border-radius: 3px;
+  flex: 1;
+  max-width: 600px;
+}
+
+.signal-log-header {
+  font-size: 8px; letter-spacing: 0.3em;
+  text-transform: uppercase; color: var(--muted);
+  margin-bottom: 4px; font-weight: 600;
+  display: flex; justify-content: space-between;
+}
+
+.signal-entries {
+  display: flex; gap: 12px; overflow-x: auto; height: 16px; align-items: center;
+  scrollbar-width: none;
+}
+.signal-entries::-webkit-scrollbar { display: none; }
+
+.signal-entry {
+  white-space: nowrap; display: flex; align-items: center; gap: 4px;
+  font-size: 10px; opacity: 0.2; transition: opacity 0.5s;
+}
+.signal-entry.fresh { opacity: 1; }
+.signal-entry .src { color: var(--entry-color); font-weight: 700; }
+.signal-entry .arrow { color: var(--muted); }
+.signal-entry .type { color: var(--fg); }
+
+.legend {
+  display: flex; gap: 12px;
+  background: rgba(8,6,12,0.75);
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--border);
+  padding: 8px 12px;
+  border-radius: 3px;
+  font-size: 8px; letter-spacing: 0.15em;
+  text-transform: uppercase; color: var(--fg-dim);
+}
+.legend-item { display: flex; align-items: center; gap: 4px; }
+.legend-dot { width: 6px; height: 6px; border-radius: 50%; }
+
+@media (max-width: 768px) {
+  .vivarium { aspect-ratio: 4/5; max-height: 75vh; }
+  .hud-top-left, .hud-top-right { display: none; }
+  .page-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .live-stats { width: 100%; justify-content: space-between; }
+  .title-block h1 { font-size: 22px; }
+}
+</style>
+</head>
+<body>
+
+<div class="layout">
+  <header class="page-header">
+    <div class="title-block">
+      <div class="eyebrow">Codex Vivarium · Volume III</div>
+      <h1>THE LIVING ENGINE</h1>
+      <p class="subtitle">Five instruments share one space. Heat diffuses, roots grow, rings align, and souls orbit — all woven into a single fabric.</p>
+    </div>
+    <div class="live-stats">
+      <div class="stat">
+        <div class="stat-label">Signals</div>
+        <div class="stat-value" id="signalCount">0</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Uptime</div>
+        <div class="stat-value" id="uptime">00:00</div>
+      </div>
+      <button class="mute-btn" id="muteBtn">Sound On</button>
+      <div class="heartbeat"></div>
+    </div>
+  </header>
+
+  <div class="vivarium">
+    <canvas id="vivariumCanvas"></canvas>
+    
+    <div class="hud hud-top-left">
+      <div class="hud-label">Climate Readout</div>
+      <div class="climate-readout">
+        <div class="climate-param"><span class="climate-name">Loom</span><div class="climate-bar"><div class="climate-fill" id="climate-loom" style="background:var(--c-loom);width:50%"></div></div></div>
+        <div class="climate-param"><span class="climate-name">Heat</span><div class="climate-bar"><div class="climate-fill" id="climate-crucible" style="background:var(--c-crucible);width:50%"></div></div></div>
+        <div class="climate-param"><span class="climate-name">Mycel</span><div class="climate-bar"><div class="climate-fill" id="climate-mycel" style="background:var(--c-mycel);width:50%"></div></div></div>
+        <div class="climate-param"><span class="climate-name">Choir</span><div class="climate-bar"><div class="climate-fill" id="climate-choir" style="background:var(--c-choir);width:50%"></div></div></div>
+      </div>
+    </div>
+
+    <div class="hud hud-top-right">
+      <div class="hud-instruction">Click anywhere to weave, heat, seed, & disrupt</div>
+    </div>
+
+    <div class="hud hud-bottom">
+      <div class="signal-log">
+        <div class="signal-log-header">
+          <span>Thread — Live Signal Traffic</span>
+          <span id="log-count">0 events woven</span>
+        </div>
+        <div class="signal-entries" id="signal-entries">
+          <span style="font-size:10px;color:var(--muted)">awaiting first signal…</span>
+        </div>
+      </div>
+      <div class="legend">
+        <div class="legend-item"><span class="legend-dot" style="background:var(--c-loom)"></span>Loom</div>
+        <div class="legend-item"><span class="legend-dot" style="background:var(--c-crucible)"></span>Crucible</div>
+        <div class="legend-item"><span class="legend-dot" style="background:var(--c-mycel)"></span>Mycel</div>
+        <div class="legend-item"><span class="legend-dot" style="background:var(--c-astrolabe)"></span>Astrolabe</div>
+        <div class="legend-item"><span class="legend-dot" style="background:var(--c-choir)"></span>Choir</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+//  CONSTANTS & STATE
+// ═══════════════════════════════════════════════
+const WILL_COLORS = {
+  loom: '#d4a45a', crucible: '#e85d3a', mycel: '#4dd4b0',
+  astrolabe: '#b8c8d8', choir: '#e88a9a'
+};
+const WILL_NAMES = {
+  loom: 'LOOM', crucible: 'CRU', mycel: 'MYC',
+  astrolabe: 'AST', choir: 'CHO'
+};
+
+const Bus = {
+  total: 0,
+  recent: [],
+  emit(signal) {
+    this.total++;
+    this.recent.unshift({ ...signal, time: Date.now() });
+    if (this.recent.length > 10) this.recent.pop();
+    updateLogUI();
+  }
+};
+
+const Climate = {
+  loomSpeed: 1.0,
+  heatDiffusion: 0.92,
+  mycelGrowth: 1.0,
+  choirCoupling: 0.5,
+  alignCount: 0,
+  setFromAlignments(count) {
+    this.alignCount = count;
+    const t = Math.min(1, count / 6);
+    this.loomSpeed = 0.6 + t * 1.4;
+    this.heatDiffusion = 0.85 + t * 0.13;
+    this.mycelGrowth = 0.5 + t * 1.5;
+    this.choirCoupling = 0.2 + t * 1.6;
+    document.getElementById('climate-loom').style.width = (this.loomSpeed / 2 * 100) + '%';
+    document.getElementById('climate-crucible').style.width = ((this.heatDiffusion - 0.85) / 0.13 * 100) + '%';
+    document.getElementById('climate-mycel').style.width = (this.mycelGrowth / 2 * 100) + '%';
+    document.getElementById('climate-choir').style.width = (this.choirCoupling / 1.8 * 100) + '%';
+  }
+};
+
+// ═══════════════════════════════════════════════
+//  CANVAS & AUDIO SETUP
+// ═══════════════════════════════════════════════
+const canvas = document.getElementById('vivariumCanvas');
+const ctx = canvas.getContext('2d');
+let W = 0, H = 0;
+let dpr = window.devicePixelRatio || 1;
+
+function fitCanvas() {
+  const rect = canvas.getBoundingClientRect();
+  W = rect.width;
+  H = rect.height;
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+
+let audioCtx = null, muted = false;
+function getAudio() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+function playTone(freq, dur=0.4, type='triangle', vol=0.08) {
+  if (muted) return;
+  const c = getAudio();
+  const osc = c.createOscillator();
+  const gain = c.createGain();
+  const filter = c.createBiquadFilter();
+  filter.type = 'lowpass'; filter.frequency.value = 2000;
+  osc.type = type; osc.frequency.value = freq;
+  gain.gain.setValueAtTime(0, c.currentTime);
+  gain.gain.linearRampToValueAtTime(vol, c.currentTime + 0.02);
+  gain.gain.exponentialRampToValueAtTime(0.001, c.currentTime + dur);
+  osc.connect(filter); filter.connect(gain); gain.connect(c.destination);
+  osc.start(); osc.stop(c.currentTime + dur);
+}
+
+// ═══════════════════════════════════════════════
+//  THE VIVARIUM ENGINE (Unified State)
+// ═══════════════════════════════════════════════
+const Engine = {
+  // Crucible (Heat Field)
+  heatGridW: 50, heatGridH: 28,
+  heat: [], heatNext: [], sparks: [],
+  avgTemp: 0,
+
+  // Loom (Fabric)
+  warps: 24, wefts: [], shuttleY: 0, shuttleTarget: 0, autoWeaveTimer: 0,
+
+  // Mycel (Roots)
+  nodes: [], edges: [], tips: [],
+
+  // Astrolabe (Rings)
+  rings: [], alignCount: 0, lastAlignCount: 0, alignments: [],
+
+  // Choir (Oscillators)
+  oscillators: [], R: 0, wasSynced: false,
+
+  init() {
+    // Crucible
+    for (let i = 0; i < this.heatGridW * this.heatGridH; i++) {
+      this.heat.push(0); this.heatNext.push(0);
+    }
+
+    // Loom
+    this.shuttleY = H * 0.7;
+    this.shuttleTarget = this.shuttleY;
+
+    // Mycel
+    for (let i = 0; i < 3; i++) {
+      this.addMycelNode(W * (0.2 + Math.random() * 0.6), H * (0.5 + Math.random() * 0.4));
+    }
+    this.nodes.forEach(n => this.spawnTip(n));
+
+    // Astrolabe (Centered)
+    const cx = W / 2, cy = H / 2;
+    const baseR = Math.min(W, H) * 0.12;
+    this.rings = [
+      { cx, cy, radius: baseR * 0.5, angle: 0, speed: 0.008, markers: 6, nudgeTimer: 0 },
+      { cx, cy, radius: baseR * 0.85, angle: Math.PI / 5, speed: -0.005, markers: 4, nudgeTimer: 0 },
+      { cx, cy, radius: baseR * 1.2, angle: Math.PI / 3, speed: 0.003, markers: 8, nudgeTimer: 0 }
+    ];
+
+    // Choir
+    for (let i = 0; i < 12; i++) {
+      this.oscillators.push({
+        phase: Math.random() * Math.PI * 2,
+        freq: 0.02 + Math.random() * 0.015,
+        hue: 340 + Math.random() * 30
+      });
+    }
+
+    Climate.setFromAlignments(0);
+  },
+
+  // ─── Interaction Handler ───
+  handleClick(x, y) {
+    // 1. Crucible: add heat
+    this.addHeat(x, y, 1.0, 4);
+    Bus.emit({ from: 'crucible', type: 'heat' });
+    playTone(80, 0.3, 'sawtooth', 0.1);
+
+    // 2. Loom: throw weft
+    this.wefts.push({ y, color: WILL_COLORS.loom, opacity: 1 });
+    Bus.emit({ from: 'loom', type: 'weft' });
+    playTone(330, 0.15, 'triangle', 0.05);
+
+    // 3. Mycel: seed node
+    const node = this.addMycelNode(x, y);
+    this.spawnTip(node);
+    Bus.emit({ from: 'mycel', type: 'pulse' });
+    playTone(440 + Math.random() * 200, 0.2, 'sine', 0.05);
+
+    // 4. Astrolabe: nudge nearest ring
+    const dx = x - W/2, dy = y - H/2;
+    const d = Math.sqrt(dx*dx + dy*dy);
+    let nearest = 0, minDiff = Infinity;
+    this.rings.forEach((ring, i) => {
+      const diff = Math.abs(d - ring.radius);
+      if (diff < minDiff) { minDiff = diff; nearest = i; }
+    });
+    this.rings[nearest].nudgeTimer = 60;
+    this.rings[nearest].speed *= -1;
+
+    // 5. Choir: disrupt nearest phase
+    const angle = Math.atan2(dy, dx);
+    let nOsc = 0, minP = Infinity;
+    this.oscillators.forEach((o, i) => {
+      let diff = Math.abs(o.phase - angle);
+      diff = Math.min(diff, Math.PI * 2 - diff);
+      if (diff < minP) { minP = diff; nOsc = i; }
+    });
+    this.oscillators[nOsc].phase += Math.PI * (0.5 + Math.random() * 0.5);
+    Bus.emit({ from: 'choir', type: 'disrupt' });
+    playTone(220 + nOsc * 30, 0.1, 'square', 0.04);
+  },
+
+  // ─── Update Loops ───
+  update(dt) {
+    this.updateCrucible(dt);
+    this.updateLoom(dt);
+    this.updateMycel(dt);
+    this.updateAstrolabe(dt);
+    this.updateChoir(dt);
+  },
+
+  updateCrucible(dt) {
+    const D = Climate.heatDiffusion;
+    for (let y = 1; y < this.heatGridH - 1; y++) {
+      for (let x = 1; x < this.heatGridW - 1; x++) {
+        const i = y * this.heatGridW + x;
+        const avg = (this.heat[i-1] + this.heat[i+1] + this.heat[i-this.heatGridW] + this.heat[i+this.heatGridW]) / 4;
+        this.heatNext[i] = this.heat[i] + D * (avg - this.heat[i]);
+        this.heatNext[i] *= 0.998;
+      }
+    }
+    [this.heat, this.heatNext] = [this.heatNext, this.heat];
+
+    // Sparks
+    for (let i = 0; i < this.heat.length; i++) {
+      if (this.heat[i] > 0.6 && Math.random() < 0.02) {
+        const gx = i % this.heatGridW, gy = Math.floor(i / this.heatGridW);
+        this.sparks.push({
+          x: (gx + 0.5) / this.heatGridW * W,
+          y: (gy + 0.5) / this.heatGridH * H,
+          vx: (Math.random() - 0.5) * 0.5,
+          vy: -Math.random() * 1.5 - 0.5,
+          life: 1, hue: 20 + Math.random() * 30
+        });
+      }
+    }
+    this.sparks = this.sparks.filter(s => {
+      s.x += s.vx; s.y += s.vy; s.vy += 0.02; s.life -= 0.02;
+      return s.life > 0;
+    });
+
+    let sum = 0;
+    for (let i = 0; i < this.heat.length; i++) sum += this.heat[i];
+    this.avgTemp = sum / this.heat.length;
+
+    // Ambient heat
+    if (Math.random() < 0.005) {
+      this.addHeat(Math.random() * W, Math.random() * H, 0.5, 2);
+    }
+  },
+
+  updateLoom(dt) {
+    this.autoWeaveTimer += dt;
+    if (this.autoWeaveTimer > 4000 / Climate.loomSpeed) {
+      this.autoWeaveTimer = 0;
+      this.wefts.push({ y: H * (0.3 + Math.random() * 0.5), color: WILL_COLORS.loom, opacity: 1 });
+    }
+
+    const scrollSpeed = 0.15 * Climate.loomSpeed;
+    this.wefts.forEach(w => {
+      w.y -= scrollSpeed;
+      if (w.y < 30) w.opacity *= 0.985;
+    });
+    this.wefts = this.wefts.filter(w => w.opacity > 0.02 && w.y > -10);
+
+    this.shuttleY += (this.shuttleTarget - this.shuttleY) * 0.08;
+    if (Math.abs(this.shuttleY - this.shuttleTarget) < 2) {
+      this.shuttleTarget = H * (0.2 + Math.random() * 0.65);
+    }
+  },
+
+  updateMycel(dt) {
+    const gr = Climate.mycelGrowth;
+    this.tips.forEach(tip => {
+      tip.age += dt * 0.06;
+      tip.angle += (Math.random() - 0.5) * 0.15;
+      tip.x += Math.cos(tip.angle) * tip.speed * gr;
+      tip.y += Math.sin(tip.angle) * tip.speed * gr;
+      tip.trail.push({ x: tip.x, y: tip.y });
+      if (tip.trail.length > 80) tip.trail.shift();
+
+      for (const node of this.nodes) {
+        if (node.id === tip.fromNode) continue;
+        const dx = node.x - tip.x, dy = node.y - tip.y;
+        const d = Math.sqrt(dx*dx + dy*dy);
+        if (d < 12) {
+          this.edges.push({ a: tip.fromNode, b: node.id, pulses: [], glow: 0.8 });
+          tip._dead = true;
+          Bus.emit({ from: 'mycel', type: 'pulse' });
+          break;
+        }
+      }
+
+      if (tip.x < 5 || tip.x > W - 5 || tip.y < 5 || tip.y > H - 5) tip._dead = true;
+      if (tip.age > tip.maxAge) tip._dead = true;
+    });
+    this.tips = this.tips.filter(t => !t._dead);
+
+    if (Math.random() < 0.02 * gr && this.nodes.length > 0 && this.tips.length < 15) {
+      const node = this.nodes[Math.floor(Math.random() * this.nodes.length)];
+      this.spawnTip(node);
+    }
+
+    this.edges.forEach(e => {
+      e.glow *= 0.97;
+      e.pulses = e.pulses.filter(p => {
+        p.progress += 0.02;
+        return p.progress < 1;
+      });
+    });
+    this.nodes.forEach(n => { n.pulse *= 0.95; });
+  },
+
+  updateAstrolabe(dt) {
+    this.rings.forEach(ring => {
+      let speedMul = 1;
+      if (ring.nudgeTimer > 0) { speedMul = 3; ring.nudgeTimer--; }
+      ring.angle += ring.speed * speedMul;
+    });
+
+    const tolerance = 0.15;
+    let aligns = 0;
+    const positions = [];
+    this.rings.forEach((ring, ri) => {
+      for (let mi = 0; mi < ring.markers; mi++) {
+        const angle = ring.angle + (mi / ring.markers) * Math.PI * 2;
+        positions.push({ angle, ringIdx: ri });
+      }
+    });
+
+    this.alignments = [];
+    for (let i = 0; i < positions.length; i++) {
+      for (let j = i + 1; j < positions.length; j++) {
+        if (positions[i].ringIdx === positions[j].ringIdx) continue;
+        let diff = Math.abs(positions[i].angle - positions[j].angle);
+        diff = Math.min(diff, Math.PI * 2 - diff);
+        if (diff < tolerance) {
+          aligns++;
+          this.alignments.push({ a: positions[i].angle, b: positions[j].angle, strength: 1 - diff / tolerance });
+        }
+      }
+    }
+
+    Climate.setFromAlignments(aligns);
+
+    if (aligns > this.lastAlignCount && aligns > 0) {
+      Bus.emit({ from: 'astrolabe', type: 'align' });
+    }
+    this.lastAlignCount = aligns;
+  },
+
+  updateChoir(dt) {
+    const K = Climate.choirCoupling;
+    const N = this.oscillators.length;
+    const newPhases = new Array(N);
+    
+    for (let i = 0; i < N; i++) {
+      let coupling = 0;
+      for (let j = 0; j < N; j++) {
+        if (i === j) continue;
+        coupling += Math.sin(this.oscillators[j].phase - this.oscillators[i].phase);
+      }
+      coupling /= N;
+      newPhases[i] = this.oscillators[i].phase + (this.oscillators[i].freq + K * coupling) * 1;
+    }
+    for (let i = 0; i < N; i++) this.oscillators[i].phase = newPhases[i];
+
+    let sumX = 0, sumY = 0;
+    for (let i = 0; i < N; i++) {
+      sumX += Math.cos(this.oscillators[i].phase);
+      sumY += Math.sin(this.oscillators[i].phase);
+    }
+    this.R = Math.sqrt(sumX * sumX + sumY * sumY) / N;
+
+    const synced = this.R > 0.85;
+    if (synced && !this.wasSynced) {
+      Bus.emit({ from: 'choir', type: 'harmony' });
+      playTone(523, 0.8, 'sine', 0.06);
+      playTone(659, 0.8, 'sine', 0.04);
+      playTone(784, 0.8, 'sine', 0.03);
+      
+      // Harmony cascade: drop wefts, add heat everywhere, spawn mycel
+      this.wefts.push({ y: H * 0.5, color: WILL_COLORS.choir, opacity: 1 });
+      for (let i = 0; i < 5; i++) {
+        this.addHeat(Math.random() * W, Math.random() * H, 0.3, 2);
+      }
+      if (this.nodes.length < 20) {
+        this.spawnTip(this.addMycelNode(Math.random() * W, Math.random() * H));
+      }
+    }
+    this.wasSynced = synced;
+  },
+
+  // ─── Helper Methods ───
+  addHeat(px, py, mag, radius) {
+    const gx = Math.floor((px / W) * this.heatGridW);
+    const gy = Math.floor((py / H) * this.heatGridH);
+    for (let dy = -radius; dy <= radius; dy++) {
+      for (let dx = -radius; dx <= radius; dx++) {
+        const x = gx + dx, y = gy + dy;
+        if (x >= 0 && x < this.heatGridW && y >= 0 && y < this.heatGridH) {
+          const d = Math.sqrt(dx*dx + dy*dy);
+          if (d <= radius) {
+            this.heat[y * this.heatGridW + x] = Math.min(1, this.heat[y * this.heatGridW + x] + mag * Math.exp(-d * 0.5));
+          }
+        }
+      }
+    }
+  },
+
+  addMycelNode(x, y) {
+    const node = { x, y, id: this.nodes.length, pulse: 0, energy: 1 };
+    this.nodes.push(node);
+    return node;
+  },
+
+  spawnTip(fromNode) {
+    this.tips.push({
+      x: fromNode.x, y: fromNode.y,
+      angle: Math.random() * Math.PI * 2,
+      speed: 0.4 + Math.random() * 0.3,
+      fromNode: fromNode.id,
+      age: 0, maxAge: 200 + Math.random() * 100,
+      trail: [{ x: fromNode.x, y: fromNode.y }]
+    });
+  },
+
+  getMarkerPos(ring, idx) {
+    const angle = ring.angle + (idx / ring.markers) * Math.PI * 2;
+    return { x: ring.cx + Math.cos(angle) * ring.radius, y: ring.cy + Math.sin(angle) * ring.radius, angle };
+  },
+
+  // ─── Unified Render ───
+  render() {
+    // Fade for trails
+    ctx.fillStyle = 'rgba(5, 4, 7, 0.18)';
+    ctx.fillRect(0, 0, W, H);
+
+    this.renderCrucible();
+    this.renderLoom();
+    this.renderMycel();
+    this.renderAstrolabe();
+    this.renderChoir();
+  },
+
+  renderCrucible() {
+    const cellW = W / this.heatGridW;
+    const cellH = H / this.heatGridH;
+
+    for (let y = 0; y < this.heatGridH; y++) {
+      for (let x = 0; x < this.heatGridW; x++) {
+        const t = this.heat[y * this.heatGridW + x];
+        if (t > 0.03) {
+          let r, g, b;
+          if (t < 0.25) { const k = t / 0.25; r = 60 + k * 140; g = 10 + k * 20; b = 40 - k * 20; }
+          else if (t < 0.5) { const k = (t - 0.25) / 0.25; r = 200 + k * 40; g = 30 + k * 50; b = 20; }
+          else if (t < 0.75) { const k = (t - 0.5) / 0.25; r = 240; g = 80 + k * 100; b = 20 + k * 30; }
+          else { const k = (t - 0.75) / 0.25; r = 240 + k * 15; g = 180 + k * 60; b = 50 + k * 150; }
+          
+          ctx.fillStyle = `rgba(${r|0}, ${g|0}, ${b|0}, ${Math.min(0.8, t * 1.2)})`;
+          ctx.fillRect(x * cellW, y * cellH, cellW + 1, cellH + 1);
+        }
+      }
+    }
+
+    // Sparks
+    this.sparks.forEach(s => {
+      ctx.fillStyle = `hsla(${s.hue}, 90%, 65%, ${s.life})`;
+      ctx.shadowBlur = 4;
+      ctx.shadowColor = `hsl(${s.hue}, 90%, 65%)`;
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, Math.max(0.3, s.life * 1.5), 0, Math.PI * 2);
+      ctx.fill();
+    });
+    ctx.shadowBlur = 0;
+  },
+
+  renderLoom() {
+    // Vertical warps (faint)
+    const warpSpacing = W / this.warps;
+    for (let i = 0; i < this.warps; i++) {
+      const x = i * warpSpacing + warpSpacing / 2;
+      ctx.strokeStyle = 'rgba(212, 164, 90, 0.04)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(x, 0); ctx.lineTo(x, H);
+      ctx.stroke();
+    }
+
+    // Horizontal wefts (woven segments)
+    this.wefts.forEach(w => {
+      ctx.globalAlpha = w.opacity * 0.7;
+      ctx.strokeStyle = w.color;
+      ctx.lineWidth = 2;
+      ctx.shadowBlur = 3;
+      ctx.shadowColor = w.color;
+      
+      // Draw weft as segments to simulate over/under
+      for (let i = 0; i < this.warps; i++) {
+        if (i % 2 === 0) {
+          const x1 = i * warpSpacing;
+          const x2 = (i + 1) * warpSpacing;
+          ctx.beginPath();
+          ctx.moveTo(x1, w.y); ctx.lineTo(x2, w.y);
+          ctx.stroke();
+        }
+      }
+    });
+    ctx.globalAlpha = 1;
+    ctx.shadowBlur = 0;
+
+    // Shuttle indicator
+    ctx.fillStyle = '#d4a45a';
+    ctx.shadowBlur = 8;
+    ctx.shadowColor = '#d4a45a';
+    ctx.beginPath();
+    ctx.arc(W / 2, this.shuttleY, 3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+  },
+
+  renderMycel() {
+    // Edges
+    this.edges.forEach(e => {
+      const a = this.nodes[e.a], b = this.nodes[e.b];
+      if (!a || !b) return;
+      ctx.strokeStyle = `rgba(77, 212, 176, ${0.15 + e.glow * 0.4})`;
+      ctx.lineWidth = 0.8 + e.glow * 0.8;
+      ctx.shadowBlur = e.glow * 6;
+      ctx.shadowColor = '#4dd4b0';
+      ctx.beginPath();
+      ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y);
+      ctx.stroke();
+
+      e.pulses.forEach(p => {
+        const px = a.x + (b.x - a.x) * p.progress;
+        const py = a.y + (b.y - a.y) * p.progress;
+        ctx.fillStyle = `rgba(180, 255, 220, ${1 - p.progress})`;
+        ctx.beginPath();
+        ctx.arc(px, py, 2, 0, Math.PI * 2);
+        ctx.fill();
+      });
+    });
+    ctx.shadowBlur = 0;
+
+    // Growing tips
+    this.tips.forEach(tip => {
+      if (tip.trail.length < 2) return;
+      ctx.strokeStyle = 'rgba(77, 212, 176, 0.4)';
+      ctx.lineWidth = 0.8;
+      ctx.beginPath();
+      ctx.moveTo(tip.trail[0].x, tip.trail[0].y);
+      for (let i = 1; i < tip.trail.length; i++) ctx.lineTo(tip.trail[i].x, tip.trail[i].y);
+      ctx.stroke();
+
+      ctx.fillStyle = '#4dd4b0';
+      ctx.shadowBlur = 6;
+      ctx.shadowColor = '#4dd4b0';
+      ctx.beginPath();
+      ctx.arc(tip.x, tip.y, 1.5, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    ctx.shadowBlur = 0;
+
+    // Nodes
+    this.nodes.forEach(n => {
+      const r = 3 + n.pulse * 4;
+      ctx.fillStyle = `rgba(77, 212, 176, ${0.7 + n.pulse * 0.3})`;
+      ctx.shadowBlur = 8;
+      ctx.shadowColor = '#4dd4b0';
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, Math.max(0.5, r), 0, Math.PI * 2);
+      ctx.fill();
+    });
+    ctx.shadowBlur = 0;
+  },
+
+  renderAstrolabe() {
+    const cx = W / 2, cy = H / 2;
+
+    // Alignment lines
+    this.alignments.forEach(al => {
+      const x1 = cx + Math.cos(al.a) * Math.min(W, H) * 0.5;
+      const y1 = cy + Math.sin(al.a) * Math.min(W, H) * 0.5;
+      const x2 = cx + Math.cos(al.b) * Math.min(W, H) * 0.5;
+      const y2 = cy + Math.sin(al.b) * Math.min(W, H) * 0.5;
+      
+      ctx.strokeStyle = `rgba(184, 200, 216, ${al.strength * 0.15})`;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(x1, y1); ctx.lineTo(x2, y2);
+      ctx.stroke();
+    });
+
+    // Rings
+    this.rings.forEach(ring => {
+      ctx.strokeStyle = `rgba(184, 200, 216, ${0.2 + (ring.nudgeTimer > 0 ? 0.3 : 0)})`;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(ring.cx, ring.cy, Math.max(0.5, ring.radius), 0, Math.PI * 2);
+      ctx.stroke();
+
+      for (let mi = 0; mi < ring.markers; mi++) {
+        const pos = this.getMarkerPos(ring, mi);
+        ctx.fillStyle = '#b8c8d8';
+        ctx.shadowBlur = 6;
+        ctx.shadowColor = '#b8c8d8';
+        ctx.beginPath();
+        ctx.arc(pos.x, pos.y, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.strokeStyle = 'rgba(184, 200, 216, 0.4)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(pos.x, pos.y);
+        ctx.lineTo(pos.x + Math.cos(pos.angle) * 6, pos.y + Math.sin(pos.angle) * 6);
+        ctx.stroke();
+      }
+    });
+    ctx.shadowBlur = 0;
+
+    // Center hub
+    ctx.fillStyle = 'rgba(184, 200, 216, 0.6)';
+    ctx.shadowBlur = 8;
+    ctx.shadowColor = '#b8c8d8';
+    ctx.beginPath();
+    ctx.arc(cx, cy, 3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+  },
+
+  renderChoir() {
+    const cx = W / 2, cy = H / 2;
+    const radius = Math.min(W, H) * 0.35;
+
+    // Order parameter circle (inner glow)
+    const innerR = Math.max(0.5, this.R * radius * 0.8);
+    const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(1, innerR));
+    grad.addColorStop(0, `rgba(232, 138, 154, ${this.R * 0.3})`);
+    grad.addColorStop(1, 'rgba(232, 138, 154, 0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(cx, cy, Math.max(0.5, innerR), 0, Math.PI * 2);
+    ctx.fill();
+
+    // Oscillators
+    this.oscillators.forEach(o => {
+      const x = cx + Math.cos(o.phase) * radius;
+      const y = cy + Math.sin(o.phase) * radius;
+
+      ctx.strokeStyle = `rgba(232, 138, 154, 0.1)`;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy); ctx.lineTo(x, y);
+      ctx.stroke();
+
+      ctx.fillStyle = `hsl(${o.hue}, 70%, 65%)`;
+      ctx.shadowBlur = 8;
+      ctx.shadowColor = `hsl(${o.hue}, 70%, 65%)`;
+      ctx.beginPath();
+      ctx.arc(x, y, 3.5, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    ctx.shadowBlur = 0;
+  }
+};
+
+// ═══════════════════════════════════════════════
+//  LOOP & UI
+// ═══════════════════════════════════════════════
+let lastTime = 0;
+const startTime = Date.now();
+
+function loop(t) {
+  const dt = Math.min(50, t - lastTime);
+  lastTime = t;
+
+  Engine.update(dt);
+  Engine.render();
+
+  document.getElementById('signalCount').textContent = Bus.total;
+  requestAnimationFrame(loop);
+}
+
+function updateLogUI() {
+  const container = document.getElementById('signal-entries');
+  container.innerHTML = '';
+  Bus.recent.forEach((sig, i) => {
+    const entry = document.createElement('span');
+    entry.className = 'signal-entry' + (i < 3 ? ' fresh' : '');
+    entry.style.setProperty('--entry-color', WILL_COLORS[sig.from]);
+    entry.innerHTML = `<span class="src">${WILL_NAMES[sig.from]}</span><span class="arrow">→</span><span class="type">${sig.type}</span>`;
+    container.appendChild(entry);
+  });
+  document.getElementById('log-count').textContent = `${Bus.total} events woven`;
+}
+
+function updateUptime() {
+  const s = Math.floor((Date.now() - startTime) / 1000);
+  const m = String(Math.floor(s / 60)).padStart(2, '0');
+  const ss = String(s % 60).padStart(2, '0');
+  document.getElementById('uptime').textContent = `${m}:${ss}`;
+}
+
+// ═══════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════
+function init() {
+  fitCanvas();
+  Engine.init();
+
+  canvas.addEventListener('click', (e) => {
+    const r = canvas.getBoundingClientRect();
+    Engine.handleClick(e.clientX - r.left, e.clientY - r.top);
+  });
+
+  // Touch support
+  canvas.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    const r = canvas.getBoundingClientRect();
+    const t = e.touches[0];
+    Engine.handleClick(t.clientX - r.left, t.clientY - r.top);
+  }, { passive: false });
+
+  window.addEventListener('resize', () => {
+    fitCanvas();
+    // Re-center astrolabe
+    const cx = W / 2, cy = H / 2;
+    const baseR = Math.min(W, H) * 0.12;
+    Engine.rings[0].cx = cx; Engine.rings[0].cy = cy; Engine.rings[0].radius = baseR * 0.5;
+    Engine.rings[1].cx = cx; Engine.rings[1].cy = cy; Engine.rings[1].radius = baseR * 0.85;
+    Engine.rings[2].cx = cx; Engine.rings[2].cy = cy; Engine.rings[2].radius = baseR * 1.2;
+  });
+
+  document.getElementById('muteBtn').addEventListener('click', () => {
+    muted = !muted;
+    const btn = document.getElementById('muteBtn');
+    btn.textContent = muted ? 'Sound Off' : 'Sound On';
+    btn.classList.toggle('muted', muted);
+  });
+
+  document.addEventListener('click', () => getAudio(), { once: true });
+
+  setInterval(updateUptime, 1000);
+  requestAnimationFrame(loop);
+}
+
+init();
+</script>
+</body>
+</html>

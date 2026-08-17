@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Omni-Choir · The Woven Will</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; width: 100%; height: 100%;
+    background: #010204; overflow: hidden; touch-action: none;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    -webkit-user-select: none; user-select: none;
+    color: rgba(220, 230, 240, 0.8);
+  }
+  canvas { display: block; width: 100vw; height: 100vh; }
+
+  /* --- UI Overlays --- */
+  #gate {
+    position: fixed; inset: 0; z-index: 50;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: radial-gradient(circle at 50% 50%, rgba(10,15,25,0.8) 0%, rgba(1,2,4,1) 80%);
+    backdrop-filter: blur(10px);
+    transition: opacity 2s ease, visibility 2s;
+    cursor: pointer;
+  }
+  #gate.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+  
+  .ring-btn {
+    width: 140px; height: 140px; border-radius: 50%;
+    border: 1px solid rgba(130, 210, 230, 0.3);
+    display: flex; align-items: center; justify-content: center;
+    animation: pulse-ring 4s ease-in-out infinite;
+    transition: all 0.5s ease;
+  }
+  .ring-btn:hover { border-color: rgba(200, 230, 255, 0.8); background: rgba(255,255,255,0.03); transform: scale(1.05); }
+  .ring-btn span { letter-spacing: 0.5em; padding-left: 0.5em; font-size: 11px; font-weight: 300; }
+  @keyframes pulse-ring {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(100, 200, 220, 0); }
+    50% { box-shadow: 0 0 40px 0 rgba(100, 200, 220, 0.15); }
+  }
+
+  .title-sub { margin-top: 40px; font-size: 9px; letter-spacing: 0.4em; opacity: 0.5; text-transform: uppercase; text-align: center; line-height: 1.8; }
+
+  #hud {
+    position: fixed; bottom: 30px; left: 30px; right: 30px; z-index: 10;
+    display: flex; justify-content: space-between; align-items: flex-end;
+    opacity: 0; transition: opacity 3s ease 1s; pointer-events: none;
+  }
+  body.entered #hud { opacity: 1; }
+  
+  .hud-text { font-size: 9px; letter-spacing: 0.3em; opacity: 0.4; text-transform: uppercase; }
+  
+  #coherence-meter {
+    width: 100px; height: 2px; background: rgba(255,255,255,0.1); margin-top: 8px; position: relative;
+  }
+  #coherence-fill {
+    position: absolute; left: 0; top: 0; bottom: 0; width: 80%;
+    background: linear-gradient(90deg, #c44, #4ca);
+    transition: width 0.3s ease, background 0.5s ease;
+  }
+  
+  #hint {
+    position: fixed; top: 40px; left: 50%; transform: translateX(-50%);
+    font-size: 10px; letter-spacing: 0.4em; opacity: 0; transition: opacity 1s;
+    color: rgba(200, 220, 255, 0.6); pointer-events: none; z-index: 10;
+  }
+
+  .vignette {
+    position: fixed; inset: 0; pointer-events: none; z-index: 5;
+    background: radial-gradient(ellipse at 50% 50%, transparent 40%, rgba(0,0,0,0.6) 100%);
+  }
+</style>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+
+<div id="gate">
+  <div class="ring-btn"><span>AWAKEN</span></div>
+  <div class="title-sub">OMNI-CHOIR · THE WOVEN WILL<br>headphones recommended · approach gently</div>
+</div>
+
+<div class="vignette"></div>
+
+<div id="hint">IT RECOILS FROM HASTE</div>
+
+<div id="hud">
+  <div class="hud-text">
+    STATE: <span id="state-label">HARMONIC</span>
+    <div id="coherence-meter"><div id="coherence-fill"></div></div>
+  </div>
+  <div class="hud-text" style="text-align: right;">
+    DRAG TO WEAVE<br>GPT-PRO · FRONTIER
+  </div>
+</div>
+
+<canvas id="c"></canvas>
+
+<script type="module">
+import * as THREE from 'three';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+
+/* ==========================================================
+   STATE & CONFIG
+========================================================== */
+const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) || window.innerWidth < 760;
+const N_FILAMENTS = isMobile ? 60 : 120;
+const N_SEGMENTS = isMobile ? 150 : 250;
+const TOTAL_POINTS = N_FILAMENTS * N_SEGMENTS;
+const MAX_EVENTS = 12;
+
+let entered = false;
+let time = 0;
+const clock = new THREE.Clock();
+
+// Free Will Mechanics
+let trust = 0.8; // 0.0 (Hostile) to 1.0 (Harmonic)
+let pointerSpeed = 0;
+let lastPtr = { x: 0, y: 0 };
+let lastEventTime = 0;
+let consecutiveRapid = 0;
+
+// Shaders/Uniforms Data
+const eventPos = new Float32Array(MAX_EVENTS * 3);
+const eventParams = new Float32Array(MAX_EVENTS * 4); // [time, power, isHarmonic, reserved]
+let eventIndex = 0;
+
+/* ==========================================================
+   AUDIO (Web Audio API)
+========================================================== */
+let audioCtx, masterGain, convolver, wetBus, filterDrone;
+const droneOscs = [];
+const F0 = 73.416; // Base freq
+const HARMONICS = [1, 1.5, 2, 2.25, 3, 4]; // Fifths, Ninths, Octaves
+
+function buildImpulseResponse(ctx, duration = 5.0) {
+  const rate = ctx.sampleRate;
+  const length = Math.floor(rate * duration);
+  const buffer = ctx.createBuffer(2, length, rate);
+  for (let ch = 0; ch < 2; ch++) {
+    const data = buffer.getChannelData(ch);
+    let lp = 0;
+    for (let i = 0; i < length; i++) {
+      const t = i / length;
+      const env = Math.exp(-t * 3.0) * (1 - t);
+      const noise = Math.random() * 2 - 1;
+      lp = lp * 0.8 + noise * 0.2; // darken tail
+      data[i] = lp * env * 0.5;
+    }
+  }
+  return buffer;
+}
+
+function initAudio() {
+  if (audioCtx) return;
+  const AC = window.AudioContext || window.webkitAudioContext;
+  audioCtx = new AC();
+
+  masterGain = audioCtx.createGain();
+  masterGain.gain.value = 0;
+
+  const comp = audioCtx.createDynamicsCompressor();
+  comp.threshold.value = -24;
+  comp.ratio.value = 4;
+  comp.attack.value = 0.05;
+  masterGain.connect(comp);
+  comp.connect(audioCtx.destination);
+
+  convolver = audioCtx.createConvolver();
+  convolver.buffer = buildImpulseResponse(audioCtx);
+  
+  wetBus = audioCtx.createGain();
+  wetBus.gain.value = 0.6;
+  
+  const dryBus = audioCtx.createGain();
+  dryBus.gain.value = 0.8;
+
+  const eq = audioCtx.createBiquadFilter();
+  eq.type = 'lowpass';
+  eq.frequency.value = 2000;
+
+  eq.connect(convolver);
+  convolver.connect(wetBus);
+  wetBus.connect(masterGain);
+  eq.connect(dryBus);
+  dryBus.connect(masterGain);
+
+  // Background Drone
+  filterDrone = audioCtx.createBiquadFilter();
+  filterDrone.type = 'lowpass';
+  filterDrone.frequency.value = 400;
+  filterDrone.Q.value = 1.0;
+  filterDrone.connect(eq);
+
+  HARMONICS.forEach((h, i) => {
+    const osc = audioCtx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.value = F0 * h;
+    
+    const lfo = audioCtx.createOscillator();
+    lfo.type = 'sine';
+    lfo.frequency.value = 0.05 + Math.random() * 0.05;
+    
+    const gain = audioCtx.createGain();
+    gain.gain.value = (1 / (i + 1)) * 0.15;
+    
+    const lfoGain = audioCtx.createGain();
+    lfoGain.gain.value = gain.gain.value * 0.5;
+    lfo.connect(lfoGain);
+    lfoGain.connect(gain.gain);
+    
+    osc.connect(gain);
+    gain.connect(filterDrone);
+    
+    osc.start();
+    lfo.start();
+    droneOscs.push({ osc, gain, baseFreq: F0 * h });
+  });
+
+  // Wind/Noise
+  const bufferSize = audioCtx.sampleRate * 2;
+  const noiseBuf = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+  const output = noiseBuf.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) output[i] = Math.random() * 2 - 1;
+  const noiseSrc = audioCtx.createBufferSource();
+  noiseSrc.buffer = noiseBuf;
+  noiseSrc.loop = true;
+  
+  const noiseFilt = audioCtx.createBiquadFilter();
+  noiseFilt.type = 'bandpass';
+  noiseFilt.frequency.value = 800;
+  noiseFilt.Q.value = 0.5;
+  
+  const noiseGain = audioCtx.createGain();
+  noiseGain.gain.value = 0.02;
+  
+  noiseSrc.connect(noiseFilt);
+  noiseFilt.connect(noiseGain);
+  noiseGain.connect(eq);
+  noiseSrc.start();
+
+  masterGain.gain.linearRampToValueAtTime(0.7, audioCtx.currentTime + 3);
+}
+
+function triggerAudioRipple(power, isHarmonic, panX) {
+  if (!audioCtx) return;
+  const t = audioCtx.currentTime;
+  
+  const voiceGain = audioCtx.createGain();
+  voiceGain.gain.setValueAtTime(0, t);
+  
+  const panner = audioCtx.createStereoPanner();
+  panner.pan.value = THREE.MathUtils.clamp(panX, -0.8, 0.8);
+  
+  const filter = audioCtx.createBiquadFilter();
+  filter.type = isHarmonic ? 'lowpass' : 'bandpass';
+  filter.frequency.setValueAtTime(isHarmonic ? 1500 : 400, t);
+  filter.Q.value = isHarmonic ? 0.5 : 2.0;
+
+  voiceGain.connect(filter);
+  filter.connect(panner);
+  panner.connect(masterGain); // dry
+  panner.connect(wetBus); // extra wet for plucks
+
+  if (isHarmonic) {
+    // Warm, ringing chime
+    voiceGain.gain.linearRampToValueAtTime(0.15 * power, t + 0.1);
+    voiceGain.gain.exponentialRampToValueAtTime(0.001, t + 4.0);
+    filter.frequency.exponentialRampToValueAtTime(400, t + 3.0);
+
+    const ratios = [1, 2.001, 3.005, 5.01];
+    ratios.forEach((r, i) => {
+      const osc = audioCtx.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.value = (F0 * 2) * r;
+      const g = audioCtx.createGain();
+      g.gain.value = 1 / (i + 1);
+      osc.connect(g);
+      g.connect(voiceGain);
+      osc.start(t);
+      osc.stop(t + 4.1);
+    });
+  } else {
+    // Hollow, dissonant thud
+    voiceGain.gain.linearRampToValueAtTime(0.1 * power, t + 0.05);
+    voiceGain.gain.exponentialRampToValueAtTime(0.001, t + 1.0);
+    filter.frequency.linearRampToValueAtTime(100, t + 0.5);
+
+    const osc = audioCtx.createOscillator();
+    osc.type = 'triangle';
+    osc.frequency.value = F0 * 0.95; // Flattened, uneasy
+    const osc2 = audioCtx.createOscillator();
+    osc2.type = 'sine';
+    osc2.frequency.value = F0 * 1.08; // Dissonant minor second rub
+    
+    osc.connect(voiceGain);
+    osc2.connect(voiceGain);
+    osc.start(t); osc2.start(t);
+    osc.stop(t + 1.1); osc2.stop(t + 1.1);
+  }
+}
+
+/* ==========================================================
+   THREE.JS SETUP
+========================================================== */
+const canvas = document.getElementById('c');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance' });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.0;
+
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0x010204, 0.015);
+
+const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 200);
+const targetCamPos = new THREE.Vector3(0, 5, 28);
+camera.position.copy(targetCamPos);
+
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.2, 0.5, 0.2);
+composer.addPass(bloomPass);
+composer.addPass(new OutputPass());
+
+/* ==========================================================
+   GEOMETRY & SHADERS
+========================================================== */
+const positions = new Float32Array(TOTAL_POINTS * 3);
+const uvs = new Float32Array(TOTAL_POINTS * 2);
+const seeds = new Float32Array(TOTAL_POINTS);
+
+for (let f = 0; f < N_FILAMENTS; f++) {
+  const v = f / (N_FILAMENTS - 1);
+  for (let s = 0; s < N_SEGMENTS; s++) {
+    const u = s / (N_SEGMENTS - 1);
+    const i = (f * N_SEGMENTS + s);
+    
+    positions[i * 3 + 0] = (u - 0.5) * 40;
+    positions[i * 3 + 1] = 0;
+    positions[i * 3 + 2] = (v - 0.5) * 20;
+    
+    uvs[i * 2 + 0] = u;
+    uvs[i * 2 + 1] = v;
+    seeds[i] = Math.random();
+  }
+}
+
+const geo = new THREE.BufferGeometry();
+geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+geo.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
+geo.setAttribute('aSeed', new THREE.BufferAttribute(seeds, 1));
+
+const uniforms = {
+  uTime: { value: 0 },
+  uTrust: { value: 0.8 },
+  uEventPos: { value: eventPos },
+  uEventParams: { value: eventParams },
+  uResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) }
+};
+
+const vs = `
+  uniform float uTime;
+  uniform float uTrust;
+  uniform vec3 uEventPos[${MAX_EVENTS}];
+  uniform vec4 uEventParams[${MAX_EVENTS}]; // x: time, y: power, z: harmonic
+
+  attribute float aSeed;
+  varying vec2 vUv;
+  varying float vEnergy;
+  varying float vHostility;
+
+  // Simplex 3D Noise loosely approximated
+  vec3 hash3(vec3 p) {
+      p = vec3(dot(p, vec3(127.1, 311.7, 74.7)),
+               dot(p, vec3(269.5, 183.3, 246.1)),
+               dot(p, vec3(113.5, 271.9, 124.6)));
+      return -1.0 + 2.0 * fract(sin(p) * 43758.5453123);
+  }
+  float noise3(vec3 p) {
+    vec3 i = floor(p); vec3 f = fract(p);
+    vec3 u = f*f*(3.0-2.0*f);
+    return mix(mix(mix(dot(hash3(i+vec3(0,0,0)), f-vec3(0,0,0)), 
+                       dot(hash3(i+vec3(1,0,0)), f-vec3(1,0,0)), u.x),
+                   mix(dot(hash3(i+vec3(0,1,0)), f-vec3(0,1,0)), 
+                       dot(hash3(i+vec3(1,1,0)), f-vec3(1,1,0)), u.x), u.y),
+               mix(mix(dot(hash3(i+vec3(0,0,1)), f-vec3(0,0,1)), 
+                       dot(hash3(i+vec3(1,0,1)), f-vec3(1,0,1)), u.x),
+                   mix(dot(hash3(i+vec3(0,1,1)), f-vec3(0,1,1)), 
+                       dot(hash3(i+vec3(1,1,1)), f-vec3(1,1,1)), u.x), u.y), u.z);
+  }
+
+  void main() {
+    vUv = uv;
+    vec3 p = position;
+    
+    // Base Loom Flow
+    float n = noise3(vec3(p.x * 0.1, p.z * 0.1, uTime * 0.2));
+    float flow = sin(p.x * 0.3 + uTime * 0.5) * cos(p.z * 0.2 - uTime * 0.3);
+    
+    // Distort based on trust (smooth flow vs jagged erratic)
+    float calm = uTrust;
+    float chaos = 1.0 - uTrust;
+    
+    p.y += flow * (1.5 + calm * 1.5) + n * (0.5 + chaos * 3.0);
+    p.x += noise3(vec3(p.y, p.z, uTime)) * chaos * 1.5;
+
+    // Interaction Events
+    float totalEnergy = 0.0;
+    float totalHostility = 0.0;
+
+    for(int i = 0; i < ${MAX_EVENTS}; i++) {
+      float eTime = uEventParams[i].x;
+      float ePower = uEventParams[i].y;
+      float eHarmonic = uEventParams[i].z;
+      
+      if (eTime > 0.0) {
+        float age = uTime - eTime;
+        if (age < 8.0) {
+          vec3 ep = uEventPos[i];
+          float d = distance(p, ep);
+          
+          // Propagating ripple front
+          float front = age * 6.0; 
+          float wave = exp(-pow(d - front, 2.0) * 0.5) * sin((d - front) * 3.0);
+          float decay = exp(-age * 0.5);
+          
+          float influence = wave * decay * ePower;
+          
+          // Displacement
+          p.y += influence * 3.0;
+          
+          // Accumulate varying fields
+          float env = exp(-d * 0.3) * decay * ePower;
+          totalEnergy += env;
+          if (eHarmonic < 0.5) {
+            totalHostility += env;
+            // Recoil horizontally if hostile
+            vec3 dir = normalize(p - ep + vec3(0.001));
+            p.xz += dir.xz * env * 2.0;
+          }
+        }
+      }
+    }
+
+    vEnergy = totalEnergy;
+    vHostility = totalHostility;
+
+    vec4 mvPosition = modelViewMatrix * vec4(p, 1.0);
+    gl_Position = projectionMatrix * mvPosition;
+    
+    // Size attenuation
+    float dist = -mvPosition.z;
+    float baseSize = mix(1.0, 3.5, aSeed);
+    gl_PointSize = baseSize * (1.0 + vEnergy * 5.0) * (30.0 / max(dist, 1.0));
+  }
+`;
+
+const fs = `
+  varying vec2 vUv;
+  varying float vEnergy;
+  varying float vHostility;
+  uniform float uTrust;
+
+  void main() {
+    // Circle shaping
+    vec2 pt = gl_PointCoord - vec2(0.5);
+    float r = length(pt);
+    if (r > 0.5) discard;
+    
+    float core = exp(-r * 6.0);
+    float glow = 1.0 - (r * 2.0);
+    
+    // Palettes
+    vec3 cDeep = vec3(0.02, 0.08, 0.15); // Navy
+    vec3 cWarm = vec3(0.2, 0.6, 0.8);    // Cyan
+    vec3 cGold = vec3(1.0, 0.7, 0.3);    // Gold
+    
+    vec3 cHostile = vec3(0.6, 0.1, 0.15); // Crimson
+    vec3 cCold = vec3(0.15, 0.18, 0.22);  // Slate
+
+    // Base color heavily depends on trust
+    vec3 baseColor = mix(cCold, cDeep, uTrust);
+    vec3 highColor = mix(cHostile, cWarm, uTrust);
+
+    // Color mixing
+    vec3 finalColor = mix(baseColor, highColor, core + vEnergy * 0.5);
+    
+    // Add event highlights
+    if (vEnergy > 0.01) {
+      finalColor = mix(finalColor, cGold, vEnergy * uTrust);
+      finalColor = mix(finalColor, vec3(1.0, 0.2, 0.2), vHostility);
+    }
+
+    // Alpha blending
+    float alpha = glow * (0.3 + vEnergy + (1.0 - uTrust)*0.2);
+    
+    // Edge fade
+    float edge = smoothstep(0.0, 0.2, vUv.x) * smoothstep(1.0, 0.8, vUv.x) *
+                 smoothstep(0.0, 0.2, vUv.y) * smoothstep(1.0, 0.8, vUv.y);
+
+    gl_FragColor = vec4(finalColor * 1.5, alpha * edge);
+  }
+`;
+
+const mat = new THREE.ShaderMaterial({
+  vertexShader: vs,
+  fragmentShader: fs,
+  uniforms: uniforms,
+  transparent: true,
+  blending: THREE.AdditiveBlending,
+  depthWrite: false
+});
+
+const points = new THREE.Points(geo, mat);
+scene.add(points);
+
+// Add faint grid lines for the "loom" structure
+const lineMat = new THREE.LineBasicMaterial({
+  color: 0x224466, transparent: true, opacity: 0.1, blending: THREE.AdditiveBlending
+});
+const lineGeo = new THREE.BufferGeometry();
+lineGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+const indices = [];
+for (let f = 0; f < N_FILAMENTS; f++) {
+  for (let s = 0; s < N_SEGMENTS - 1; s++) {
+    const i = f * N_SEGMENTS + s;
+    indices.push(i, i + 1);
+    if (f < N_FILAMENTS - 1) indices.push(i, i + N_SEGMENTS);
+  }
+}
+lineGeo.setIndex(indices);
+const lines = new THREE.LineSegments(lineGeo, lineMat);
+scene.add(lines);
+
+/* ==========================================================
+   INTERACTION
+========================================================== */
+const raycaster = new THREE.Raycaster();
+const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+const hit = new THREE.Vector3();
+let isDragging = false;
+
+function spawnEvent(x, y, isDrag) {
+  if (!entered) return;
+  
+  // Calculate Pointer Speed for intent mapping
+  const dx = x - lastPtr.x;
+  const dy = y - lastPtr.y;
+  pointerSpeed = Math.sqrt(dx*dx + dy*dy);
+  lastPtr.x = x; lastPtr.y = y;
+
+  const now = time;
+  const timeSinceLast = now - lastEventTime;
+  lastEventTime = now;
+
+  // Trust Logic (Free Will mechanism)
+  let isHarmonic = true;
+  if (pointerSpeed > 60 || (!isDrag && timeSinceLast < 0.2)) {
+    consecutiveRapid++;
+    if (consecutiveRapid > 2) {
+      isHarmonic = false;
+      trust -= 0.15; // Harsh touch
+      showHint();
+    }
+  } else {
+    consecutiveRapid = 0;
+    if (!isDrag) trust += 0.08; // Gentle touch rewards
+  }
+  trust = THREE.MathUtils.clamp(trust, 0.0, 1.0);
+  updateHUD();
+
+  // Raycast
+  const ndc = new THREE.Vector2((x / window.innerWidth) * 2 - 1, -(y / window.innerHeight) * 2 + 1);
+  raycaster.setFromCamera(ndc, camera);
+  if (raycaster.ray.intersectPlane(plane, hit)) {
+    
+    const power = isHarmonic ? (isDrag ? 0.4 : 1.0) : 1.5;
+
+    // Send to Shaders
+    const idx = eventIndex % MAX_EVENTS;
+    eventPos[idx * 3 + 0] = hit.x;
+    eventPos[idx * 3 + 1] = hit.y;
+    eventPos[idx * 3 + 2] = hit.z;
+    
+    eventParams[idx * 4 + 0] = now;
+    eventParams[idx * 4 + 1] = power;
+    eventParams[idx * 4 + 2] = isHarmonic ? 1.0 : 0.0;
+    
+    eventIndex++;
+
+    // Audio Trigger
+    if (!isDrag || Math.random() < 0.1) {
+      triggerAudioRipple(power, isHarmonic, ndc.x);
+    }
+  }
+}
+
+// Event Listeners
+window.addEventListener('pointerdown', e => {
+  if (!entered) return;
+  isDragging = true;
+  spawnEvent(e.clientX, e.clientY, false);
+});
+window.addEventListener('pointermove', e => {
+  if (!entered || !isDragging) {
+    lastPtr.x = e.clientX; lastPtr.y = e.clientY;
+    return;
+  }
+  if (time - lastEventTime > 0.05) spawnEvent(e.clientX, e.clientY, true);
+});
+window.addEventListener('pointerup', () => isDragging = false);
+window.addEventListener('pointercancel', () => isDragging = false);
+
+/* ==========================================================
+   UI & LIFECYCLE
+========================================================== */
+const gateBtn = document.getElementById('gate');
+const hudState = document.getElementById('state-label');
+const hudFill = document.getElementById('coherence-fill');
+const hintEl = document.getElementById('hint');
+
+function enter() {
+  if (entered) return;
+  entered = true;
+  gateBtn.classList.add('hidden');
+  document.body.classList.add('entered');
+  initAudio();
+}
+
+gateBtn.addEventListener('click', enter);
+window.addEventListener('keydown', e => { if ((e.key === ' ' || e.key === 'Enter') && !entered) enter(); });
+
+let hintTimeout;
+function showHint() {
+  hintEl.style.opacity = '1';
+  clearTimeout(hintTimeout);
+  hintTimeout = setTimeout(() => hintEl.style.opacity = '0', 3000);
+}
+
+function updateHUD() {
+  hudFill.style.width = `${trust * 100}%`;
+  if (trust > 0.7) {
+    hudState.innerText = "HARMONIC";
+    hudState.style.color = "#8df";
+    hudFill.style.background = "linear-gradient(90deg, #28a, #8df)";
+  } else if (trust > 0.3) {
+    hudState.innerText = "UNCERTAIN";
+    hudState.style.color = "#da5";
+    hudFill.style.background = "linear-gradient(90deg, #a63, #da5)";
+  } else {
+    hudState.innerText = "FRACTURED";
+    hudState.style.color = "#e55";
+    hudFill.style.background = "linear-gradient(90deg, #622, #e55)";
+  }
+}
+
+/* ==========================================================
+   RENDER LOOP
+========================================================== */
+function animate() {
+  requestAnimationFrame(animate);
+  const dt = Math.min(clock.getDelta(), 0.05);
+  if (entered) time += dt;
+
+  // Natural trust recovery toward neutral-harmonic state
+  if (entered && !isDragging) {
+    trust += (0.8 - trust) * 0.05 * dt;
+    updateHUD();
+  }
+
+  uniforms.uTime.value = time;
+  uniforms.uTrust.value = trust;
+
+  // Audio modulation based on state
+  if (audioCtx && filterDrone) {
+    const targetFreq = 200 + (trust * 800) + Math.sin(time * 0.5) * 100;
+    filterDrone.frequency.setTargetAtTime(targetFreq, audioCtx.currentTime, 0.5);
+    
+    // Detune drones if hostile
+    droneOscs.forEach((d, i) => {
+      const targetDetune = (1.0 - trust) * (i % 2 === 0 ? 50 : -50);
+      d.osc.detune.setTargetAtTime(targetDetune, audioCtx.currentTime, 1.0);
+    });
+  }
+
+  // Camera sway & depth
+  const swayX = Math.sin(time * 0.2) * 2;
+  const swayY = Math.cos(time * 0.15) * 1.5;
+  const zoom = 28 - (trust * 4); // pull back when hostile
+  
+  targetCamPos.set(swayX, 6 + swayY, zoom);
+  camera.position.lerp(targetCamPos, dt * 0.5);
+  camera.lookAt(0, 0, 0);
+
+  // Line opacity modulation
+  lineMat.opacity = 0.05 + (trust * 0.15);
+
+  // Post-processing adjustment
+  bloomPass.strength = 1.0 + (trust * 0.6) + Math.sin(time) * 0.1;
+  bloomPass.threshold = 0.6 - (trust * 0.2); // easier to glow when harmonious
+
+  composer.render();
+}
+
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  composer.setSize(window.innerWidth, window.innerHeight);
+  uniforms.uResolution.value.set(window.innerWidth, window.innerHeight);
+});
+
+updateHUD();
+animate();
+</script>
+</body>
+</html>

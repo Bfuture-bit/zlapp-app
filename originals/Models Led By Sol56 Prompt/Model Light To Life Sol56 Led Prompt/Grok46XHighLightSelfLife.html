@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title></title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;background:#030104;overflow:hidden;touch-action:none;cursor:none}
+canvas{display:block}
+#gate{
+  position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;
+  background:#030104;cursor:pointer;transition:opacity 2.8s ease;
+}
+#gate b{
+  font:400 11px/1 ui-sans-serif,system-ui,sans-serif;
+  letter-spacing:.62em;color:rgba(255,196,128,.38);
+  font-weight:400;text-indent:.62em;
+}
+#mark{
+  position:fixed;left:50%;bottom:16px;transform:translateX(-50%);
+  z-index:8;pointer-events:none;
+  font:400 9px/1 ui-sans-serif,system-ui,sans-serif;
+  letter-spacing:.32em;color:rgba(255,210,160,.12);
+  opacity:0;transition:opacity 5s ease 1.5s;
+}
+</style>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+<div id="gate"><b>ENTER</b></div>
+<div id="mark">Grok 4.6</div>
+<script type="module">
+import * as THREE from 'three';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+
+const mobile = matchMedia('(pointer:coarse)').matches || innerWidth < 820 || navigator.maxTouchPoints > 1;
+const N_MEM = mobile ? 17000 : 42000;
+const N_ATM = mobile ? 5000 : 12000;
+const N_FG = mobile ? 48 : 90;
+const MAX_FOLDS = 8;
+const P = 5, Q = 3, KR = 6.62, KA = 2.44;
+const TAU = Math.PI * 2;
+
+const GLSL = /* glsl */`
+const float PI = 3.14159265359;
+const float TAU = 6.28318530718;
+const float P = 5.0;
+const float Q = 3.0;
+const float KR = 6.62;
+const float KA = 2.44;
+
+vec3 knot(float t){
+  float cq = cos(Q*t), sq = sin(Q*t);
+  float cp = cos(P*t), sp = sin(P*t);
+  return vec3((KR + KA*cq)*cp, (KR + KA*cq)*sp, KA*sq*1.14);
+}
+void frenet(float t, out vec3 T, out vec3 N, out vec3 B){
+  float e = 0.0028;
+  vec3 p0 = knot(t);
+  vec3 p1 = knot(t+e);
+  vec3 p2 = knot(t+e*2.0);
+  T = normalize(p1-p0);
+  vec3 acc = (p2-p1)-(p1-p0);
+  N = acc - T*dot(acc,T);
+  float ln = length(N);
+  if(ln < 0.00001){
+    N = cross(T, vec3(0.0,0.0,1.0));
+    if(length(N) < 0.15) N = cross(T, vec3(0.0,1.0,0.0));
+    N = normalize(N);
+  } else N /= ln;
+  B = normalize(cross(T,N));
+  N = cross(B,T);
+}
+float lifeFn(float t, float a, float b, float c){
+  return 0.50 + 0.16*sin(0.29*t+a) + 0.10*sin(0.43*t-b) + 0.06*sin(0.71*t+c);
+}
+float jacobian(float th, float ph, float life){
+  return cos(3.0*th + 2.0*ph + life*1.21)
+       + 0.47*cos(5.0*th - ph - life*0.73)
+       + 0.14*cos(8.0*th + 3.0*ph + 0.4)
+       + 0.08*sin(2.0*th + life*0.19);
+}
+float angDiff(float a, float b){
+  return atan(sin(a-b), cos(a-b));
+}
+`;
+
+const foldUniformsSrc = /* glsl */`
+uniform float uFoldTheta[8];
+uniform float uFoldPhi[8];
+uniform float uFoldStr[8];
+uniform float uFoldAge[8];
+`;
+
+function foldFieldGLSL(name){
+  return /* glsl */`
+float ${name}(float th, float ph){
+  float acc = 0.0;
+  for(int i=0;i<8;i++){
+    float dth = angDiff(th, uFoldTheta[i]);
+    float dph = angDiff(ph, uFoldPhi[i]);
+    float decay = 0.16 + 0.84*exp(-uFoldAge[i]*0.085);
+    acc += uFoldStr[i]*decay*exp(-dth*dth*7.4 - dph*dph*1.65);
+  }
+  return acc;
+}
+int nearestFold(float th, out float wmax){
+  int idx = 0; wmax = 0.0;
+  for(int i=0;i<8;i++){
+    float dth = angDiff(th, uFoldTheta[i]);
+    float decay = 0.16 + 0.84*exp(-uFoldAge[i]*0.085);
+    float w = uFoldStr[i]*decay*exp(-dth*dth*5.2);
+    if(w > wmax){ wmax = w; idx = i; }
+  }
+  return idx;
+}
+`;
+}
+
+function knotJS(t){
+  const cq = Math.cos(Q*t), sq = Math.sin(Q*t);
+  const cp = Math.cos(P*t), sp = Math.sin(P*t);
+  return new THREE.Vector3((KR+KA*cq)*cp, (KR+KA*cq)*sp, KA*sq*1.14);
+}
+function frenetJS(t){
+  const e = 0.0028;
+  const p0 = knotJS(t), p1 = knotJS(t+e), p2 = knotJS(t+e*2);
+  const T = new THREE.Vector3().subVectors(p1, p0).normalize();
+  const acc = new THREE.Vector3().subVectors(p2, p1).sub(new THREE.Vector3().subVectors(p1, p0));
+  let N = acc.sub(T.clone().multiplyScalar(acc.dot(T)));
+  if(N.lengthSq() < 1e-10){
+    N = new THREE.Vector3().crossVectors(T, new THREE.Vector3(0,0,1));
+    if(N.lengthSq() < 0.02) N.crossVectors(T, new THREE.Vector3(0,1,0));
+  }
+  N.normalize();
+  const B = new THREE.Vector3().crossVectors(T, N).normalize();
+  N.crossVectors(B, T);
+  return {T, N, B, p: p0};
+}
+function lifeFn(t,a,b,c){
+  return 0.50 + 0.16*Math.sin(0.29*t+a) + 0.10*Math.sin(0.43*t-b) + 0.06*Math.sin(0.71*t+c);
+}
+function angDiff(a,b){ return Math.atan2(Math.sin(a-b), Math.cos(a-b)); }
+function damp(cur, tgt, lambda, dt){
+  const k = 1 - Math.exp(-lambda*dt);
+  if(cur.isVector3){ cur.x += (tgt.x-cur.x)*k; cur.y += (tgt.y-cur.y)*k; cur.z += (tgt.z-cur.z)*k; return cur; }
+  return cur + (tgt-cur)*k;
+}
+function trap(t,a,b,c,d){
+  const x = THREE.MathUtils.smoothstep(a,b,t) * (1 - THREE.MathUtils.smoothstep(c,d,t));
+  return x;
+}
+
+const renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'high-performance', alpha: false });
+renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 1.75));
+renderer.setSize(innerWidth, innerHeight);
+renderer.setClearColor(0x030104, 1);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 0.92;
+document.body.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0x030104, 0.008);
+const camera = new THREE.PerspectiveCamera(46, innerWidth/innerHeight, 0.08, 220);
+camera.position.set(0.6, 0.2, 1.4);
+
+const composer = new EffectComposer(renderer);
+const renderPass = new RenderPass(scene, camera);
+const bloomPass = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 0.36, 0.28, 0.46);
+const outputPass = new OutputPass();
+composer.setPixelRatio(renderer.getPixelRatio());
+composer.addPass(renderPass);
+composer.addPass(bloomPass);
+composer.addPass(outputPass);
+
+const group = new THREE.Group();
+scene.add(group);
+
+const uTime = { value: 0 };
+const uLife = { value: 0.5 };
+const uLife2 = { value: 0.5 };
+const uLife3 = { value: 0.5 };
+const uGazeTheta = { value: 0 };
+const uGazeStr = { value: 0 };
+const uPulseTheta = { value: 0 };
+const uPulseAmt = { value: 0 };
+const uSparkTheta = { value: 0 };
+const uSparkAmt = { value: 0 };
+const uPixelRatio = { value: renderer.getPixelRatio() };
+const uSize = { value: 1 };
+const foldTheta = new Float32Array(MAX_FOLDS);
+const foldPhi = new Float32Array(MAX_FOLDS);
+const foldStr = new Float32Array(MAX_FOLDS);
+const foldAge = new Float32Array(MAX_FOLDS);
+const uFoldTheta = { value: foldTheta };
+const uFoldPhi = { value: foldPhi };
+const uFoldStr = { value: foldStr };
+const uFoldAge = { value: foldAge };
+
+function commonUniforms(){
+  return {
+    uTime, uLife, uLife2, uLife3,
+    uGazeTheta, uGazeStr, uPulseTheta, uPulseAmt, uSparkTheta, uSparkAmt,
+    uFoldTheta, uFoldPhi, uFoldStr, uFoldAge
+  };
+}
+
+const memVS = /* glsl */`
+attribute float aSeed, aPhase, aTheta, aRadius, aDepth, aLane, aFamily, aFreq;
+varying vec3 vColor;
+varying float vAlpha;
+uniform float uTime, uLife, uLife2, uLife3, uGazeTheta, uGazeStr, uPulseTheta, uPulseAmt, uSparkTheta, uSparkAmt, uPixelRatio, uSize;
+${foldUniformsSrc}
+${GLSL}
+${foldFieldGLSL('foldF')}
+void main(){
+  float th = aTheta + uTime*aFreq*0.031 + 0.04*sin(uLife2*3.0 + aPhase);
+  float ph = aLane > 0.5
+    ? (aLane/12.0)*TAU + aPhase*0.11 + uLife3*0.18
+    : aPhase*TAU + uLife*0.12;
+  float life = uLife;
+  float j = jacobian(th, ph, life);
+  float fld = foldF(th, ph);
+  float dGaze = angDiff(th,uGazeTheta);
+  float dPulse = angDiff(th,uPulseTheta);
+  float dSpark = angDiff(th,uSparkTheta);
+  float gaze = uGazeStr * exp(-dGaze*dGaze*16.0);
+  float pulse = uPulseAmt * exp(-dPulse*dPulse*9.0);
+  float spark = uSparkAmt * exp(-dSpark*dSpark*28.0);
+  j += fld*sin(14.0*angDiff(th, uGazeTheta)+ph)*0.55;
+  float dens = 1.0 / (0.11 + abs(j));
+  float rad = aRadius * (0.78 + 0.22*uLife) * (1.0 + 0.42*j) * (1.0 + fld*1.55 + gaze*0.35);
+  vec3 T,N,B;
+  frenet(th, T, N, B);
+  float twist = ph + Q*th;
+  vec3 pos = knot(th) + rad*(cos(twist)*N + sin(twist)*B);
+  float wN = 0.0;
+  int ni = nearestFold(th, wN);
+  if(aDepth > 0.4 && wN > 0.02){
+    vec3 fT,fN,fB;
+    float fth = uFoldTheta[ni];
+    frenet(fth, fT, fN, fB);
+    vec3 c = knot(fth);
+    float sc = mix(0.18, 0.07, smoothstep(0.8, 1.8, aDepth));
+    sc *= (0.85 + 0.25*uLife2);
+    vec3 mk = knot(th*(2.0+aDepth) + aPhase*4.0) * (sc/KR);
+    vec3 nest = c + mk.x*fN + mk.y*fB + mk.z*fT;
+    float descend = smoothstep(0.04, 0.38, wN) * smoothstep(0.35, 1.15, aDepth);
+    pos = mix(pos, nest, descend);
+  }
+  vec4 mv = modelViewMatrix * vec4(pos, 1.0);
+  gl_Position = projectionMatrix * mv;
+  float energy = dens*0.22 + fld*0.85 + gaze*0.55 + pulse*0.4 + spark*1.2;
+  energy *= 0.55 + 0.45*uLife;
+  vec3 gold = vec3(1.0, 0.58, 0.18);
+  vec3 ember = vec3(0.42, 0.08, 0.07);
+  vec3 white = vec3(1.0, 0.94, 0.84);
+  vec3 cyan = vec3(0.32, 0.86, 0.95);
+  vec3 col = mix(ember, gold, smoothstep(0.08, 0.85, energy));
+  col = mix(col, white, smoothstep(1.1, 2.4, energy + dens*0.08));
+  col = mix(col, cyan, clamp(aDepth*0.42*smoothstep(0.08,0.5,wN) + fld*0.18, 0.0, 0.7));
+  float nuclear = smoothstep(1.6, 3.4, dens*(0.4+fld+spark));
+  col = mix(col, vec3(1.0,0.98,0.93), nuclear);
+  vColor = col * (0.35 + 1.15*energy);
+  float dist = -mv.z;
+  vAlpha = 0.11 * (0.45 + dens*0.22) * (1.0 + fld*0.85 + spark*1.2);
+  vAlpha *= (1.0 - smoothstep(8.0, 70.0, dist));
+  if(aDepth > 0.4) vAlpha *= 0.55 + 1.6*smoothstep(0.05,0.4,wN);
+  if(aLane > 0.5) vAlpha *= 1.35;
+  float psz = uPixelRatio * uSize * mix(1.8, 4.6, aSeed) * (155.0 / max(dist, 0.8));
+  if(aLane > 0.5) psz *= 0.78;
+  if(aDepth > 0.4) psz *= mix(0.65, 1.25, smoothstep(0.05,0.45,wN));
+  gl_PointSize = clamp(psz, 0.6, 16.0);
+}
+`;
+
+const memFS = /* glsl */`
+precision highp float;
+varying vec3 vColor;
+varying float vAlpha;
+void main(){
+  vec2 uv = gl_PointCoord - 0.5;
+  float d = length(uv);
+  if(d > 0.5) discard;
+  float core = smoothstep(0.5, 0.0, d);
+  float halo = exp(-d*5.2);
+  float a = (halo*0.55 + core*0.7) * vAlpha;
+  gl_FragColor = vec4(vColor * (0.4 + 1.7*core), a);
+}
+`;
+
+const atmVS = /* glsl */`
+attribute float aSeed, aTheta, aRad, aPhase;
+varying vec3 vColor;
+varying float vAlpha;
+uniform float uTime, uLife, uLife2, uLife3, uPixelRatio;
+${foldUniformsSrc}
+${GLSL}
+${foldFieldGLSL('foldF')}
+void main(){
+  float th = aTheta + uTime*0.017*(0.4+aSeed);
+  vec3 T,N,B;
+  frenet(th, T, N, B);
+  float swirl = uLife2*1.8 + aPhase;
+  vec3 pos = knot(th)*(1.7 + aRad*1.9)
+    + N*(aSeed-0.5)*14.0
+    + B*sin(swirl)* (3.0+aRad*6.0)
+    + T*cos(uLife3+aPhase)*2.2;
+  pos *= 1.0 + 0.04*sin(uLife*2.0);
+  float fld = foldF(th, aPhase*TAU);
+  vec4 mv = modelViewMatrix * vec4(pos,1.0);
+  gl_Position = projectionMatrix * mv;
+  float dist = -mv.z;
+  vec3 col = mix(vec3(0.28,0.05,0.06), vec3(0.85,0.42,0.16), aSeed*0.5+uLife*0.2);
+  col = mix(col, vec3(0.25,0.55,0.7), fld*0.35);
+  vColor = col;
+  vAlpha = 0.012 * (0.55+0.35*uLife) * (0.45+fld);
+  vAlpha *= (1.0 - smoothstep(12.0, 90.0, dist));
+  float psz = uPixelRatio * mix(2.4, 7.5, aRad) * (170.0 / max(dist, 2.4));
+  gl_PointSize = clamp(psz, 0.7, 12.0);
+}
+`;
+
+const atmFS = memFS;
+
+const ribVS = /* glsl */`
+attribute float aTheta, aPhi;
+varying vec3 vColor;
+varying float vAlpha;
+varying float vPhi;
+uniform float uTime, uLife, uLife2, uLife3, uGazeTheta, uGazeStr, uPulseTheta, uPulseAmt;
+${foldUniformsSrc}
+${GLSL}
+${foldFieldGLSL('foldF')}
+void main(){
+  float th = aTheta;
+  float ph = aPhi;
+  float j = jacobian(th, ph, uLife);
+  float fld = foldF(th, ph);
+  float dGaze = angDiff(th,uGazeTheta);
+  float dPulse = angDiff(th,uPulseTheta);
+  float gaze = uGazeStr * exp(-dGaze*dGaze*12.0);
+  float pulse = uPulseAmt * exp(-dPulse*dPulse*8.0);
+  float rad = (0.42 + 0.18*uLife) * (1.0 + 0.5*j) * (1.0 + fld*1.35 + gaze*0.25);
+  vec3 T,N,B;
+  frenet(th, T, N, B);
+  float twist = ph + Q*th + uLife3*0.15;
+  vec3 pos = knot(th) + rad*(cos(twist)*N + sin(twist)*B);
+  vec4 mv = modelViewMatrix * vec4(pos,1.0);
+  gl_Position = projectionMatrix * mv;
+  float dens = 1.0/(0.12+abs(j));
+  float energy = dens*0.18 + fld*0.7 + gaze*0.4 + pulse*0.3;
+  vec3 gold = vec3(1.0, 0.56, 0.16);
+  vec3 deep = vec3(0.18, 0.03, 0.04);
+  vec3 cyan = vec3(0.3, 0.82, 0.92);
+  vColor = mix(deep, gold, smoothstep(0.05, 1.0, energy));
+  vColor = mix(vColor, cyan, fld*0.28);
+  vColor *= 0.45 + 0.7*uLife;
+  vPhi = ph;
+  vAlpha = 0.11 * (0.35 + energy);
+}
+`;
+
+const ribFS = /* glsl */`
+precision highp float;
+varying vec3 vColor;
+varying float vAlpha;
+varying float vPhi;
+void main(){
+  float edge = pow(max(1.0 - abs(vPhi)/0.95, 0.0), 1.6);
+  float a = vAlpha * (0.35 + 0.9*edge);
+  gl_FragColor = vec4(vColor*(0.6+1.2*edge), a);
+}
+`;
+
+function makeMembrane(){
+  const geo = new THREE.BufferGeometry();
+  const n = N_MEM;
+  const seed = new Float32Array(n);
+  const phase = new Float32Array(n);
+  const theta = new Float32Array(n);
+  const radius = new Float32Array(n);
+  const depth = new Float32Array(n);
+  const lane = new Float32Array(n);
+  const family = new Float32Array(n);
+  const freq = new Float32Array(n);
+  const pos = new Float32Array(n*3);
+  const nFil = Math.floor(n*0.22);
+  const nD1 = Math.floor(n*0.16);
+  const nD2 = Math.floor(n*0.07);
+  for(let i=0;i<n;i++){
+    seed[i] = Math.random();
+    phase[i] = Math.random();
+    family[i] = i % 5;
+    freq[i] = 0.55 + (i%5)*0.17 + seed[i]*0.08;
+    if(i < nFil){
+      lane[i] = 1 + (i % 12);
+      theta[i] = ((i / nFil) * TAU * 7.0 + seed[i]*0.08) % TAU;
+      radius[i] = 0.22 + seed[i]*0.08;
+      depth[i] = 0;
+    } else if(i < nFil + nD1){
+      lane[i] = 0;
+      theta[i] = (i * 1.61803398875 * 0.41) % TAU;
+      radius[i] = 0.18 + seed[i]*0.12;
+      depth[i] = 1.0;
+    } else if(i < nFil + nD1 + nD2){
+      lane[i] = 0;
+      theta[i] = (i * 1.32471795724) % TAU;
+      radius[i] = 0.14 + seed[i]*0.1;
+      depth[i] = 1.85;
+    } else {
+      lane[i] = 0;
+      theta[i] = (i * 0.61803398875 * TAU * 0.13 + seed[i]*0.15) % TAU;
+      radius[i] = 0.28 + seed[i]*0.55;
+      depth[i] = 0;
+    }
+  }
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  geo.setAttribute('aSeed', new THREE.BufferAttribute(seed, 1));
+  geo.setAttribute('aPhase', new THREE.BufferAttribute(phase, 1));
+  geo.setAttribute('aTheta', new THREE.BufferAttribute(theta, 1));
+  geo.setAttribute('aRadius', new THREE.BufferAttribute(radius, 1));
+  geo.setAttribute('aDepth', new THREE.BufferAttribute(depth, 1));
+  geo.setAttribute('aLane', new THREE.BufferAttribute(lane, 1));
+  geo.setAttribute('aFamily', new THREE.BufferAttribute(family, 1));
+  geo.setAttribute('aFreq', new THREE.BufferAttribute(freq, 1));
+  geo.boundingSphere = new THREE.Sphere(new THREE.Vector3(), 48);
+  const mat = new THREE.ShaderMaterial({
+    uniforms: { ...commonUniforms(), uPixelRatio, uSize },
+    vertexShader: memVS,
+    fragmentShader: memFS,
+    transparent: true,
+    depthWrite: false,
+    depthTest: true,
+    blending: THREE.AdditiveBlending
+  });
+  const pts = new THREE.Points(geo, mat);
+  pts.frustumCulled = false;
+  pts.renderOrder = 2;
+  return pts;
+}
+
+function makeAtmosphere(){
+  const geo = new THREE.BufferGeometry();
+  const n = N_ATM;
+  const seed = new Float32Array(n);
+  const theta = new Float32Array(n);
+  const rad = new Float32Array(n);
+  const phase = new Float32Array(n);
+  const pos = new Float32Array(n*3);
+  for(let i=0;i<n;i++){
+    seed[i] = Math.random();
+    theta[i] = Math.random()*TAU;
+    rad[i] = Math.pow(Math.random(), 0.65);
+    phase[i] = Math.random()*TAU;
+  }
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  geo.setAttribute('aSeed', new THREE.BufferAttribute(seed, 1));
+  geo.setAttribute('aTheta', new THREE.BufferAttribute(theta, 1));
+  geo.setAttribute('aRad', new THREE.BufferAttribute(rad, 1));
+  geo.setAttribute('aPhase', new THREE.BufferAttribute(phase, 1));
+  geo.boundingSphere = new THREE.Sphere(new THREE.Vector3(), 80);
+  const mat = new THREE.ShaderMaterial({
+    uniforms: { ...commonUniforms(), uPixelRatio },
+    vertexShader: atmVS,
+    fragmentShader: atmFS,
+    transparent: true,
+    depthWrite: false,
+    depthTest: true,
+    blending: THREE.AdditiveBlending
+  });
+  const pts = new THREE.Points(geo, mat);
+  pts.frustumCulled = false;
+  pts.renderOrder = 0;
+  return pts;
+}
+
+function makeRibbon(){
+  const nu = mobile ? 240 : 420;
+  const nv = mobile ? 12 : 18;
+  const n = nu * nv;
+  const pos = new Float32Array(n*3);
+  const aTheta = new Float32Array(n);
+  const aPhi = new Float32Array(n);
+  const idx = [];
+  for(let i=0;i<nu;i++){
+    for(let j=0;j<nv;j++){
+      const id = i*nv+j;
+      aTheta[id] = (i/nu)*TAU;
+      aPhi[id] = (j/(nv-1) - 0.5)*1.82;
+    }
+  }
+  for(let i=0;i<nu;i++){
+    const i2 = (i+1)%nu;
+    for(let j=0;j<nv-1;j++){
+      const a = i*nv+j, b = a+1, c = i2*nv+j, d = c+1;
+      idx.push(a,c,b, b,c,d);
+    }
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  geo.setAttribute('aTheta', new THREE.BufferAttribute(aTheta, 1));
+  geo.setAttribute('aPhi', new THREE.BufferAttribute(aPhi, 1));
+  geo.setIndex(idx);
+  geo.boundingSphere = new THREE.Sphere(new THREE.Vector3(), 40);
+  const mat = new THREE.ShaderMaterial({
+    uniforms: commonUniforms(),
+    vertexShader: ribVS,
+    fragmentShader: ribFS,
+    transparent: true,
+    depthWrite: false,
+    depthTest: true,
+    blending: THREE.AdditiveBlending,
+    side: THREE.DoubleSide
+  });
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.frustumCulled = false;
+  mesh.renderOrder = 1;
+  return mesh;
+}
+
+const fgVS = /* glsl */`
+attribute vec3 aColor;
+varying vec3 vColor;
+varying float vAlpha;
+uniform float uPixelRatio;
+uniform float uLife;
+void main(){
+  vColor = aColor;
+  vec4 mv = modelViewMatrix * vec4(position, 1.0);
+  gl_Position = projectionMatrix * mv;
+  float dist = max(-mv.z, 0.15);
+  vAlpha = 0.16 * (0.55 + 0.45*uLife) * (1.0 - smoothstep(2.0, 36.0, dist));
+  gl_PointSize = clamp(uPixelRatio * 5.5 * (140.0 / dist), 0.8, 11.0);
+}
+`;
+
+function makeForeground(){
+  const geo = new THREE.BufferGeometry();
+  const pos = new Float32Array(N_FG*3);
+  const col = new Float32Array(N_FG*3);
+  const seed = [];
+  for(let i=0;i<N_FG;i++){
+    seed.push({
+      th: Math.random()*TAU,
+      ph: Math.random()*TAU,
+      r: 0.35 + Math.random()*1.4,
+      s: Math.random(),
+      sp: 0.04 + Math.random()*0.08
+    });
+    col[i*3] = 1.0; col[i*3+1] = 0.72 + Math.random()*0.2; col[i*3+2] = 0.4;
+  }
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  geo.setAttribute('aColor', new THREE.BufferAttribute(col, 3));
+  geo.boundingSphere = new THREE.Sphere(new THREE.Vector3(), 30);
+  const mat = new THREE.ShaderMaterial({
+    uniforms: { uPixelRatio, uLife },
+    vertexShader: fgVS,
+    fragmentShader: memFS,
+    transparent: true,
+    depthWrite: false,
+    depthTest: true,
+    blending: THREE.AdditiveBlending
+  });
+  const pts = new THREE.Points(geo, mat);
+  pts.frustumCulled = false;
+  pts.renderOrder = 3;
+  pts.userData.seed = seed;
+  return pts;
+}
+
+const membrane = makeMembrane();
+const atmosphere = makeAtmosphere();
+const ribbon = makeRibbon();
+const foreground = makeForeground();
+group.add(atmosphere, ribbon, membrane, foreground);
+
+const PICK = 280;
+const pickTh = new Float32Array(PICK);
+const pickP = [];
+for(let i=0;i<PICK;i++){
+  pickTh[i] = i/PICK*TAU;
+  pickP.push(knotJS(pickTh[i]));
+}
+addFold(0.52, 0.15, 0.55);
+addFold(2.41, -0.22, 0.42);
+addFold(4.18, 0.08, 0.36);
+
+const rayNdc = new THREE.Vector2();
+const projTmp = new THREE.Vector3();
+const camPos = new THREE.Vector3(0.7, 0.15, 1.2);
+const camLook = new THREE.Vector3(0,0,0);
+const camUp = new THREE.Vector3(0,1,0);
+const tgtPos = new THREE.Vector3();
+const tgtLook = new THREE.Vector3();
+const tgtUp = new THREE.Vector3(0,1,0);
+camera.position.copy(camPos);
+
+let started = false;
+let tWorld = 0;
+let tChapter = 0;
+let pointer = { x: 0, y: 0, down: false, active: false };
+let gazeTheta = 0;
+let gazeStr = 0;
+let pulseTheta = 0;
+let pulseAmt = 0.15;
+let sparkTheta = 0;
+let sparkAmt = 0;
+let sparkVel = 0;
+let eventCarry = 0;
+let sparkCarry = 0;
+let spectrumOpen = 0.06;
+let spectrumFloor = 0.05;
+let lastFoldAt = -10;
+let lastSoundAt = -10;
+let soundPoly = 0;
+let lastPickTheta = 0;
+
+function weakestFold(){
+  let w = 0, m = foldStr[0];
+  for(let i=1;i<MAX_FOLDS;i++){
+    const e = foldStr[i] * (0.16 + 0.84*Math.exp(-foldAge[i]*0.085));
+    if(e < m){ m = e; w = i; }
+  }
+  return w;
+}
+
+function addFold(th, ph, strength){
+  for(let i=0;i<MAX_FOLDS;i++){
+    if(foldStr[i] < 0.001) continue;
+    if(Math.abs(angDiff(th, foldTheta[i])) < 0.24){
+      foldStr[i] = Math.min(1.85, foldStr[i] + strength);
+      foldTheta[i] += angDiff(th, foldTheta[i]) * 0.22;
+      foldPhi[i] = ph;
+      foldAge[i] *= 0.62;
+      return i;
+    }
+  }
+  let slot = -1;
+  for(let i=0;i<MAX_FOLDS;i++) if(foldStr[i] < 0.001){ slot = i; break; }
+  if(slot < 0) slot = weakestFold();
+  foldTheta[slot] = th;
+  foldPhi[slot] = ph;
+  foldStr[slot] = strength;
+  foldAge[slot] = 0;
+  return slot;
+}
+
+function pickTheta(nx, ny){
+  rayNdc.set(nx, ny);
+  let best = 0, bestD = 1e9;
+  for(let i=0;i<PICK;i++){
+    projTmp.copy(pickP[i]).applyMatrix4(group.matrixWorld).project(camera);
+    if(projTmp.z < -1 || projTmp.z > 1) continue;
+    const dx = projTmp.x - nx, dy = projTmp.y - ny;
+    const d = dx*dx + dy*dy*1.15;
+    if(d < bestD){ bestD = d; best = i; }
+  }
+  for(let i=0;i<MAX_FOLDS;i++){
+    if(foldStr[i] < 0.05) continue;
+    const p = knotJS(foldTheta[i]);
+    projTmp.copy(p).applyMatrix4(group.matrixWorld).project(camera);
+    if(projTmp.z < -1 || projTmp.z > 1) continue;
+    const dx = projTmp.x - nx, dy = projTmp.y - ny;
+    const d = dx*dx + dy*dy;
+    if(d < bestD * 0.85){ bestD = d; lastPickTheta = foldTheta[i]; return { th: foldTheta[i], ph: foldPhi[i], dist: Math.sqrt(d), nested: true }; }
+  }
+  lastPickTheta = pickTh[best];
+  return { th: pickTh[best], ph: 0.2*Math.sin(pickTh[best]*3), dist: Math.sqrt(bestD), nested: false };
+}
+
+const audio = {
+  ctx: null,
+  master: null,
+  voices: [],
+  lp: null,
+  wet: null,
+  delayMix: null,
+  noiseF: null,
+  noiseG: null,
+  eventBus: null,
+  spectrumG: [],
+  ready: false
+};
+
+function makeIR(ctx, seconds){
+  const rate = ctx.sampleRate;
+  const n = Math.floor(rate * seconds);
+  const buf = ctx.createBuffer(2, n, rate);
+  for(let c=0;c<2;c++){
+    const d = buf.getChannelData(c);
+    let lp = 0;
+    for(let i=0;i<n;i++){
+      const t = i/rate;
+      const env = Math.exp(-t*(0.95 + c*0.12));
+      const bright = Math.exp(-t*4.4);
+      let noise = (Math.random()*2-1);
+      if(i < rate*0.22 && Math.random() < 0.01) noise += (Math.random()*2-1)*0.8;
+      const raw = noise * (0.2 + 0.8*bright) * env * 0.42;
+      const a = 0.1 + 0.84*Math.exp(-t*2.1);
+      lp += a * (raw - lp);
+      d[i] = lp;
+    }
+  }
+  return buf;
+}
+
+function connectPan(ctx, node, dest, panVal){
+  if(typeof ctx.createStereoPanner === 'function'){
+    const p = ctx.createStereoPanner();
+    p.pan.value = panVal;
+    node.connect(p).connect(dest);
+    return p;
+  }
+  node.connect(dest);
+  return null;
+}
+
+function addVoice(ctx, dest, base, pan, partials, level){
+  const out = ctx.createGain();
+  out.gain.value = level;
+  connectPan(ctx, out, dest, pan);
+  const oscs = [];
+  for(const p of partials){
+    const o = ctx.createOscillator();
+    o.type = 'sine';
+    o.frequency.value = base * p.r;
+    const g = ctx.createGain();
+    g.gain.value = p.g;
+    o.connect(g).connect(out);
+    o.start();
+    oscs.push({ o, g, p, base });
+  }
+  return { out, oscs, base, level };
+}
+
+function fadeMaster(){
+  const ctx = audio.ctx;
+  const master = audio.master;
+  if(!ctx || !master) return;
+  const t = ctx.currentTime;
+  const cur = Math.max(master.gain.value, 0.03);
+  master.gain.cancelScheduledValues(t);
+  master.gain.setValueAtTime(cur, t);
+  master.gain.linearRampToValueAtTime(0.22, t + 7.5);
+}
+
+function setupAudio(ctx){
+  if(audio.ready) return;
+  audio.ctx = ctx;
+  audio.ready = true;
+
+  try{
+    const z = ctx.createBuffer(1, 1, ctx.sampleRate);
+    const zs = ctx.createBufferSource();
+    zs.buffer = z;
+    const zg = ctx.createGain();
+    zg.gain.value = 0.0001;
+    zs.connect(zg).connect(ctx.destination);
+    zs.start();
+  }catch(e){}
+
+  const master = ctx.createGain();
+  master.gain.value = 0.04;
+  master.connect(ctx.destination);
+
+  const hp = ctx.createBiquadFilter();
+  hp.type = 'highpass'; hp.frequency.value = 80; hp.Q.value = 0.5;
+  const lp = ctx.createBiquadFilter();
+  lp.type = 'lowpass'; lp.frequency.value = 1700; lp.Q.value = 0.45;
+  const shelf = ctx.createBiquadFilter();
+  shelf.type = 'highshelf'; shelf.frequency.value = 2400; shelf.gain.value = -12;
+
+  const bus = ctx.createGain();
+  bus.gain.value = 1;
+  bus.connect(hp).connect(lp).connect(shelf);
+
+  const dry = ctx.createGain();
+  dry.gain.value = 0.78;
+  shelf.connect(dry).connect(master);
+
+  let wetG = { gain: { value: 0, setTargetAtTime(){} } };
+  try{
+    const conv = ctx.createConvolver();
+    conv.buffer = makeIR(ctx, 7.2);
+    wetG = ctx.createGain();
+    wetG.gain.value = 0.4;
+    shelf.connect(conv).connect(wetG).connect(master);
+  }catch(e){}
+
+  let delayMix = { gain: { value: 0, setTargetAtTime(){} } };
+  try{
+    const delayL = ctx.createDelay(1.6); delayL.delayTime.value = 0.73;
+    const delayR = ctx.createDelay(1.6); delayR.delayTime.value = 1.07;
+    const fbL = ctx.createGain(); fbL.gain.value = 0.12;
+    const fbR = ctx.createGain(); fbR.gain.value = 0.1;
+    delayMix = ctx.createGain(); delayMix.gain.value = 0.05;
+    const merger = ctx.createChannelMerger(2);
+    shelf.connect(delayMix);
+    delayMix.connect(delayL); delayMix.connect(delayR);
+    delayL.connect(fbL).connect(delayR);
+    delayR.connect(fbR).connect(delayL);
+    delayL.connect(merger, 0, 0);
+    delayR.connect(merger, 0, 1);
+    merger.connect(master);
+  }catch(e){}
+
+  const partials = [
+    { r: 1, g: 1.0 },
+    { r: 2.0018, g: 0.12 },
+    { r: 3.0024, g: 0.045 },
+    { r: 5.003, g: 0.014 }
+  ];
+  const v1 = addVoice(ctx, bus, 146.83, -0.22, partials, 0.078);
+  const v2 = addVoice(ctx, bus, 220.00, 0.26, partials.map(p => ({ r: p.r, g: p.g*0.78 })), 0.062);
+  const v3 = addVoice(ctx, bus, 174.61, 0.04, partials.map(p => ({ r: p.r, g: p.g*0.62 })), 0.048);
+
+  const nLen = Math.floor(ctx.sampleRate*2);
+  const nb = ctx.createBuffer(1, nLen, ctx.sampleRate);
+  const nd = nb.getChannelData(0);
+  for(let i=0;i<nLen;i++) nd[i] = Math.random()*2-1;
+  const noise = ctx.createBufferSource();
+  noise.buffer = nb; noise.loop = true;
+  const nlp = ctx.createBiquadFilter();
+  nlp.type = 'lowpass'; nlp.frequency.value = 640; nlp.Q.value = 0.4;
+  const ng = ctx.createGain(); ng.gain.value = 0.016;
+  noise.connect(nlp).connect(ng).connect(bus);
+  noise.start();
+
+  const eventBus = ctx.createGain();
+  eventBus.gain.value = 1;
+  eventBus.connect(bus);
+
+  audio.master = master;
+  audio.voices = [v1, v2, v3];
+  audio.lp = lp;
+  audio.wet = wetG;
+  audio.delayMix = delayMix;
+  audio.noiseF = nlp;
+  audio.noiseG = ng;
+  audio.eventBus = eventBus;
+  audio.spectrumG = [v1, v2, v3].flatMap(v => [v.oscs[2].g, v.oscs[3].g]);
+
+  fadeMaster();
+}
+
+function bootAudio(){
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if(!AC) return;
+  try{
+    if(!audio.ctx) setupAudio(new AC());
+  }catch(e){}
+  const ctx = audio.ctx;
+  if(!ctx) return;
+  if(ctx.state !== 'running'){
+    const p = ctx.resume();
+    if(p && typeof p.then === 'function') p.then(fadeMaster);
+  }
+}
+
+function unfoldSound(th, strength, nested){
+  const ctx = audio.ctx;
+  if(!ctx || !audio.eventBus) return;
+  if(tChapter - lastSoundAt < 0.4 || soundPoly > 3) return;
+  lastSoundAt = tChapter;
+  soundPoly++;
+  const t = ctx.currentTime;
+  const fund = (th % TAU) < Math.PI ? 146.83 : 220.00;
+  const pan = Math.sin(th) * 0.45;
+  const g = ctx.createGain();
+  const peak = 0.036 * strength * (nested ? 1.08 : 1);
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.linearRampToValueAtTime(peak, t + 0.95);
+  g.gain.linearRampToValueAtTime(0.0001, t + 5.4);
+  const pn = connectPan(ctx, g, audio.eventBus, pan);
+  if(pn && pn.pan){
+    pn.pan.setValueAtTime(pan, t);
+    pn.pan.linearRampToValueAtTime(pan * -0.18, t + 3.6);
+  }
+  const ratios = [1, 2.0016, 3.002];
+  const gains = [1, 0.1, 0.032];
+  let ended = 0;
+  const done = () => { ended++; if(ended>=3) soundPoly = Math.max(0, soundPoly-1); };
+  ratios.forEach((r,i) => {
+    const o = ctx.createOscillator();
+    o.type = 'sine';
+    o.frequency.value = fund * r;
+    const pg = ctx.createGain();
+    pg.gain.value = gains[i];
+    o.connect(pg).connect(g);
+    o.onended = done;
+    o.start(t);
+    o.stop(t + 5.6);
+  });
+  const nLen = Math.floor(ctx.sampleRate * 1.2);
+  const nb = ctx.createBuffer(1, nLen, ctx.sampleRate);
+  const nd = nb.getChannelData(0);
+  for(let i=0;i<nLen;i++) nd[i] = (Math.random()*2-1) * Math.exp(-i/nLen*1.6);
+  const src = ctx.createBufferSource(); src.buffer = nb;
+  const lp = ctx.createBiquadFilter();
+  lp.type = 'lowpass'; lp.frequency.value = 680; lp.Q.value = 0.32;
+  const ng = ctx.createGain();
+  ng.gain.setValueAtTime(0.0001, t);
+  ng.gain.linearRampToValueAtTime(0.02 * strength, t + 0.6);
+  ng.gain.linearRampToValueAtTime(0.0001, t + 3.0);
+  src.connect(lp).connect(ng).connect(g);
+  src.start(t);
+  if(audio.lp && audio.lp.frequency) audio.lp.frequency.setTargetAtTime(2300, t, 0.2);
+  if(audio.wet && audio.wet.gain && audio.wet.gain.setTargetAtTime) audio.wet.gain.setTargetAtTime(0.5, t, 0.25);
+}
+
+function tickAudio(dt, t){
+  if(!audio.ctx || !audio.ready) return;
+  if(audio.ctx.state !== 'running') audio.ctx.resume();
+  const L1 = uLife.value, L2 = uLife2.value, L3 = uLife3.value;
+  const now = audio.ctx.currentTime;
+  if(audio.lp && audio.lp.frequency) audio.lp.frequency.setTargetAtTime(1500 + 850*L1 + 650*spectrumOpen, now, 0.28);
+  if(audio.wet && audio.wet.gain && audio.wet.gain.setTargetAtTime) audio.wet.gain.setTargetAtTime(0.36 + 0.1*L2 + 0.12*spectrumOpen, now, 0.22);
+  if(audio.delayMix && audio.delayMix.gain && audio.delayMix.gain.setTargetAtTime) audio.delayMix.gain.setTargetAtTime(0.04 + 0.04*L3 + 0.03*spectrumOpen, now, 0.22);
+  if(audio.noiseF) audio.noiseF.frequency.setTargetAtTime(460 + 200*L2, now, 0.18);
+  if(audio.noiseG) audio.noiseG.gain.setTargetAtTime(0.012 + 0.01*L1, now, 0.18);
+  const drift = 1 + 0.0028*Math.sin(0.017*t) + 0.0018*Math.sin(0.008*t+1.3);
+  for(const v of audio.voices){
+    const breath = 0.93 + 0.07*Math.sin(t*0.06 + v.base*0.008);
+    if(v.out && v.out.gain) v.out.gain.setTargetAtTime((v.level || 0.06) * breath, now, 0.45);
+    for(const os of v.oscs){
+      os.o.frequency.setTargetAtTime(v.base * os.p.r * drift, now, 0.4);
+      const open = os.p.r > 2.5 ? (1 + spectrumOpen * 1.6) : 1;
+      os.g.gain.setTargetAtTime(os.p.g * open, now, 0.28);
+    }
+  }
+}
+
+function causeUnfold(th, ph, dist, nested, fromUser){
+  const str = fromUser
+    ? (0.42 + 0.58*Math.exp(-dist*6.5)) * (nested ? 1.25 : 1)
+    : 0.18 + Math.random()*0.16;
+  addFold(th, ph, str);
+  spectrumOpen = Math.min(1.2, spectrumOpen + str * (fromUser ? 0.55 : 0.22));
+  spectrumFloor = Math.min(0.42, spectrumFloor + str * (fromUser ? 0.09 : 0.03));
+  pulseAmt = Math.min(1.2, pulseAmt + 0.35*str);
+  if(fromUser) unfoldSound(th, str, nested);
+  lastFoldAt = tChapter;
+}
+
+function onPointer(e, down){
+  const x = (e.clientX / innerWidth) * 2 - 1;
+  const y = -(e.clientY / innerHeight) * 2 + 1;
+  pointer.x = x; pointer.y = y; pointer.active = true;
+  if(down === true) pointer.down = true;
+  if(down === false) pointer.down = false;
+  if(!started) return;
+  const hit = pickTheta(x, y);
+  gazeTheta = hit.th;
+  if(down === true){
+    lastPickTheta = hit.th;
+    causeUnfold(hit.th, hit.ph, hit.dist, hit.nested, true);
+  }
+}
+
+window.addEventListener('pointerdown', e => {
+  e.preventDefault();
+  if(started) bootAudio();
+  onPointer(e, true);
+}, { passive: false });
+window.addEventListener('pointermove', e => {
+  onPointer(e, undefined);
+}, { passive: true });
+window.addEventListener('pointerup', e => onPointer(e, false));
+window.addEventListener('pointercancel', e => onPointer(e, false));
+window.addEventListener('pointerleave', () => { pointer.active = false; pointer.down = false; });
+window.addEventListener('contextmenu', e => e.preventDefault());
+document.addEventListener('visibilitychange', () => { if(!document.hidden && started) bootAudio(); });
+
+const gate = document.getElementById('gate');
+const mark = document.getElementById('mark');
+function enter(e){
+  if(e){ e.preventDefault(); e.stopPropagation(); }
+  if(started){ bootAudio(); return; }
+  started = true;
+  bootAudio();
+  gate.style.pointerEvents = 'none';
+  gate.style.opacity = '0';
+  setTimeout(() => { if(gate.parentNode) gate.remove(); }, 3000);
+  mark.style.opacity = '1';
+}
+gate.addEventListener('pointerdown', enter);
+gate.addEventListener('click', enter);
+gate.addEventListener('touchstart', enter, { passive: false });
+
+function cameraChoreography(t){
+  const L1 = lifeFn(t, 0.2, 1.1, 2.4);
+  const L2 = lifeFn(t, 1.7, 0.4, 3.1);
+  const L3 = lifeFn(t, 2.8, 2.0, 0.6);
+  const u = t*0.068 + L1*0.55;
+  const f = frenetJS(u);
+  const f2 = frenetJS(u + 0.9);
+
+  const pInt = f.p.clone().add(f.N.clone().multiplyScalar(1.55)).add(f.B.clone().multiplyScalar(0.62)).add(f.T.clone().multiplyScalar(-0.35));
+  const lInt = f.p.clone().add(f.T.clone().multiplyScalar(1.7)).add(f.N.clone().multiplyScalar(-0.2));
+  const uInt = f.B.clone().multiplyScalar(0.45).add(new THREE.Vector3(0,1,0).multiplyScalar(0.55)).normalize();
+
+  const pStr = f.p.clone().add(f.N.clone().multiplyScalar(6.2 + L2*0.9)).add(f.B.clone().multiplyScalar(1.6)).add(f.T.clone().multiplyScalar(0.8));
+  const lStr = f.p.clone().multiplyScalar(0.55);
+  const uStr = new THREE.Vector3(0,1,0);
+
+  const pEnt = f.p.clone().add(f.T.clone().multiplyScalar(-0.4)).add(f.N.clone().multiplyScalar(0.72 + 0.08*L3));
+  const lEnt = f.p.clone().add(f.T.clone().multiplyScalar(3.4));
+  const uEnt = f.B.clone().lerp(new THREE.Vector3(0,1,0), 0.45).normalize();
+
+  const pImm = new THREE.Vector3(
+    Math.cos(t*0.04 + 0.6)*(13.5 + L1*2.2),
+    4.8 + L2*1.6,
+    Math.sin(t*0.04 + 0.6)*(13.5 + L1*2.2)
+  );
+  const lImm = f2.p.clone().multiplyScalar(0.22);
+  const uImm = new THREE.Vector3(0,1,0);
+
+  const ang = t*0.038 + L2*0.55;
+  const rad = 11.5 + 3.2*L1;
+  const pLiv = new THREE.Vector3(Math.cos(ang)*rad, 2.6+1.6*L3, Math.sin(ang)*rad);
+  const lLiv = f.p.clone().multiplyScalar(0.28);
+  const uLiv = new THREE.Vector3(0,1,0);
+
+  let wInt = trap(t, -1, 0, 5, 11);
+  let wStr = trap(t, 7, 12, 22, 30);
+  let wEnt = trap(t, 20, 26, 34, 42);
+  let wImm = trap(t, 36, 44, 62, 80);
+  let wLiv = trap(t, 52, 64, 1e6, 1e6+1);
+  let s = wInt+wStr+wEnt+wImm+wLiv;
+  if(s < 1e-4){ wLiv = 1; s = 1; }
+  wInt/=s; wStr/=s; wEnt/=s; wImm/=s; wLiv/=s;
+
+  tgtPos.set(0,0,0)
+    .addScaledVector(pInt, wInt)
+    .addScaledVector(pStr, wStr)
+    .addScaledVector(pEnt, wEnt)
+    .addScaledVector(pImm, wImm)
+    .addScaledVector(pLiv, wLiv);
+  tgtLook.set(0,0,0)
+    .addScaledVector(lInt, wInt)
+    .addScaledVector(lStr, wStr)
+    .addScaledVector(lEnt, wEnt)
+    .addScaledVector(lImm, wImm)
+    .addScaledVector(lLiv, wLiv);
+  tgtUp.set(0,0,0)
+    .addScaledVector(uInt, wInt)
+    .addScaledVector(uStr, wStr)
+    .addScaledVector(uEnt, wEnt)
+    .addScaledVector(uImm, wImm)
+    .addScaledVector(uLiv, wLiv).normalize();
+
+  const fovT = 46*wInt + 38*wStr + 52*wEnt + 34*wImm + 37*wLiv;
+  const lambda = 0.85 + 1.1*wEnt + 0.4*wStr;
+  return { fovT, lambda };
+}
+
+function tickForeground(t){
+  const arr = foreground.geometry.attributes.position.array;
+  const seeds = foreground.userData.seed;
+  for(let i=0;i<N_FG;i++){
+    const s = seeds[i];
+    const th = s.th + t*s.sp;
+    const f = frenetJS(th);
+    const near = (i % 7 === 0) ? 0.55 + 0.35*Math.sin(t*0.13 + s.s*6) : 1.15 + s.r;
+    const p = f.p.clone()
+      .add(f.N.clone().multiplyScalar(Math.cos(s.ph+t*0.07)*near))
+      .add(f.B.clone().multiplyScalar(Math.sin(s.ph+t*0.05)*near*0.6));
+    arr[i*3] = p.x; arr[i*3+1] = p.y; arr[i*3+2] = p.z;
+  }
+  foreground.geometry.attributes.position.needsUpdate = true;
+}
+
+const clock = new THREE.Clock();
+function frame(){
+  const dt = Math.min(clock.getDelta(), 0.05);
+  tWorld += dt;
+  if(started) tChapter += dt;
+  const t = started ? tChapter : tWorld*0.25;
+
+  const L1 = lifeFn(tWorld, 0.2, 1.1, 2.4);
+  const L2 = lifeFn(tWorld, 1.7, 0.4, 3.1);
+  const L3 = lifeFn(tWorld, 2.8, 2.0, 0.6);
+
+  uTime.value = tWorld;
+  uLife.value = L1;
+  uLife2.value = L2;
+  uLife3.value = L3;
+
+  group.rotation.x = 0.16*Math.sin(tWorld*0.041 + 0.3);
+  group.rotation.z = 0.07*Math.sin(tWorld*0.027);
+  group.updateMatrixWorld(true);
+
+  pulseTheta += dt * (0.13 + 0.1*L2);
+  pulseAmt = damp(pulseAmt, 0.12 + 0.08*L1, 0.35, dt);
+  uPulseTheta.value = pulseTheta;
+  uPulseAmt.value = pulseAmt;
+
+  sparkCarry += dt * (0.06 + 0.08*L3);
+  if(Math.random() < 1 - Math.exp(-0.09*dt)){
+    sparkTheta = Math.random()*TAU;
+    sparkAmt = 0.7 + Math.random()*0.6;
+  }
+  sparkAmt = damp(sparkAmt, 0, 0.85, dt);
+  uSparkTheta.value = sparkTheta;
+  uSparkAmt.value = sparkAmt;
+
+  eventCarry += dt * (0.07 + 0.05*L1);
+  if(started && Math.random() < 1 - Math.exp(-0.11*dt)){
+    const th = (pulseTheta + (Math.random()-0.5)*0.8 + L2) % TAU;
+    causeUnfold(th, Math.random()*0.6-0.3, 0.4, false, false);
+  }
+
+  for(let i=0;i<MAX_FOLDS;i++){
+    if(foldStr[i] < 0.001) continue;
+    foldAge[i] += dt;
+    const floor = 0.14;
+    const k = 1 - Math.exp(-0.32*dt);
+    if(foldStr[i] > floor) foldStr[i] += (floor - foldStr[i])*k*0.45;
+  }
+  spectrumOpen += (spectrumFloor - spectrumOpen) * (1 - Math.exp(-0.18*dt));
+  spectrumFloor += (0.05 - spectrumFloor) * (1 - Math.exp(-0.025*dt));
+
+  if(pointer.active && started){
+    const hit = pickTheta(pointer.x, pointer.y);
+    gazeTheta = hit.th;
+    gazeStr = damp(gazeStr, pointer.down ? 1.0 : 0.55, 7, dt);
+    if(pointer.down){
+      if(tChapter - lastFoldAt > 0.048){
+        causeUnfold(hit.th, hit.ph, hit.dist, hit.nested, true);
+      }
+    }
+  } else {
+    gazeStr = damp(gazeStr, 0, 2.2, dt);
+  }
+  uGazeTheta.value = gazeTheta;
+  uGazeStr.value = gazeStr;
+
+  const camT = started ? tChapter : 0;
+  const { fovT, lambda } = cameraChoreography(started ? camT : 2.5);
+  damp(camPos, tgtPos, lambda, dt);
+  damp(camLook, tgtLook, lambda*0.9, dt);
+  damp(camUp, tgtUp, 0.9, dt);
+  camera.position.copy(camPos);
+  camera.up.copy(camUp);
+  camera.lookAt(camLook);
+  camera.fov += (fovT - camera.fov) * (1 - Math.exp(-1.4*dt));
+  camera.updateProjectionMatrix();
+
+  tickForeground(tWorld);
+  tickAudio(dt, tWorld);
+
+  bloomPass.strength = 0.32 + 0.10*L1 + 0.14*Math.min(1, spectrumOpen);
+  bloomPass.threshold = 0.44 - 0.05*L2;
+
+  composer.render();
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+function onResize(){
+  const w = innerWidth, h = innerHeight;
+  camera.aspect = w/h;
+  camera.updateProjectionMatrix();
+  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 1.75));
+  renderer.setSize(w, h);
+  composer.setPixelRatio(renderer.getPixelRatio());
+  composer.setSize(w, h);
+  bloomPass.setSize(w, h);
+  uPixelRatio.value = renderer.getPixelRatio();
+}
+window.addEventListener('resize', onResize);
+</script>
+</body>
+</html>

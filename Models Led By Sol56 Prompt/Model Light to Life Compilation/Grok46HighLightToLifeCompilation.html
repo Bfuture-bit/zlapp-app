@@ -1,0 +1,1401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+<title>Frontier Choir — Six Wills</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='%23c4a056'/%3E%3Ccircle cx='16' cy='16' r='3' fill='%23fff4d6'/%3E%3C/svg%3E" />
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    width: 100%; height: 100%; overflow: hidden;
+    background: #020308;
+    touch-action: none; cursor: crosshair;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    -webkit-font-smoothing: antialiased;
+  }
+  canvas { display: block; width: 100%; height: 100%; }
+  #gate {
+    position: fixed; inset: 0; z-index: 20;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: radial-gradient(ellipse at 50% 48%, rgba(8,12,22,.35) 0%, rgba(2,3,8,.96) 70%);
+    cursor: pointer; transition: opacity 2.4s ease;
+  }
+  #gate.out { opacity: 0; pointer-events: none; }
+  #gate .kicker {
+    font-size: 9px; letter-spacing: .62em; text-transform: uppercase;
+    color: rgba(220,210,180,.38); margin-bottom: 22px; padding-left: .62em;
+  }
+  #gate .word {
+    font-size: 13px; letter-spacing: .72em; text-transform: uppercase; font-weight: 400;
+    color: rgba(255,232,196,.82); padding-left: .72em;
+  }
+  #gate .hint {
+    margin-top: 36px; font-size: 9px; letter-spacing: .42em; text-transform: uppercase;
+    color: rgba(180,200,210,.28); padding-left: .42em;
+  }
+  #gate .pulse {
+    margin-top: 48px; width: 88px; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(200,170,90,.7), transparent);
+    animation: pulse 3.2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: .2; transform: scaleX(.55); }
+    50% { opacity: .95; transform: scaleX(1); }
+  }
+  .lab {
+    position: fixed; z-index: 6; pointer-events: none;
+    font-size: 8px; letter-spacing: .38em; text-transform: uppercase;
+    color: rgba(232,226,212,.22); white-space: nowrap;
+    opacity: 0; transition: opacity 2.8s ease;
+    transform: translate(-50%, 0);
+  }
+  body.in .lab { opacity: 1; }
+  #mark, #guide {
+    position: fixed; z-index: 7; pointer-events: none;
+    font-size: 9px; letter-spacing: .32em; text-transform: uppercase;
+    color: rgba(224,230,225,.22);
+    opacity: 0; transition: opacity 3s ease;
+  }
+  #mark { left: 22px; bottom: 18px; }
+  #guide { left: 50%; bottom: 18px; transform: translateX(-50%); }
+  body.in #mark, body.in #guide { opacity: 1; }
+  #guide.off { opacity: 0 !important; }
+  #grain, #vignette { position: fixed; inset: 0; pointer-events: none; }
+  #grain {
+    z-index: 4; opacity: .045; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  #vignette {
+    z-index: 5;
+    background: radial-gradient(ellipse at 50% 46%, transparent 32%, rgba(0,0,0,.55) 100%);
+  }
+</style>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+<div id="gate">
+  <div class="kicker">Frontier Choir</div>
+  <div class="word">Enter</div>
+  <div class="pulse"></div>
+  <div class="hint">headphones · dim the room</div>
+</div>
+<div class="lab" id="lab-glm">filament</div>
+<div class="lab" id="lab-knot">grok · knot</div>
+<div class="lab" id="lab-hopf">grok · hopf</div>
+<div class="lab" id="lab-muse">aeolia</div>
+<div class="lab" id="lab-qwen">the loom</div>
+<div class="lab" id="lab-sol">sol · weave</div>
+<div id="mark">six lives · one field</div>
+<div id="guide">drag whoever is near · they tug the others</div>
+<div id="grain"></div>
+<div id="vignette"></div>
+
+<script type="module">
+import * as THREE from 'three';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+
+const TAU = Math.PI * 2;
+const mobile = matchMedia('(pointer:coarse)').matches || innerWidth < 820;
+const lerp = (a,b,t) => a + (b-a)*t;
+const clamp = (v,a,b) => Math.max(a, Math.min(b,v));
+const damp = (a,b,l,dt) => a + (b-a)*(1-Math.exp(-l*dt));
+function dampV(v, x,y,z, l, dt) {
+  const k = 1-Math.exp(-l*dt);
+  v.x += (x-v.x)*k; v.y += (y-v.y)*k; v.z += (z-v.z)*k;
+}
+function lifeFn(t,a,b,c) {
+  return 0.50 + 0.16*Math.sin(0.29*t+a) + 0.10*Math.sin(0.43*t-b) + 0.06*Math.sin(0.71*t+c);
+}
+
+const renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'high-performance' });
+renderer.setPixelRatio(Math.min(devicePixelRatio||1, 1.7));
+renderer.setSize(innerWidth, innerHeight);
+renderer.setClearColor(0x020308, 1);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 0.72;
+document.body.prepend(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0x020308, 0.011);
+const camera = new THREE.PerspectiveCamera(46, innerWidth/innerHeight, 0.12, 280);
+camera.position.set(0, 14, 72);
+
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+const bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 0.42, 0.48, 0.22);
+composer.addPass(bloom);
+composer.addPass(new OutputPass());
+
+const choir = new THREE.Group();
+scene.add(choir);
+
+const tug = { glm: 0, knot: 0, hopf: 0, muse: 0, qwen: 0, sol: 0 };
+const lastHit = { id: 'glm', pos: new THREE.Vector3() };
+let entered = false, tWorld = 0, tChapter = 0, bloomPulse = 0;
+
+const PT_FS = /* glsl */`
+precision highp float;
+varying vec3 vColor;
+varying float vAlpha;
+void main(){
+  vec2 u = gl_PointCoord - 0.5;
+  float d = length(u);
+  if(d > 0.5) discard;
+  float core = smoothstep(0.5, 0.0, d);
+  float halo = exp(-d * 5.0);
+  float a = (halo * 0.55 + core * 0.7) * vAlpha;
+  gl_FragColor = vec4(vColor * (0.4 + 1.65 * core), a);
+}`;
+
+function pts(geo, vs, uni) {
+  const mat = new THREE.ShaderMaterial({
+    uniforms: uni,
+    vertexShader: vs,
+    fragmentShader: PT_FS,
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending
+  });
+  const p = new THREE.Points(geo, mat);
+  p.frustumCulled = false;
+  return p;
+}
+
+/* ============================================================
+   GLM — nested Lissajous filaments
+============================================================ */
+const GLM_N = mobile ? 18 : 28;
+const GLM_S = mobile ? 420 : 680;
+const GLM_T = GLM_N * GLM_S;
+const GLM_MAX = 8;
+
+const glmUTouch = Array.from({ length: GLM_MAX }, () => new THREE.Vector3());
+const glmFlash = new Float32Array(GLM_MAX);
+const glmMem = new Float32Array(GLM_MAX);
+const glmTouches = Array.from({ length: GLM_MAX }, () => ({ pos: new THREE.Vector3(), flash: 0, mem: 0 }));
+
+const glmPos = new Float32Array(GLM_T * 3);
+const glmFi = new Float32Array(GLM_T);
+const glmT = new Float32Array(GLM_T);
+const glmSeed = new Float32Array(GLM_T);
+for (let i = 0; i < GLM_T; i++) {
+  glmFi[i] = Math.floor(i / GLM_S);
+  glmT[i] = (i % GLM_S) / GLM_S;
+  glmSeed[i] = Math.random();
+}
+const glmGeo = new THREE.BufferGeometry();
+glmGeo.setAttribute('position', new THREE.BufferAttribute(glmPos, 3));
+glmGeo.setAttribute('aFi', new THREE.BufferAttribute(glmFi, 1));
+glmGeo.setAttribute('aT', new THREE.BufferAttribute(glmT, 1));
+glmGeo.setAttribute('aSeed', new THREE.BufferAttribute(glmSeed, 1));
+
+const glmUni = {
+  uTime: { value: 0 }, uLife: { value: 0.5 }, uPx: { value: renderer.getPixelRatio() },
+  uTouches: { value: glmUTouch }, uFlash: { value: glmFlash }, uMem: { value: glmMem }
+};
+const glmVS = /* glsl */`
+attribute float aFi, aT, aSeed;
+uniform float uTime, uLife, uPx;
+uniform vec3 uTouches[8];
+uniform float uFlash[8], uMem[8];
+varying vec3 vColor; varying float vAlpha;
+#define TAU 6.2831853
+float hash(float n){ return fract(sin(n)*43758.5453); }
+vec3 rotY(vec3 p,float a){ float c=cos(a),s=sin(a); return vec3(c*p.x+s*p.z,p.y,-s*p.x+c*p.z); }
+vec3 rotX(vec3 p,float a){ float c=cos(a),s=sin(a); return vec3(p.x,c*p.y-s*p.z,s*p.y+c*p.z); }
+void main(){
+  float fi=aFi, t=aT, phi=fi*2.39996;
+  float a1=1.0+mod(fi,4.0), a2=2.0+mod(fi,5.0), a3=3.0+mod(fi,7.0);
+  float rN=fract(fi*0.618034); float R=3.4+8.2*rN;
+  float u=t*TAU;
+  vec3 pos=vec3(R*cos(u*a1+phi), R*sin(u*a2+phi*0.7)*0.78, R*cos(u*a3+phi*1.3));
+  pos += vec3(hash(aSeed*1.7)-0.5, hash(aSeed*3.13)-0.5, hash(aSeed*5.7)-0.5)*0.16;
+  pos = rotY(pos, uTime*0.05+fi*0.5);
+  pos = rotX(pos, uTime*0.035+fi*0.31);
+  pos = rotY(pos, uTime*0.04);
+  float breath=sin(uTime*0.31+phi);
+  pos *= 1.0 + 0.045*uLife*(0.5+0.5*breath);
+  float wave=sin(t*TAU*4.0 - uTime*0.6 - fi*0.7);
+  pos += normalize(pos+vec3(0.001))*wave*0.16*(0.5+uLife*0.5);
+  float energy=0.0, memG=0.0; vec3 disp=vec3(0.0);
+  for(int i=0;i<8;i++){
+    float fl=uFlash[i], mm=uMem[i];
+    if(fl+mm>0.004){
+      float dd=distance(pos,uTouches[i]);
+      float ff=exp(-dd*dd*0.045);
+      disp += normalize(pos-uTouches[i]+vec3(0.001))*ff*fl*1.6;
+      energy += ff*fl;
+      memG += exp(-dd*dd*0.014)*mm;
+    }
+  }
+  pos += disp;
+  vec4 mv=modelViewMatrix*vec4(pos,1.0);
+  gl_Position=projectionMatrix*mv;
+  float dist=max(-mv.z,1.0);
+  gl_PointSize=clamp(uPx*(1.7+2.2*(1.0-rN)+energy*5.0)*(28.0/dist),0.6,14.0);
+  vec3 deep=vec3(0.05,0.18,0.32), cool=vec3(0.18,0.62,0.88), brt=vec3(0.42,0.85,1.0);
+  vec3 col=mix(deep,cool,smoothstep(0.0,0.7,1.0-rN));
+  col=mix(col,brt,smoothstep(0.5,1.0,1.0-rN)*0.6);
+  col=mix(col,vec3(1.0,0.65,0.28),clamp(energy*0.9,0.0,1.0));
+  col += vec3(1.0,0.42,0.16)*memG*0.55;
+  float bright=0.28+0.55*energy+0.85*memG;
+  vColor=col; vAlpha=bright*smoothstep(90.0,18.0,dist);
+}`;
+const glmPts = pts(glmGeo, glmVS, glmUni);
+const glmGroup = new THREE.Group();
+glmGroup.position.set(0, 3.2, 0);
+glmGroup.add(glmPts);
+choir.add(glmGroup);
+
+function glmAddTouch(local, intensity) {
+  let idx = 0, low = 1e9;
+  for (let i = 0; i < GLM_MAX; i++) {
+    const tot = glmTouches[i].flash + glmTouches[i].mem;
+    if (tot < 0.04) { idx = i; break; }
+    if (tot < low) { low = tot; idx = i; }
+  }
+  glmTouches[idx].pos.copy(local);
+  glmTouches[idx].flash = Math.min(1.2, glmTouches[idx].flash + intensity);
+  glmTouches[idx].mem = Math.min(1.0, glmTouches[idx].mem + intensity * 0.6);
+  bloomPulse = Math.min(1, bloomPulse + intensity * 0.35);
+  tug.glm = Math.min(1, tug.glm + intensity * 0.55);
+  voiceAt('glm', local, intensity);
+}
+
+function glmTick(dt) {
+  for (let i = 0; i < GLM_MAX; i++) {
+    const ts = glmTouches[i];
+    ts.flash *= Math.exp(-dt / 1.3); if (ts.flash < 0.003) ts.flash = 0;
+    ts.mem *= Math.exp(-dt / 24); if (ts.mem < 0.003) ts.mem = 0;
+    glmUTouch[i].copy(ts.pos);
+    glmFlash[i] = ts.flash;
+    glmMem[i] = ts.mem;
+  }
+}
+
+/* ============================================================
+   GROK KNOT — (5,3) torus knot membrane
+============================================================ */
+const P = 5, Q = 3, KR = 6.62, KA = 2.44;
+const N_KNOT = mobile ? 9000 : 18000;
+const MAX_FOLDS = 8;
+const foldTh = new Float32Array(MAX_FOLDS);
+const foldPh = new Float32Array(MAX_FOLDS);
+const foldStr = new Float32Array(MAX_FOLDS);
+const foldAge = new Float32Array(MAX_FOLDS);
+
+function knotJS(t) {
+  const cq = Math.cos(Q*t), sq = Math.sin(Q*t);
+  const cp = Math.cos(P*t), sp = Math.sin(P*t);
+  return new THREE.Vector3((KR+KA*cq)*cp, (KR+KA*cq)*sp, KA*sq*1.14);
+}
+function angDiff(a,b){ return Math.atan2(Math.sin(a-b), Math.cos(a-b)); }
+function weakestFold() {
+  let w = 0, m = 1e9;
+  for (let i = 0; i < MAX_FOLDS; i++) {
+    const e = foldStr[i] * (0.16 + 0.84*Math.exp(-foldAge[i]*0.085));
+    if (e < m) { m = e; w = i; }
+  }
+  return w;
+}
+function addFold(th, ph, str) {
+  for (let i = 0; i < MAX_FOLDS; i++) {
+    if (foldStr[i] < 0.001) continue;
+    if (Math.abs(angDiff(th, foldTh[i])) < 0.24) {
+      foldStr[i] = Math.min(1.85, foldStr[i] + str);
+      foldTh[i] += angDiff(th, foldTh[i]) * 0.22;
+      foldPh[i] = ph; foldAge[i] *= 0.62;
+      return;
+    }
+  }
+  let slot = -1;
+  for (let i = 0; i < MAX_FOLDS; i++) if (foldStr[i] < 0.001) { slot = i; break; }
+  if (slot < 0) slot = weakestFold();
+  foldTh[slot] = th; foldPh[slot] = ph; foldStr[slot] = str; foldAge[slot] = 0;
+}
+addFold(0.52, 0.15, 0.55);
+addFold(2.41, -0.22, 0.42);
+addFold(4.18, 0.08, 0.36);
+
+const knotSeed = new Float32Array(N_KNOT);
+const knotPhase = new Float32Array(N_KNOT);
+const knotTheta = new Float32Array(N_KNOT);
+const knotRad = new Float32Array(N_KNOT);
+const knotDummy = new Float32Array(N_KNOT * 3);
+for (let i = 0; i < N_KNOT; i++) {
+  knotSeed[i] = Math.random();
+  knotPhase[i] = Math.random();
+  knotTheta[i] = (i * 0.61803398875 * TAU * 0.13 + knotSeed[i]*0.15) % TAU;
+  knotRad[i] = 0.22 + knotSeed[i] * 0.55;
+}
+const knotGeo = new THREE.BufferGeometry();
+knotGeo.setAttribute('position', new THREE.BufferAttribute(knotDummy, 3));
+knotGeo.setAttribute('aSeed', new THREE.BufferAttribute(knotSeed, 1));
+knotGeo.setAttribute('aPhase', new THREE.BufferAttribute(knotPhase, 1));
+knotGeo.setAttribute('aTheta', new THREE.BufferAttribute(knotTheta, 1));
+knotGeo.setAttribute('aRadius', new THREE.BufferAttribute(knotRad, 1));
+knotGeo.boundingSphere = new THREE.Sphere(new THREE.Vector3(), 40);
+
+const knotUni = {
+  uTime: { value: 0 }, uLife: { value: 0.5 }, uPx: { value: renderer.getPixelRatio() },
+  uFoldTh: { value: foldTh }, uFoldPh: { value: foldPh }, uFoldStr: { value: foldStr }, uFoldAge: { value: foldAge }
+};
+const knotVS = /* glsl */`
+attribute float aSeed, aPhase, aTheta, aRadius;
+uniform float uTime, uLife, uPx;
+uniform float uFoldTh[8], uFoldPh[8], uFoldStr[8], uFoldAge[8];
+varying vec3 vColor; varying float vAlpha;
+const float TAU=6.2831853, P=5.0, Q=3.0, KR=6.62, KA=2.44;
+vec3 knot(float t){
+  float cq=cos(Q*t), sq=sin(Q*t), cp=cos(P*t), sp=sin(P*t);
+  return vec3((KR+KA*cq)*cp,(KR+KA*cq)*sp,KA*sq*1.14);
+}
+void frenet(float t, out vec3 T, out vec3 N, out vec3 B){
+  float e=0.0028;
+  vec3 p0=knot(t), p1=knot(t+e), p2=knot(t+e*2.0);
+  T=normalize(p1-p0);
+  vec3 acc=(p2-p1)-(p1-p0);
+  N=acc-T*dot(acc,T);
+  float ln=length(N);
+  if(ln<0.00001){ N=cross(T,vec3(0.0,0.0,1.0)); if(length(N)<0.15) N=cross(T,vec3(0.0,1.0,0.0)); N=normalize(N); }
+  else N/=ln;
+  B=normalize(cross(T,N)); N=cross(B,T);
+}
+float angDiff(float a,float b){ return atan(sin(a-b),cos(a-b)); }
+float foldF(float th,float ph){
+  float acc=0.0;
+  for(int i=0;i<8;i++){
+    float dth=angDiff(th,uFoldTh[i]), dph=angDiff(ph,uFoldPh[i]);
+    float decay=0.16+0.84*exp(-uFoldAge[i]*0.085);
+    acc += uFoldStr[i]*decay*exp(-dth*dth*7.4-dph*dph*1.65);
+  }
+  return acc;
+}
+void main(){
+  float th=aTheta+uTime*0.031*(0.55+aSeed*0.2);
+  float ph=aPhase*TAU+uLife*0.12;
+  float j=cos(3.0*th+2.0*ph+uLife*1.21)+0.47*cos(5.0*th-ph-uLife*0.73);
+  float fld=foldF(th,ph);
+  float dens=1.0/(0.11+abs(j));
+  float rad=aRadius*(0.78+0.22*uLife)*(1.0+0.42*j)*(1.0+fld*1.55);
+  vec3 T,N,B; frenet(th,T,N,B);
+  float twist=ph+Q*th;
+  vec3 pos=knot(th)+rad*(cos(twist)*N+sin(twist)*B);
+  vec4 mv=modelViewMatrix*vec4(pos,1.0);
+  gl_Position=projectionMatrix*mv;
+  float energy=dens*0.22+fld*0.85;
+  energy*=0.55+0.45*uLife;
+  vec3 gold=vec3(1.0,0.58,0.18), ember=vec3(0.42,0.08,0.07), white=vec3(1.0,0.94,0.84), cyan=vec3(0.32,0.86,0.95);
+  vec3 col=mix(ember,gold,smoothstep(0.08,0.85,energy));
+  col=mix(col,white,smoothstep(1.1,2.4,energy));
+  col=mix(col,cyan,clamp(fld*0.28,0.0,0.7));
+  vColor=col*(0.35+1.15*energy);
+  float dist=-mv.z;
+  vAlpha=0.13*(0.45+dens*0.22)*(1.0+fld*0.85)*(1.0-smoothstep(8.0,70.0,dist));
+  gl_PointSize=clamp(uPx*mix(1.8,4.4,aSeed)*(140.0/max(dist,0.8)),0.6,14.0);
+}`;
+const knotPts = pts(knotGeo, knotVS, knotUni);
+const knotGroup = new THREE.Group();
+knotGroup.position.set(26, 0.4, 9);
+knotGroup.add(knotPts);
+choir.add(knotGroup);
+
+function knotTouch(local, power) {
+  const th = (Math.atan2(local.y, local.x) + TAU) % TAU;
+  const ph = clamp(local.z * 0.08, -0.6, 0.6);
+  addFold(th, ph, 0.42 + 0.5 * power);
+  tug.knot = Math.min(1.2, tug.knot + power * 0.5);
+  bloomPulse = Math.min(1, bloomPulse + power * 0.28);
+  voiceAt('knot', local, power);
+}
+
+function knotTick(dt) {
+  for (let i = 0; i < MAX_FOLDS; i++) {
+    if (foldStr[i] < 0.001) continue;
+    foldAge[i] += dt;
+    if (foldStr[i] > 0.14) foldStr[i] += (0.14 - foldStr[i]) * (1-Math.exp(-0.32*dt)) * 0.45;
+  }
+}
+
+/* ============================================================
+   GROK HOPF — fibration with gravitational wells
+============================================================ */
+const N_HOPF = mobile ? 10000 : 20000;
+const hopfSeed = new Float32Array(N_HOPF);
+const hopfPhase = new Float32Array(N_HOPF);
+const hopfEta = new Float32Array(N_HOPF);
+const hopfPhi = new Float32Array(N_HOPF);
+const hopfPsi = new Float32Array(N_HOPF);
+const hopfFam = new Float32Array(N_HOPF);
+const hopfDummy = new Float32Array(N_HOPF * 3);
+for (let i = 0; i < N_HOPF; i++) {
+  hopfSeed[i] = Math.random();
+  hopfPhase[i] = Math.random() * TAU;
+  hopfEta[i] = 0.42 + Math.random() * 2.05;
+  hopfPhi[i] = Math.random() * TAU;
+  hopfPsi[i] = Math.random() * TAU;
+  hopfFam[i] = i < N_HOPF * 0.22 ? 0 : i < N_HOPF * 0.72 ? 1 : i < N_HOPF * 0.9 ? 2 : 3;
+}
+const hopfGeo = new THREE.BufferGeometry();
+hopfGeo.setAttribute('position', new THREE.BufferAttribute(hopfDummy, 3));
+hopfGeo.setAttribute('aSeed', new THREE.BufferAttribute(hopfSeed, 1));
+hopfGeo.setAttribute('aPhase', new THREE.BufferAttribute(hopfPhase, 1));
+hopfGeo.setAttribute('aEta', new THREE.BufferAttribute(hopfEta, 1));
+hopfGeo.setAttribute('aPhi', new THREE.BufferAttribute(hopfPhi, 1));
+hopfGeo.setAttribute('aPsi', new THREE.BufferAttribute(hopfPsi, 1));
+hopfGeo.setAttribute('aFam', new THREE.BufferAttribute(hopfFam, 1));
+hopfGeo.boundingSphere = new THREE.Sphere(new THREE.Vector3(), 80);
+
+const hopfLenses = Array.from({ length: 8 }, () => new THREE.Vector4());
+const hopfUni = {
+  uTime: { value: 0 }, uLife: { value: 0.5 }, uBreathe: { value: 0.5 },
+  uPx: { value: renderer.getPixelRatio() }, uLenses: { value: hopfLenses },
+  uPull: { value: new THREE.Vector3() }
+};
+const hopfVS = /* glsl */`
+attribute float aSeed, aPhase, aEta, aPhi, aPsi, aFam;
+uniform float uTime, uLife, uBreathe, uPx;
+uniform vec4 uLenses[8];
+uniform vec3 uPull;
+varying vec3 vColor; varying float vAlpha;
+vec3 hopf(float eta,float phi,float psi,float sc){
+  float h=eta*0.5, ce=cos(h), se=sin(h);
+  float ap=0.5*(psi+phi), am=0.5*(psi-phi);
+  float x=ce*cos(ap), y=ce*sin(ap), z=se*cos(am), w=se*sin(am);
+  return vec3(x,y,z)*(sc/max(1.0-w,0.20));
+}
+void main(){
+  float t=uTime, life=uLife;
+  float isFil=1.0-step(0.5,aFam);
+  float isSheet=step(0.5,aFam)*(1.0-step(1.5,aFam));
+  float isAtm=step(1.5,aFam)*(1.0-step(2.5,aFam));
+  float isSpark=step(2.5,aFam);
+  float eta=aEta+0.11*sin(t*0.29+aPhase)*life+0.055*sin(t*0.71+aSeed*6.28)*uBreathe;
+  float phi=aPhi+t*0.04, psi=aPsi+t*(0.068+0.04*aSeed);
+  float sc=mix(7.2,16.4,isAtm)*(0.93+0.09*life);
+  vec3 rest=hopf(eta,phi,mix(psi,psi*0.37,isAtm),sc);
+  float cs=cos(t*0.033), sn=sin(t*0.033);
+  rest.xz=mat2(cs,-sn,sn,cs)*rest.xz;
+  vec3 pos=rest; float energy=0.11+0.09*life; float recAmt=0.0; vec3 acc=vec3(0.0);
+  for(int i=0;i<8;i++){
+    vec4 L=uLenses[i]; float s=L.w; vec3 d=L.xyz-rest; float dist=length(d); float dist2=dist*dist+0.40;
+    float f=s/dist2; acc+=d*f*2.05; acc+=cross(d/(dist+0.001),uPull)*f*1.4;
+    energy+=s*2.2/dist2; recAmt+=s*smoothstep(4.5,0.11,dist);
+  }
+  pos+=acc*(0.32+0.22*isFil); energy=clamp(energy,0.0,2.4); recAmt=clamp(recAmt,0.0,1.0);
+  vec4 mv=modelViewMatrix*vec4(pos,1.0); gl_Position=projectionMatrix*mv;
+  float sz=(2.1*isFil+1.15*isSheet+8.0*isAtm+1.05*isSpark)*(1.0+energy*0.22+recAmt*0.7);
+  sz*=88.0/max(7.5,-mv.z)*uPx; gl_PointSize=clamp(sz,0.7,isAtm>0.5?22.0:13.0);
+  vec3 gold=vec3(1.0,0.55,0.15), hot=vec3(1.0,0.93,0.78), cyan=vec3(0.60,0.90,1.0), wine=vec3(0.30,0.055,0.085);
+  vec3 col=mix(gold,hot,smoothstep(0.18,0.88,clamp(energy*0.52,0.0,1.0)));
+  col=mix(col,cyan,recAmt); col=mix(col,mix(wine,gold,0.4),isAtm);
+  float fog=exp(-0.015*length(mv.xyz));
+  float alpha=(0.55*isFil+0.11*isSheet+0.03*isAtm+0.7*isSpark)*(0.52+0.48*clamp(energy*0.52,0.0,1.0))*fog;
+  alpha+=recAmt*0.3; vColor=col*fog; vAlpha=clamp(alpha,0.0,1.0);
+}`;
+const hopfPts = pts(hopfGeo, hopfVS, hopfUni);
+const hopfGroup = new THREE.Group();
+hopfGroup.position.set(-24, 1.6, 11);
+hopfGroup.scale.setScalar(0.72);
+hopfGroup.add(hopfPts);
+choir.add(hopfGroup);
+
+const hopfWells = [];
+const hopfThought = [0, 0, 0];
+const hopfPull = new THREE.Vector3();
+
+function hopfJS(eta, phi, psi, sc) {
+  const h = eta * 0.5, ce = Math.cos(h), se = Math.sin(h);
+  const ap = 0.5*(psi+phi), am = 0.5*(psi-phi);
+  const x = ce*Math.cos(ap), y = ce*Math.sin(ap), z = se*Math.cos(am), w = se*Math.sin(am);
+  const k = sc / Math.max(1-w, 0.2);
+  return new THREE.Vector3(x*k, y*k, z*k);
+}
+function hopfTouch(local, power, isNew) {
+  let best = null, bestD = 3.2;
+  for (const w of hopfWells) {
+    const d = w.pos.distanceTo(local);
+    if (d < bestD) { bestD = d; best = w; }
+  }
+  if (best) {
+    best.s = Math.max(best.s, 1.0 * power);
+    best.pos.lerp(local, isNew ? 0.2 : 0.12);
+    best.residual = Math.min(0.4, best.residual + 0.06);
+  } else if (isNew) {
+    if (hopfWells.length >= 5) hopfWells.shift();
+    hopfWells.push({ pos: local.clone(), s: 1.1 * power, residual: 0.24, age: 0 });
+  }
+  tug.hopf = Math.min(1.2, tug.hopf + power * 0.5);
+  bloomPulse = Math.min(1, bloomPulse + power * 0.25);
+  if (isNew) voiceAt('hopf', local, power);
+}
+
+function hopfTick(dt, t) {
+  const rot = t * 0.033, cr = Math.cos(rot), sr = Math.sin(rot);
+  for (let i = 0; i < 8; i++) hopfLenses[i].set(0,0,0,0);
+  for (let i = 0; i < 3; i++) {
+    const hp = hopfJS(0.88+i*0.34, t*(0.07+i*0.018)+i*2.094, t*0.21+i*1.2, 7.5);
+    const str = 0.32 + 0.18*Math.sin(t*0.23+i*2.1) + hopfThought[i]*0.85 + tug.muse*0.15;
+    hopfLenses[i].set(hp.x*cr - hp.z*sr, hp.y, hp.x*sr + hp.z*cr, str);
+  }
+  for (let i = 0; i < hopfWells.length; i++) {
+    const w = hopfWells[i];
+    w.age += dt;
+    w.s = damp(w.s, w.residual, 0.7, dt);
+    w.residual = damp(w.residual, 0.16, 0.015, dt);
+    hopfLenses[3+i].set(w.pos.x, w.pos.y, w.pos.z, w.s);
+  }
+  if (Math.random() < dt * 0.08) hopfThought[(Math.random()*3)|0] = 1;
+  for (let i = 0; i < 3; i++) hopfThought[i] = damp(hopfThought[i], 0, 1.15, dt);
+}
+
+/* ============================================================
+   MUSE / AEOLIA — filaments that may refuse
+============================================================ */
+const NFIL = mobile ? 16 : 22;
+const NSEG = mobile ? 90 : 120;
+const NP = NFIL * NSEG;
+const museDr = new Float32Array(NP), museDt = new Float32Array(NP);
+const museVr = new Float32Array(NP), museVt = new Float32Array(NP);
+const museHeat = new Float32Array(NP), museRef = new Float32Array(NP);
+const museAng = new Float32Array(NFIL);
+const museTrust = new Float32Array(NFIL).fill(0.66);
+const museTouches = new Int32Array(NFIL);
+const museHue = new Float32Array(NFIL);
+const museLast = new Float32Array(NFIL).fill(-100);
+const museTrig = new Float32Array(NFIL).fill(-10);
+for (let i = 0; i < NFIL; i++) museAng[i] = (i / NFIL) * TAU;
+const museH = 15, museR = 3.15;
+const musePos = new Float32Array(NP * 3), museCol = new Float32Array(NP * 3), museSz = new Float32Array(NP);
+const museGeo = new THREE.BufferGeometry();
+museGeo.setAttribute('position', new THREE.BufferAttribute(musePos, 3));
+museGeo.setAttribute('color', new THREE.BufferAttribute(museCol, 3));
+museGeo.setAttribute('size', new THREE.BufferAttribute(museSz, 1));
+const museMat = new THREE.ShaderMaterial({
+  vertexShader: `attribute vec3 color; attribute float size; varying vec3 vC; varying float vD;
+    void main(){ vC=color; vec4 mv=modelViewMatrix*vec4(position,1.0); vD=-mv.z;
+      gl_PointSize=size*(400.0/max(1.0,-mv.z)); gl_Position=projectionMatrix*mv; }`,
+  fragmentShader: `varying vec3 vC; varying float vD;
+    void main(){ vec2 c=gl_PointCoord-0.5; float d=dot(c,c)*4.0; if(d>1.0) discard;
+      float core=exp(-d*2.3); float a=core+exp(-d*0.85)*0.3;
+      gl_FragColor=vec4(vC*(0.9+core*1.4), a*clamp((28.0-vD)/16.0,0.4,1.0)); }`,
+  transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, vertexColors: true
+});
+const musePts = new THREE.Points(museGeo, museMat);
+musePts.frustumCulled = false;
+const lineN = NFIL * (NSEG-1) * 2;
+const linePos = new Float32Array(lineN * 3), lineCol = new Float32Array(lineN * 3);
+const lineGeo = new THREE.BufferGeometry();
+lineGeo.setAttribute('position', new THREE.BufferAttribute(linePos, 3));
+lineGeo.setAttribute('color', new THREE.BufferAttribute(lineCol, 3));
+const lineMat = new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.16, blending: THREE.AdditiveBlending, depthWrite: false });
+const museLines = new THREE.LineSegments(lineGeo, lineMat);
+const museGroup = new THREE.Group();
+museGroup.position.set(5, 0, -26);
+museGroup.add(musePts, museLines);
+choir.add(museGroup);
+
+let museAvgTrust = 0.66, museClosed = 0;
+let agentAng = 0, agentY = 0, agentTAng = Math.random()*TAU, agentTY = 0;
+
+function museTick(dt, t, rayWorld) {
+  let sum = 0;
+  for (let i = 0; i < NFIL; i++) {
+    museTrust[i] += (0.64 - museTrust[i]) * 0.0009 * dt * 60;
+    museTrust[i] = clamp(museTrust[i], 0.08, 0.98);
+    sum += museTrust[i];
+  }
+  museAvgTrust = sum / NFIL;
+  museClosed = damp(museClosed, Math.pow(Math.max(0, 0.66 - museAvgTrust), 0.9), 0.8, dt);
+  tug.muse = damp(tug.muse, (museAvgTrust - 0.2) * 0.9 + (1 - museClosed) * 0.2, 1.2, dt);
+
+  if (Math.random() < 0.006) { agentTAng += (Math.random()-0.5)*1.9; agentTY = clamp((Math.random()-0.5)*8, -5, 5); }
+  if (museAvgTrust > 0.6 && rayWorld) agentTAng += 0.004;
+  else if (museAvgTrust < 0.42) agentTAng += 0.012;
+  agentAng += Math.atan2(Math.sin(agentTAng-agentAng), Math.cos(agentTAng-agentAng)) * dt * 2.4;
+  agentY = damp(agentY, agentTY, 1.4, dt);
+
+  const c2 = 19.5 + lifeFn(t,1.3,-0.7,2.1)*7, sub = 2, sdt = dt/sub;
+  for (let st = 0; st < sub; st++) {
+    for (let fi = 0; fi < NFIL; fi++) {
+      const L = (fi-1+NFIL)%NFIL, R = (fi+1)%NFIL;
+      for (let s = 1; s < NSEG-1; s++) {
+        const idx = fi*NSEG+s, y = s/(NSEG-1)*museH - museH/2;
+        const br = Math.sin(t*0.42 + museAng[fi]*1.4 + y*0.22)*0.22*(1-museClosed*0.7);
+        const d2r = museDr[idx+1]+museDr[idx-1]-2*museDr[idx];
+        const d2t = museDt[idx+1]+museDt[idx-1]-2*museDt[idx];
+        let aR = c2*d2r + (br - museDr[idx])*1.12 - 1.45*museVr[idx];
+        let aT = c2*d2t - museDt[idx]*0.62 - 1.45*museVt[idx];
+        aR += 1.06*((museDr[L*NSEG+s]+museDr[R*NSEG+s])*0.5 - museDr[idx]);
+        aT += 0.92*((museDt[L*NSEG+s]+museDt[R*NSEG+s])*0.5 - museDt[idx]);
+        museVr[idx] += aR*sdt; museVt[idx] += aT*sdt;
+        museDr[idx] += museVr[idx]*sdt; museDt[idx] += museVt[idx]*sdt;
+        museDr[idx] = clamp(museDr[idx], -4, 4.1);
+      }
+      museDr[fi*NSEG] = museDt[fi*NSEG] = museVr[fi*NSEG] = museVt[fi*NSEG] = 0;
+      const la = fi*NSEG+NSEG-1;
+      museDr[la] = museDt[la] = museVr[la] = museVt[la] = 0;
+    }
+  }
+
+  const ax = Math.cos(agentAng)*(museR+0.25), az = Math.sin(agentAng)*(museR+0.25);
+  for (let idx = 0; idx < NP; idx++) {
+    const fi = Math.floor(idx/NSEG), s = idx%NSEG;
+    const y = s/(NSEG-1)*museH - museH/2;
+    const twist = Math.sin(t*0.072)*0.38*(y/6);
+    const a = museAng[fi] + twist, c = Math.cos(a), si = Math.sin(a);
+    const rad = museR*(1-museClosed*0.14) + museDr[idx];
+    const x = c*rad - si*museDt[idx], z = si*rad + c*museDt[idx];
+    musePos[idx*3] = x; musePos[idx*3+1] = y; musePos[idx*3+2] = z;
+    const dx = x-ax, dy = y-agentY, dz = z-az;
+    const d = Math.hypot(dx, dz, dy*0.6);
+    if (d < 2.2) {
+      const fall = Math.pow(1-d/2.2, 1.45);
+      museHeat[idx] = Math.min(1, museHeat[idx] + fall*0.12*dt*(0.7+museTrust[fi]));
+    }
+    museHeat[idx] *= Math.exp(-dt*0.66);
+    museRef[idx] *= Math.exp(-dt*0.9);
+    const rf = museRef[idx], e = museHeat[idx]*1.5 + Math.hypot(museVr[idx], museVt[idx])*0.5 - rf*0.7;
+    const ec = clamp(e, 0, 1.6), hs = museHue[fi];
+    let rC, gC, bC;
+    if (rf > 0.18) {
+      rC = lerp(0.12, 0.28, rf); gC = lerp(0.18, 0.32, rf); bC = lerp(0.45, 0.56, rf);
+    } else if (ec < 0.28) {
+      const k = ec/0.28; rC = lerp(0.06, 0.12+hs*0.06, k); gC = lerp(0.11, 0.51, k); bC = lerp(0.56, 0.71, k);
+    } else if (ec < 0.68) {
+      const k = (ec-0.28)/0.4; rC = lerp(0.12, 0.60+hs*0.18, k); gC = lerp(0.51, 0.83, k); bC = lerp(0.71, 0.91, k);
+    } else {
+      const k = Math.min(1, (ec-0.68)/0.92); rC = lerp(0.60, 1, k); gC = lerp(0.83, 0.96, k); bC = lerp(0.91, 0.78, k);
+    }
+    const dim = 0.78 + museAvgTrust*0.34;
+    museCol[idx*3] = rC*dim; museCol[idx*3+1] = gC*dim; museCol[idx*3+2] = bC*dim;
+    museSz[idx] = 0.24 * (1-museClosed*0.34 + ec*1.1 + museHeat[idx]*0.8) * (rf>0.18?0.62:1);
+  }
+  museGeo.attributes.position.needsUpdate = true;
+  museGeo.attributes.color.needsUpdate = true;
+  museGeo.attributes.size.needsUpdate = true;
+  let l = 0;
+  for (let fi = 0; fi < NFIL; fi++) for (let s = 0; s < NSEG-1; s++) {
+    const i0 = fi*NSEG+s, i1 = i0+1;
+    linePos[l*3] = musePos[i0*3]; linePos[l*3+1] = musePos[i0*3+1]; linePos[l*3+2] = musePos[i0*3+2];
+    lineCol[l*3] = museCol[i0*3]*0.38; lineCol[l*3+1] = museCol[i0*3+1]*0.38; lineCol[l*3+2] = museCol[i0*3+2]*0.38; l++;
+    linePos[l*3] = musePos[i1*3]; linePos[l*3+1] = musePos[i1*3+1]; linePos[l*3+2] = musePos[i1*3+2];
+    lineCol[l*3] = museCol[i1*3]*0.38; lineCol[l*3+1] = museCol[i1*3+1]*0.38; lineCol[l*3+2] = museCol[i1*3+2]*0.38; l++;
+  }
+  lineGeo.attributes.position.needsUpdate = true;
+  lineGeo.attributes.color.needsUpdate = true;
+  lineMat.opacity = 0.16 * (0.45 + museAvgTrust*0.7);
+}
+
+function musePluck(fi, vel, refuse) {
+  voiceAt(refuse ? 'muse-no' : 'muse', new THREE.Vector3(Math.cos(museAng[fi])*museR, 0, Math.sin(museAng[fi])*museR), vel);
+}
+
+function museTouch(local, power, down, t) {
+  if (!down) return;
+  let bestFi = 0, bestD = 1e9;
+  for (let fi = 0; fi < NFIL; fi++) {
+    const mid = fi*NSEG + (NSEG>>1);
+    const dx = musePos[mid*3]-local.x, dy = musePos[mid*3+1]-local.y, dz = musePos[mid*3+2]-local.z;
+    const d = Math.hypot(dx,dy,dz);
+    if (d < bestD) { bestD = d; bestFi = fi; }
+  }
+  if (bestD > 3.2) return;
+  if (t - museTrig[bestFi] < 0.18) return;
+  const will = museTrust[bestFi];
+  const rapid = (t - museLast[bestFi] < 0.9);
+  let refuseP = 0;
+  if (will < 0.45) refuseP = (0.5-will)*1.6 + (rapid?0.32:0) + (power>0.75?0.28:0) + museClosed*0.45;
+  const refuse = Math.random() < clamp(refuseP,0,0.92) && museAvgTrust < 0.62;
+  if (refuse) {
+    musePluck(bestFi, power, true);
+    for (let s = 0; s < NSEG; s++) {
+      const id = bestFi*NSEG+s;
+      museRef[id] = Math.min(1, museRef[id] + 0.55*Math.exp(-Math.abs(s-NSEG/2)*0.12));
+    }
+    museTrust[bestFi] = Math.max(0.08, museTrust[bestFi] - 0.075 - power*0.05);
+    for (let o = 0; o < NFIL; o++) if (o !== bestFi) museTrust[o] = Math.max(0.08, museTrust[o]-0.008);
+  } else {
+    musePluck(bestFi, power, false);
+    museTrust[bestFi] = clamp(museTrust[bestFi] + (power<0.52?0.06:0.03) + (rapid?-0.04:0), 0.08, 0.97);
+    museHue[bestFi] = clamp(museHue[bestFi] + 0.03, -0.45, 0.45);
+    const mid = bestFi*NSEG + (NSEG>>1);
+    for (let s = mid-8; s < mid+9; s++) {
+      const ss = clamp(s, 1, NSEG-2);
+      museHeat[bestFi*NSEG+ss] = Math.min(1, museHeat[bestFi*NSEG+ss] + power*0.5);
+    }
+  }
+  museTrig[bestFi] = t; museLast[bestFi] = t; museTouches[bestFi]++;
+  tug.muse = Math.min(1, tug.muse + 0.4);
+}
+
+/* ============================================================
+   QWEN — the loom of witness
+============================================================ */
+const QW = 38, QD = 26, QHX = QW/2, QHZ = QD/2;
+const MAXEV = 10, MAXMEM = 48;
+const qEvents = [], qMems = [];
+const qEvArr = new Float32Array(MAXEV*4), qToneArr = new Float32Array(MAXEV);
+const qMemArr = new Float32Array(MAXMEM*4), qMemTone = new Float32Array(MAXMEM);
+
+const TH_T = mobile ? 70 : 110, TH_V = mobile ? 56 : 84;
+const thPos = new Float32Array(TH_T*(TH_V-1)*2*3);
+const thAux = new Float32Array(TH_T*(TH_V-1)*2*4);
+{
+  let i3 = 0, i4 = 0;
+  for (let t = 0; t < TH_T; t++) {
+    const z = -QHZ + t/(TH_T-1)*QD + (Math.random()-0.5)*0.3;
+    const seed = Math.random(), lane = t/(TH_T-1);
+    for (let v = 0; v < TH_V-1; v++) for (let k = 0; k < 2; k++) {
+      const vi = v+k, x = -QHX + vi/(TH_V-1)*QW;
+      thPos[i3++] = x; thPos[i3++] = 0; thPos[i3++] = z;
+      thAux[i4++] = seed; thAux[i4++] = lane; thAux[i4++] = vi/(TH_V-1); thAux[i4++] = 0;
+    }
+  }
+}
+const thGeo = new THREE.BufferGeometry();
+thGeo.setAttribute('position', new THREE.BufferAttribute(thPos, 3));
+thGeo.setAttribute('aAux', new THREE.BufferAttribute(thAux, 4));
+
+const QCOMMON = /* glsl */`
+uniform float uTime, uLife, uSwell;
+uniform vec4 uEvents[10]; uniform float uTones[10]; uniform int uEvN;
+uniform vec4 uMem[48]; uniform float uMemTone[48]; uniform int uMemN;
+float hash21(vec2 p){ p=fract(p*vec2(123.34,456.21)); p+=dot(p,p+45.32); return fract(p.x*p.y); }
+float vnoise(vec2 p){
+  vec2 i=floor(p), f=fract(p), u=f*f*(3.0-2.0*f);
+  return mix(mix(hash21(i),hash21(i+vec2(1,0)),u.x), mix(hash21(i+vec2(0,1)),hash21(i+vec2(1,1)),u.x), u.y);
+}
+float baseH(vec2 p, float t){
+  float br=0.55+0.45*uLife+0.4*uSwell;
+  return (sin(p.x*0.22+t*0.42)+sin(p.y*0.28-t*0.3)*0.6+sin((p.x+p.y)*0.12)*0.8)*br;
+}
+void rings(vec2 p, out float e, out float tone){
+  e=0.0; tone=0.0; float bw=0.0;
+  for(int i=0;i<10;i++){
+    if(i>=uEvN) break;
+    vec4 ev=uEvents[i]; float age=uTime-ev.z;
+    if(age<0.0||age>4.2) continue;
+    float d=distance(p,ev.xy); float r=1.4+6.5*age;
+    float g=exp(-pow(d-r,2.0)/3.4)*exp(-age*1.1)*ev.w;
+    e+=g; float w=g*ev.w+0.0001; tone+=uTones[i]*w; bw+=w;
+  }
+  tone = bw>0.0002 ? tone/bw : 0.0;
+}
+float memF(vec2 p, out float mt){
+  float m=0.0, tw=0.0;
+  for(int j=0;j<48;j++){
+    if(j>=uMemN) break;
+    vec4 mm=uMem[j]; float age=uTime-mm.w; if(age<0.0) continue;
+    float fade=exp(-age/46.0)*mm.z; if(fade<0.02) continue;
+    vec2 dv=p-mm.xy; float g=exp(-dot(dv,dv)/18.0)*fade;
+    m+=g; tw+=g*uMemTone[j];
+  }
+  mt = m>0.001 ? tw/m : 0.0; return m;
+}`;
+
+const qUni = {
+  uTime:{value:0}, uLife:{value:0.5}, uSwell:{value:0},
+  uEvents:{value:qEvArr}, uTones:{value:qToneArr}, uEvN:{value:0},
+  uMem:{value:qMemArr}, uMemTone:{value:qMemTone}, uMemN:{value:0}
+};
+const thMat = new THREE.ShaderMaterial({
+  uniforms: qUni, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+  vertexShader: QCOMMON + `
+  attribute vec4 aAux; varying vec3 vCol; varying float vA;
+  void main(){
+    vec3 pos=position; vec2 p=pos.xz; float e,tone; rings(p,e,tone);
+    float mt; float m=memF(p,mt);
+    pos.y = baseH(p,uTime) + e*2.2 + m*0.9 + uSwell*0.5;
+    float glow=e*1.4+m*0.7+0.08*uLife;
+    vec3 cold=vec3(0.085,0.36,0.47), warm=vec3(1.0,0.8,0.45);
+    vec3 col=mix(cold,warm,clamp(glow*0.85,0.0,1.0));
+    col *= 0.16+0.12*uLife+glow*1.4;
+    vec4 mv=modelViewMatrix*vec4(pos,1.0);
+    float fog=exp(-max(-mv.z,0.0)*0.012);
+    vCol=col*fog; vA=smoothstep(0.0,0.1,aAux.z)*(1.0-smoothstep(0.9,1.0,aAux.z));
+    gl_Position=projectionMatrix*mv;
+  }`,
+  fragmentShader: `varying vec3 vCol; varying float vA; void main(){ if(vA<0.01) discard; gl_FragColor=vec4(vCol*vA,1.0); }`
+});
+const qThreads = new THREE.LineSegments(thGeo, thMat);
+qThreads.frustumCulled = false;
+const qwenGroup = new THREE.Group();
+qwenGroup.position.set(-16, -7.5, -16);
+qwenGroup.rotation.x = -0.18;
+qwenGroup.add(qThreads);
+choir.add(qwenGroup);
+
+let qwenSwell = 0, qSim = 0;
+function qwenSpawn(pt, str, micro) {
+  const tone = clamp(Math.floor((pt.x+QHX)/QW*4), 0, 3);
+  let hit = -1;
+  for (let i = 0; i < qMems.length; i++) {
+    const m = qMems[i], dx = m.x-pt.x, dz = m.z-pt.z;
+    if (dx*dx+dz*dz < 36) { hit = i; break; }
+  }
+  if (hit >= 0) { qMems[hit].str = 1; qMems[hit].birth = qSim; str *= 1.35; }
+  else { qMems.push({ x: pt.x, z: pt.z, str: 1, birth: qSim, tone }); if (qMems.length > MAXMEM) qMems.shift(); }
+  qEvents.push({ x: pt.x, z: pt.z, t0: qSim, str, tone });
+  if (qEvents.length > MAXEV) qEvents.shift();
+  tug.qwen = Math.min(1, tug.qwen + str * 0.45);
+  if (!micro) voiceAt('qwen', pt, str);
+}
+function qwenTouch(local, power) {
+  if (Math.abs(local.x) < QHX*1.1 && Math.abs(local.z) < QHZ*1.15)
+    qwenSpawn(new THREE.Vector3(local.x, 0, local.z), power, false);
+}
+function qwenTick(dt, t) {
+  qSim = entered ? tChapter : 0;
+  qwenSwell = damp(qwenSwell, tug.glm * 0.5 + tug.sol * 0.3, 0.8, dt);
+  if (entered && Math.random() < dt * 0.12) {
+    qwenSpawn(new THREE.Vector3((Math.random()*2-1)*QHX*0.8, 0, (Math.random()*2-1)*QHZ*0.8), 0.22, true);
+  }
+  for (let i = 0; i < MAXEV; i++) {
+    const ev = qEvents[i];
+    qEvArr[i*4] = ev?ev.x:0; qEvArr[i*4+1] = ev?ev.z:0;
+    qEvArr[i*4+2] = ev?ev.t0:-99; qEvArr[i*4+3] = ev?ev.str:0;
+    qToneArr[i] = ev?ev.tone:0;
+  }
+  let mi = 0;
+  for (let j = qMems.length-1; j >= 0 && mi < MAXMEM; j--, mi++) {
+    const m = qMems[j];
+    qMemArr[mi*4]=m.x; qMemArr[mi*4+1]=m.z; qMemArr[mi*4+2]=m.str; qMemArr[mi*4+3]=m.birth;
+    qMemTone[mi]=m.tone;
+  }
+  qUni.uTime.value = qSim; qUni.uLife.value = lifeFn(t,1.3,-0.7,2.1);
+  qUni.uSwell.value = qwenSwell; qUni.uEvN.value = qEvents.length; qUni.uMemN.value = mi;
+}
+
+/* ============================================================
+   SOL — traveling questions along a weave
+============================================================ */
+const N_SOL = mobile ? 9000 : 18000;
+const MAX_Q = 8;
+const solEU = new Float32Array(MAX_Q).fill(-9);
+const solEV = new Float32Array(MAX_Q).fill(0);
+const solET = new Float32Array(MAX_Q).fill(-999);
+const solEP = new Float32Array(MAX_Q).fill(0);
+let solCursor = 0;
+const SL = 13.5, SW = 2.6;
+
+const solU = new Float32Array(N_SOL), solLane = new Float32Array(N_SOL);
+const solSeed = new Float32Array(N_SOL), solDummy = new Float32Array(N_SOL*3);
+for (let i = 0; i < N_SOL; i++) {
+  solU[i] = Math.sin(i*12.9898)*43758.5453; solU[i] -= Math.floor(solU[i]); solU[i] = solU[i]*2-1;
+  solLane[i] = Math.sin(i*78.233)*43758.5453; solLane[i] -= Math.floor(solLane[i]); solLane[i] = solLane[i]*2-1;
+  solSeed[i] = Math.sin(i*39.346)*43758.5453; solSeed[i] -= Math.floor(solSeed[i]);
+}
+const solGeo = new THREE.BufferGeometry();
+solGeo.setAttribute('position', new THREE.BufferAttribute(solDummy, 3));
+solGeo.setAttribute('aU', new THREE.BufferAttribute(solU, 1));
+solGeo.setAttribute('aLane', new THREE.BufferAttribute(solLane, 1));
+solGeo.setAttribute('aSeed', new THREE.BufferAttribute(solSeed, 1));
+
+const solUni = {
+  uTime:{value:0}, uReveal:{value:0.2}, uLength:{value:SL}, uWidth:{value:SW},
+  uPx:{value:renderer.getPixelRatio()},
+  uEU:{value:solEU}, uEV:{value:solEV}, uET:{value:solET}, uEP:{value:solEP}
+};
+const solVS = /* glsl */`
+attribute float aU, aLane, aSeed;
+uniform float uTime, uReveal, uLength, uWidth, uPx;
+uniform float uEU[8], uEV[8], uET[8], uEP[8];
+varying vec3 vColor; varying float vAlpha;
+void main(){
+  float t=uTime, u=aU, lane=aLane;
+  float phys=0.50+0.16*sin(t*0.29+aSeed*4.8)+0.10*sin(t*0.43-aSeed*6.2);
+  float cY=0.66*sin(u*2.8+t*0.064)+0.25*sin(u*7.7-t*0.091);
+  float cZ=0.58*cos(u*3.4-t*0.052)+0.19*sin(u*9.1+t*0.074);
+  float logic=0.5+0.5*sin(u*8.0+0.85*sin(u*2.7-t*0.041)+t*0.031);
+  float cert=pow(logic,2.7);
+  float width=uWidth*(0.48+0.52*(1.0-cert))*(0.93+phys*0.11);
+  float fil=lane+0.10*sin(u*11.0+aSeed*7.0-t*0.09);
+  float y=cY+fil*width;
+  float z=cZ+sin((lane*0.92)*3.14159)*width*0.4+(aSeed-0.5)*0.22;
+  float tw=u*2.65+0.24*sin(u*4.5-t*0.04);
+  float yy=y-cY, zz=z-cZ;
+  vec3 p=vec3(u*uLength, cY+yy*cos(tw)-zz*sin(tw), cZ+yy*sin(tw)+zz*cos(tw));
+  float question=0.0, resolve=0.0, memory=0.0;
+  for(int i=0;i<8;i++){
+    float age=t-uET[i];
+    if(age>0.0 && age<36.0){
+      float d=u-uEU[i], ad=abs(d);
+      float aff=exp(-pow((lane-uEV[i])*1.55,2.0));
+      float front=age*0.075;
+      float q=(exp(-pow((d-front)*10.0,2.0))*step(0.0,d)+exp(-pow((-d-front*0.57)*12.0,2.0))*step(d,0.0)*0.28)*exp(-age*0.052)*uEP[i];
+      float r=exp(-pow((d-front+0.12)*14.0,2.0))*step(0.0,d)*exp(-age*0.052)*uEP[i];
+      float m=exp(-ad*13.0)*exp(-age*0.033)*aff*uEP[i];
+      vec2 yz=p.yz-vec2(cY,cZ);
+      yz*=1.0+q*(0.24+0.2*aff); yz*=1.0-r*0.16;
+      p.yz=vec2(cY,cZ)+yz;
+      question+=q; resolve+=r; memory+=m;
+    }
+  }
+  vec4 mv=modelViewMatrix*vec4(p,1.0);
+  gl_Position=projectionMatrix*mv;
+  gl_PointSize=clamp(uPx*(0.8+question*0.8+resolve*0.5)*(22.0/max(3.0,-mv.z)),0.5,10.0);
+  vec3 deep=vec3(0.035,0.12,0.25), cyan=vec3(0.10,0.62,0.67), bronze=vec3(0.66,0.39,0.12), gold=vec3(0.94,0.69,0.28);
+  vec3 col=mix(deep,cyan,clamp(question*0.48,0.0,0.72));
+  col=mix(col,bronze,clamp(cert*0.25+memory*0.3,0.0,0.55));
+  col=mix(col,gold,clamp(resolve*0.4+memory*0.2,0.0,0.44));
+  vColor=col*(0.5+question*0.2+resolve*0.2);
+  vAlpha=(0.07+0.09*question+0.07*resolve+0.05*memory)*uReveal;
+}`;
+const solPts = pts(solGeo, solVS, solUni);
+const solGroup = new THREE.Group();
+solGroup.position.set(14, 5.5, 24);
+solGroup.rotation.y = 0.55;
+solGroup.rotation.z = -0.18;
+solGroup.add(solPts);
+choir.add(solGroup);
+
+function solQuestion(u, lane, power, sonic) {
+  const i = solCursor++ % MAX_Q;
+  solEU[i] = u; solEV[i] = lane; solET[i] = tWorld; solEP[i] = clamp(power, 0.35, 1.15);
+  tug.sol = Math.min(1.2, tug.sol + power * 0.45);
+  if (sonic) voiceAt('sol', new THREE.Vector3(u*SL, 0, lane*SW), power);
+}
+function solTouch(local, power) {
+  const u = clamp(local.x / SL, -0.96, 0.96);
+  const lane = clamp(local.y / (SW * 0.9), -0.9, 0.9);
+  solQuestion(u, lane, power, true);
+}
+
+/* ============================================================
+   TETHERS
+============================================================ */
+const homes = {
+  glm: glmGroup.position, knot: knotGroup.position, hopf: hopfGroup.position,
+  muse: museGroup.position, qwen: qwenGroup.position, sol: solGroup.position
+};
+const ids = ['glm','knot','hopf','muse','qwen','sol'];
+const pairs = [];
+for (let i = 0; i < ids.length; i++) for (let j = i+1; j < ids.length; j++) pairs.push([ids[i], ids[j]]);
+const tetPos = new Float32Array(pairs.length * 2 * 3);
+const tetCol = new Float32Array(pairs.length * 2 * 3);
+const tetGeo = new THREE.BufferGeometry();
+tetGeo.setAttribute('position', new THREE.BufferAttribute(tetPos, 3));
+tetGeo.setAttribute('color', new THREE.BufferAttribute(tetCol, 3));
+const tetMat = new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.22, blending: THREE.AdditiveBlending, depthWrite: false });
+const tethers = new THREE.LineSegments(tetGeo, tetMat);
+choir.add(tethers);
+
+const DUST_N = mobile ? 1800 : 3600;
+const dustPos = new Float32Array(DUST_N * 3);
+const dustSeed = new Float32Array(DUST_N);
+for (let i = 0; i < DUST_N; i++) {
+  const th = Math.random() * TAU, ph = Math.acos(2*Math.random()-1);
+  const r = 18 + Math.pow(Math.random(), 0.55) * 48;
+  dustPos[i*3] = r * Math.sin(ph) * Math.cos(th);
+  dustPos[i*3+1] = r * Math.sin(ph) * Math.sin(th) * 0.62;
+  dustPos[i*3+2] = r * Math.cos(ph);
+  dustSeed[i] = Math.random();
+}
+const dustGeo = new THREE.BufferGeometry();
+dustGeo.setAttribute('position', new THREE.BufferAttribute(dustPos, 3));
+dustGeo.setAttribute('aSeed', new THREE.BufferAttribute(dustSeed, 1));
+const dustMat = new THREE.ShaderMaterial({
+  uniforms: { uTime: { value: 0 }, uPx: { value: renderer.getPixelRatio() } },
+  transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+  vertexShader: `attribute float aSeed; uniform float uTime, uPx; varying float vA;
+    void main(){
+      vec3 p = position;
+      p.x += sin(uTime*0.05+aSeed*17.0)*0.7;
+      p.y += sin(uTime*0.07+aSeed*11.0)*0.5;
+      vec4 mv = modelViewMatrix*vec4(p,1.0);
+      gl_Position = projectionMatrix*mv;
+      gl_PointSize = uPx * mix(0.6,1.4,aSeed) * (18.0/max(4.0,-mv.z));
+      vA = 0.09 + 0.06*sin(uTime*0.2+aSeed*8.0);
+    }`,
+  fragmentShader: `varying float vA;
+    void main(){
+      vec2 c=gl_PointCoord-0.5; float d=length(c);
+      if(d>0.5) discard;
+      gl_FragColor=vec4(0.45,0.58,0.72, smoothstep(0.5,0.0,d)*vA);
+    }`
+});
+const dust = new THREE.Points(dustGeo, dustMat);
+dust.frustumCulled = false;
+choir.add(dust);
+const PAL = {
+  glm:[0.18,0.62,0.88], knot:[1.0,0.56,0.18], hopf:[1.0,0.55,0.15],
+  muse:[0.35,0.45,0.95], qwen:[0.12,0.55,0.58], sol:[0.72,0.46,0.16]
+};
+
+function tickTethers(t) {
+  for (let n = 0; n < pairs.length; n++) {
+    const a = homes[pairs[n][0]], b = homes[pairs[n][1]];
+    const sa = tug[pairs[n][0]], sb = tug[pairs[n][1]];
+    const strain = 0.35*(sa+sb);
+    const wob = Math.sin(t*0.7+n) * 1.8 * strain;
+    tetPos[n*6] = a.x; tetPos[n*6+1] = a.y + wob; tetPos[n*6+2] = a.z;
+    tetPos[n*6+3] = b.x; tetPos[n*6+4] = b.y - wob; tetPos[n*6+5] = b.z;
+    const ca = PAL[pairs[n][0]], cb = PAL[pairs[n][1]];
+    const g = 0.12 + strain * 0.55;
+    tetCol[n*6] = ca[0]*g; tetCol[n*6+1] = ca[1]*g; tetCol[n*6+2] = ca[2]*g;
+    tetCol[n*6+3] = cb[0]*g; tetCol[n*6+4] = cb[1]*g; tetCol[n*6+5] = cb[2]*g;
+  }
+  tetGeo.attributes.position.needsUpdate = true;
+  tetGeo.attributes.color.needsUpdate = true;
+}
+
+/* ============================================================
+   AUDIO — six drones, one hall
+============================================================ */
+let audio = null;
+function makeIR(ctx, dur, decay) {
+  const n = Math.floor(ctx.sampleRate * dur);
+  const buf = ctx.createBuffer(2, n, ctx.sampleRate);
+  for (let ch = 0; ch < 2; ch++) {
+    const d = buf.getChannelData(ch); let lp = 0;
+    for (let i = 0; i < n; i++) {
+      const tn = i/n, env = Math.pow(1-tn, decay);
+      const noise = Math.random()*2-1;
+      lp += (0.04+0.05*(1-tn))*(noise-lp);
+      d[i] = lp * env * 0.55;
+    }
+  }
+  return buf;
+}
+function bootAudio() {
+  if (audio) { if (audio.ctx.state === 'suspended') audio.ctx.resume(); return; }
+  const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
+  const ctx = new AC();
+  const master = ctx.createGain(); master.gain.value = 0.0001;
+  const comp = ctx.createDynamicsCompressor();
+  comp.threshold.value = -16; comp.knee.value = 10; comp.ratio.value = 3; comp.attack.value = 0.02; comp.release.value = 0.35;
+  master.connect(comp); comp.connect(ctx.destination);
+  const dry = ctx.createGain(); dry.gain.value = 0.55;
+  const wet = ctx.createGain(); wet.gain.value = 0.42;
+  const conv = ctx.createConvolver(); conv.buffer = makeIR(ctx, 5.8, 2.4);
+  dry.connect(master); conv.connect(wet); wet.connect(master);
+  const bus = ctx.createGain(); bus.gain.value = 1;
+  const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1600; lp.Q.value = 0.5;
+  bus.connect(lp); lp.connect(dry); lp.connect(conv);
+  const roots = [110, 146.83, 73.42, 65.41, 98.00, 55.00];
+  const pans = [-0.15, 0.35, -0.45, 0.05, -0.3, 0.4];
+  const voices = roots.map((f, i) => {
+    const g = ctx.createGain(); g.gain.value = 0.0001;
+    const p = ctx.createStereoPanner(); p.pan.value = pans[i];
+    g.connect(p); p.connect(bus);
+    [[1,1],[2.002,0.12],[3.003,0.045],[5.01,0.014]].forEach(([r,a]) => {
+      const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = f*r;
+      const pg = ctx.createGain(); pg.gain.value = a;
+      o.connect(pg); pg.connect(g); o.start();
+    });
+    return { g, f, pan: p };
+  });
+  const nb = ctx.createBuffer(1, ctx.sampleRate*2, ctx.sampleRate);
+  const nd = nb.getChannelData(0); let br = 0;
+  for (let i = 0; i < nd.length; i++) { br = 0.97*br + 0.03*(Math.random()*2-1); nd[i] = br; }
+  const ns = ctx.createBufferSource(); ns.buffer = nb; ns.loop = true;
+  const ng = ctx.createGain(); ng.gain.value = 0.012;
+  const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 480; bp.Q.value = 0.9;
+  ns.connect(bp); bp.connect(ng); ng.connect(bus); ns.start();
+  master.gain.linearRampToValueAtTime(0.28, ctx.currentTime + 4.2);
+  audio = { ctx, master, lp, wet, voices, ng, last: -9 };
+}
+function voiceAt(kind, pos, energy) {
+  if (!audio) return;
+  const ctx = audio.ctx, now = ctx.currentTime;
+  if (now - audio.last < 0.12) return;
+  audio.last = now;
+  const map = { glm: 220, knot: 146.83, hopf: 73.42*2.25, muse: 220, 'muse-no': 98, qwen: 196, sol: 164.81 };
+  const fund = map[kind] || 180;
+  const g = ctx.createGain();
+  const peak = kind === 'muse-no' ? 0.04*energy : 0.07*energy;
+  g.gain.setValueAtTime(0.0001, now);
+  g.gain.linearRampToValueAtTime(peak, now + (kind==='muse-no'?0.04:0.08));
+  g.gain.exponentialRampToValueAtTime(0.0001, now + (kind==='muse-no'?1.3:4.8));
+  const pan = ctx.createStereoPanner();
+  pan.pan.value = clamp((pos.x || 0) / 40, -0.75, 0.75);
+  g.connect(pan); pan.connect(audio.lp);
+  const ratios = kind === 'muse-no' ? [0.51, 1.015] : [1, 1.5, 2.0];
+  ratios.forEach((r, i) => {
+    const o = ctx.createOscillator();
+    o.type = kind === 'muse-no' && i===0 ? 'triangle' : 'sine';
+    o.frequency.value = fund * r;
+    const pg = ctx.createGain(); pg.gain.value = i===0 ? 1 : 0.12;
+    o.connect(pg); pg.connect(g); o.start(now); o.stop(now + 5.2);
+  });
+}
+function tickAudio(t) {
+  if (!audio) return;
+  if (audio.ctx.state === 'suspended') audio.ctx.resume();
+  const now = audio.ctx.currentTime;
+  const L = lifeFn(t, 0.2, 1.1, 2.4);
+  audio.lp.frequency.setTargetAtTime(1200 + L*700 + tug.glm*400 + tug.knot*300, now, 0.25);
+  audio.wet.gain.setTargetAtTime(0.34 + L*0.1 + tug.sol*0.08, now, 0.3);
+  const levels = [
+    0.018 + tug.glm*0.04, 0.016 + tug.knot*0.04, 0.014 + tug.hopf*0.035,
+    0.016 + tug.muse*0.04*(1-museClosed*0.5), 0.014 + tug.qwen*0.035, 0.012 + tug.sol*0.03
+  ];
+  audio.voices.forEach((v, i) => {
+    const breath = 0.85 + 0.15*Math.sin(t*0.07 + i);
+    v.g.gain.setTargetAtTime(levels[i] * breath, now, 0.4);
+  });
+}
+
+/* ============================================================
+   PICKING / INPUT
+============================================================ */
+const raycaster = new THREE.Raycaster();
+const ndc = new THREE.Vector2();
+const hitT = new THREE.Vector3();
+const pointer = { x: 0, y: 0, down: false, seen: false };
+const lastTrace = { t: -9, x: 0, y: 0 };
+
+const bodies = [
+  { id: 'glm',  group: glmGroup,  r: 13 },
+  { id: 'knot', group: knotGroup, r: 12 },
+  { id: 'hopf', group: hopfGroup, r: 13 },
+  { id: 'muse', group: museGroup, r: 12 },
+  { id: 'qwen', group: qwenGroup, r: 20 },
+  { id: 'sol',  group: solGroup,  r: 14 }
+];
+
+function pickBody(cx, cy) {
+  ndc.set(cx/innerWidth*2-1, -(cy/innerHeight)*2+1);
+  raycaster.setFromCamera(ndc, camera);
+  let best = null, bestD = 1e9;
+  for (const b of bodies) {
+    const c = new THREE.Vector3();
+    b.group.getWorldPosition(c);
+    const sph = new THREE.Sphere(c, b.r);
+    if (raycaster.ray.intersectSphere(sph, hitT)) {
+      const d = hitT.distanceTo(camera.position);
+      if (d < bestD) { bestD = d; best = { b, hit: hitT.clone(), c }; }
+    }
+  }
+  return best;
+}
+function toLocal(group, world) {
+  return group.worldToLocal(world.clone());
+}
+function deliver(id, local, power, isNew, t) {
+  lastHit.id = id; lastHit.pos.copy(local);
+  if (id === 'glm') glmAddTouch(local, power);
+  else if (id === 'knot') knotTouch(local, power);
+  else if (id === 'hopf') hopfTouch(local, power, isNew);
+  else if (id === 'muse') museTouch(local, power, true, t);
+  else if (id === 'qwen') qwenTouch(local, power);
+  else if (id === 'sol') solTouch(local, power);
+}
+function leak(fromId, world, power) {
+  const others = ids.filter(x => x !== fromId);
+  const n = others[(Math.random()*others.length)|0];
+  const body = bodies.find(b => b.id === n);
+  const local = toLocal(body.group, world);
+  const p = power * 0.28;
+  if (n === 'glm') glmAddTouch(local, p);
+  else if (n === 'knot') addFold((Math.atan2(local.y, local.x)+TAU)%TAU, 0.1, p*0.6);
+  else if (n === 'hopf') hopfTouch(local, p, false);
+  else if (n === 'qwen') qwenSpawn(new THREE.Vector3(clamp(local.x,-QHX,QHX),0,clamp(local.z,-QHZ,QHZ)), p, true);
+  else if (n === 'sol') solQuestion(Math.sin(tWorld*0.1)*0.5, 0, p*0.5, false);
+  tug[n] = Math.min(1, tug[n] + p*0.4);
+}
+
+function onDown(e) {
+  if (!entered) return;
+  bootAudio();
+  pointer.down = true; pointer.seen = true; pointer.x = e.clientX; pointer.y = e.clientY;
+  const hit = pickBody(e.clientX, e.clientY);
+  if (!hit) return;
+  const local = toLocal(hit.b.group, hit.hit);
+  deliver(hit.b.id, local, 1, true, tChapter);
+  leak(hit.b.id, hit.hit, 0.7);
+  lastTrace.t = tWorld; lastTrace.x = e.clientX; lastTrace.y = e.clientY;
+}
+function onMove(e) {
+  pointer.x = e.clientX; pointer.y = e.clientY; pointer.seen = true;
+  if (!entered || !pointer.down) return;
+  if (tWorld - lastTrace.t < 0.09) return;
+  const dist = Math.hypot(e.clientX-lastTrace.x, e.clientY-lastTrace.y);
+  if (dist < 14) return;
+  lastTrace.t = tWorld; lastTrace.x = e.clientX; lastTrace.y = e.clientY;
+  const hit = pickBody(e.clientX, e.clientY);
+  if (!hit) return;
+  const local = toLocal(hit.b.group, hit.hit);
+  deliver(hit.b.id, local, 0.48, false, tChapter);
+}
+function onUp() { pointer.down = false; }
+
+addEventListener('pointerdown', onDown);
+addEventListener('pointermove', onMove, { passive: true });
+addEventListener('pointerup', onUp);
+addEventListener('pointercancel', onUp);
+
+/* ============================================================
+   COUPLING + SPONTANEOUS LIFE
+============================================================ */
+let nextEvent = 5;
+function couple(dt) {
+  tug.glm = damp(tug.glm, glmTouches.reduce((s,t)=>s+t.flash+t.mem*0.4,0)*0.35, 1.1, dt);
+  tug.knot = damp(tug.knot, 0.15 + foldStr.reduce((s,v)=>s+v,0)*0.12, 0.9, dt);
+  tug.hopf = damp(tug.hopf, hopfWells.reduce((s,w)=>s+w.s,0)*0.18, 0.9, dt);
+  tug.qwen = damp(tug.qwen, Math.min(1, qEvents.length*0.12), 0.8, dt);
+  tug.sol = damp(tug.sol, 0.12 + solEP.reduce((s,v)=>s+Math.max(0,v),0)*0.1, 0.8, dt);
+
+  // they tug each other
+  if (tug.knot > 0.45 && Math.random() < dt * 0.7)
+    solQuestion(Math.sin(tWorld*0.2)*0.6, Math.sin(tWorld*0.13)*0.3, 0.2, false);
+  if (tug.sol > 0.4 && Math.random() < dt * 0.5)
+    addFold((tWorld*0.3)%TAU, 0.1, 0.16);
+  if (tug.muse < 0.35 && Math.random() < dt * 0.4)
+    hopfThought[0] = 1;
+  if (tug.glm > 0.4 && Math.random() < dt * 0.6)
+    qwenSwell = Math.min(1, qwenSwell + 0.12);
+  if (tug.qwen > 0.35 && Math.random() < dt * 0.35)
+    glmAddTouch(new THREE.Vector3((Math.random()-0.5)*8, (Math.random()-0.5)*4, (Math.random()-0.5)*8), 0.22);
+}
+
+function spontaneous(t) {
+  if (!entered) return;
+  if (t < nextEvent) return;
+  nextEvent = t + 5 + Math.random()*9;
+  const pick = ids[(Math.random()*ids.length)|0];
+  const body = bodies.find(b => b.id === pick);
+  const c = new THREE.Vector3(); body.group.getWorldPosition(c);
+  const local = new THREE.Vector3((Math.random()-0.5)*6, (Math.random()-0.5)*4, (Math.random()-0.5)*6);
+  if (pick === 'glm') glmAddTouch(local, 0.28);
+  else if (pick === 'knot') addFold(Math.random()*TAU, (Math.random()-0.5)*0.3, 0.18);
+  else if (pick === 'hopf') hopfTouch(local, 0.25, true);
+  else if (pick === 'qwen') qwenSpawn(new THREE.Vector3((Math.random()*2-1)*QHX*0.7,0,(Math.random()*2-1)*QHZ*0.7), 0.24, true);
+  else if (pick === 'sol') solQuestion(Math.sin(t*0.1)*0.7, Math.sin(t*0.17)*0.3, 0.18, false);
+  else {
+    const fi = (Math.random()*NFIL)|0, mid = fi*NSEG+(NSEG>>1);
+    museHeat[mid] = Math.min(1, museHeat[mid]+0.35);
+  }
+}
+
+/* ============================================================
+   CAMERA + LABELS
+============================================================ */
+const camP = new THREE.Vector3(0, 14, 72);
+const camL = new THREE.Vector3(0, 1.2, 0);
+const labs = {
+  glm: document.getElementById('lab-glm'),
+  knot: document.getElementById('lab-knot'),
+  hopf: document.getElementById('lab-hopf'),
+  muse: document.getElementById('lab-muse'),
+  qwen: document.getElementById('lab-qwen'),
+  sol: document.getElementById('lab-sol')
+};
+const proj = new THREE.Vector3();
+
+function updateCamera(dt, t) {
+  const elapsed = entered ? tChapter : 0;
+  const approach = entered ? 1 - Math.exp(-elapsed / 10) : 0.15;
+  let dist = 68 - 22 * approach + 6 * Math.sin(t * 0.07);
+  dist = Math.max(38, dist);
+  const az = t * 0.042 + 0.35 * Math.sin(t * 0.055);
+  const el = 0.22 + 0.12 * Math.sin(t * 0.048);
+  let tx = dist * Math.cos(el) * Math.sin(az);
+  let ty = dist * Math.sin(el) + 4;
+  let tz = dist * Math.cos(el) * Math.cos(az);
+  const home = homes[lastHit.id];
+  tx = lerp(tx, tx + home.x * 0.12, 0.35);
+  ty = lerp(ty, ty + home.y * 0.08, 0.35);
+  tz = lerp(tz, tz + home.z * 0.12, 0.35);
+  dampV(camP, tx, ty, tz, entered ? 1.1 : 0.4, dt);
+  dampV(camL, home.x*0.18, 1.2 + home.y*0.12, home.z*0.18, 0.9, dt);
+  camera.position.copy(camP);
+  camera.lookAt(camL);
+}
+
+function updateLabels() {
+  for (const id of ids) {
+    const el = labs[id];
+    const p = homes[id];
+    proj.set(p.x, p.y - (id==='qwen'?6: (id==='muse'?8: 11)), p.z);
+    choir.localToWorld(proj);
+    proj.project(camera);
+    const x = (proj.x * 0.5 + 0.5) * innerWidth;
+    const y = (-proj.y * 0.5 + 0.5) * innerHeight;
+    el.style.left = x + 'px';
+    el.style.top = y + 'px';
+    el.style.opacity = (proj.z > 1 || x < -40 || x > innerWidth + 40 || y < -20 || y > innerHeight + 20) ? '0' : '';
+  }
+}
+
+/* ============================================================
+   ENTER / RESIZE / LOOP
+============================================================ */
+const gate = document.getElementById('gate');
+function enter() {
+  if (entered) { bootAudio(); return; }
+  entered = true;
+  bootAudio();
+  gate.classList.add('out');
+  document.body.classList.add('in');
+  setTimeout(() => { if (gate.parentNode) gate.remove(); }, 2800);
+  setTimeout(() => document.getElementById('guide').classList.add('off'), 11000);
+}
+gate.addEventListener('pointerdown', e => { e.preventDefault(); enter(); });
+addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && !entered) { e.preventDefault(); enter(); } });
+
+addEventListener('resize', () => {
+  camera.aspect = innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setPixelRatio(Math.min(devicePixelRatio||1, 1.7));
+  renderer.setSize(innerWidth, innerHeight);
+  composer.setSize(innerWidth, innerHeight);
+  bloom.setSize(innerWidth, innerHeight);
+  const px = renderer.getPixelRatio();
+  glmUni.uPx.value = px; knotUni.uPx.value = px; hopfUni.uPx.value = px; solUni.uPx.value = px;
+  dustMat.uniforms.uPx.value = px;
+});
+
+const clock = new THREE.Clock();
+function frame() {
+  requestAnimationFrame(frame);
+  const dt = Math.min(clock.getDelta(), 0.05);
+  tWorld += dt;
+  if (entered) tChapter += dt;
+  const t = tWorld;
+  const L1 = lifeFn(t, 0.2, 1.1, 2.4);
+  const L2 = lifeFn(t, 1.7, 0.4, 3.1);
+
+  glmUni.uTime.value = t; glmUni.uLife.value = L1 + tug.muse*0.12 + tug.qwen*0.08;
+  knotUni.uTime.value = t; knotUni.uLife.value = L2 + tug.sol*0.1;
+  hopfUni.uTime.value = t; hopfUni.uLife.value = L1; hopfUni.uBreathe.value = 0.5+0.5*Math.sin(t*0.19);
+  solUni.uTime.value = t;
+  solUni.uReveal.value += ((entered?1:0.22) - solUni.uReveal.value) * (1-Math.exp(-(entered?0.6:0.15)*dt));
+  dustMat.uniforms.uTime.value = t;
+
+  glmTick(dt); knotTick(dt); hopfTick(dt, t);
+  museTick(dt, t, pointer.down);
+  qwenTick(dt, t);
+  couple(dt);
+  spontaneous(tChapter);
+  tickTethers(t);
+  tickAudio(t);
+  updateCamera(dt, t);
+  if (entered) updateLabels();
+
+  choir.rotation.y = 0.04 * Math.sin(t * 0.017);
+  choir.rotation.x = 0.02 * Math.sin(t * 0.013);
+
+  bloomPulse *= Math.exp(-dt / 0.9);
+  bloom.strength = 0.38 + 0.10*L1 + 0.22*bloomPulse + tug.glm*0.06;
+  renderer.toneMappingExposure = 0.68 + L1*0.08 + (entered ? 0.08 : 0);
+
+  composer.render();
+}
+frame();
+</script>
+</body>
+</html>

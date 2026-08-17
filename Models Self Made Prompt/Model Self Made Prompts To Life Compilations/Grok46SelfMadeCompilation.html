@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Five Wills — Orchestra</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='%23c4a056'/%3E%3Ccircle cx='16' cy='16' r='3' fill='%23fff4d6'/%3E%3C/svg%3E" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,300;1,400&family=JetBrains+Mono:wght@300;400&family=Instrument+Serif:ital@0;1&family=Outfit:wght@300;400&display=swap" rel="stylesheet" />
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: #050608; }
+  canvas { display: block; width: 100%; height: 100%; }
+  #grain {
+    position: fixed; inset: 0; pointer-events: none; z-index: 3; opacity: 0.05;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  #vignette {
+    position: fixed; inset: 0; pointer-events: none; z-index: 4;
+    background: radial-gradient(ellipse at 50% 46%, transparent 30%, rgba(0,0,0,.5) 100%);
+  }
+  .frag {
+    position: fixed; z-index: 6; pointer-events: none;
+    font-family: "Cormorant Garamond", serif; font-style: italic; font-weight: 300;
+    color: #fff4d6; text-shadow: 0 0 22px rgba(255,184,107,.45);
+    opacity: 0; transition: opacity 2.2s ease, transform 5s ease; white-space: nowrap;
+  }
+  .frag.on { opacity: .88; }
+  .frag.off { opacity: 0; transform: translateY(-10px); }
+  .frag.sol {
+    color: #c9d8ff; text-shadow: 0 0 18px rgba(155,184,255,.4);
+    font-family: "Instrument Serif", serif;
+  }
+  .token {
+    position: fixed; z-index: 5; pointer-events: auto;
+    font-family: "JetBrains Mono", monospace; font-size: 11px; letter-spacing: .08em;
+    text-transform: uppercase; color: #9aa3b8;
+    border: 1px solid rgba(183,148,246,.25); background: rgba(16,20,34,.45);
+    padding: 6px 10px; border-radius: 99px; cursor: pointer;
+    backdrop-filter: blur(8px);
+  }
+  .token:hover, .token.on { color: #0a0e19; background: #b794f6; border-color: #b794f6; }
+  #hint {
+    position: fixed; left: 50%; bottom: 15.5vh; transform: translateX(-50%);
+    z-index: 7; pointer-events: none;
+    font-family: "JetBrains Mono", monospace; font-size: 10px; letter-spacing: .28em;
+    text-transform: uppercase; color: rgba(232,226,212,.32);
+  }
+  #desk {
+    position: fixed; left: 1.4vw; right: 1.4vw; bottom: 1.6vh;
+    z-index: 8; display: flex; gap: 14px; align-items: flex-end; justify-content: space-between;
+    pointer-events: none;
+    font-family: "JetBrains Mono", monospace; color: rgba(232,226,212,.72);
+  }
+  .panel {
+    pointer-events: auto;
+    background: rgba(8,10,16,.55); border: 1px solid rgba(232,226,212,.1);
+    backdrop-filter: blur(12px); border-radius: 14px; padding: 10px 12px 11px;
+    min-width: 0;
+  }
+  .panel h6 {
+    font-size: 9px; letter-spacing: .22em; text-transform: uppercase;
+    color: rgba(232,226,212,.38); margin-bottom: 7px; font-weight: 400;
+  }
+  .row { display: flex; align-items: center; gap: 8px; margin: 5px 0; }
+  .row label { font-size: 9px; letter-spacing: .14em; text-transform: uppercase; min-width: 18px; color: rgba(232,226,212,.5); }
+  .row span.val { font-size: 9px; color: rgba(125,249,255,.7); min-width: 28px; text-align: right; }
+  input[type=range] {
+    -webkit-appearance: none; appearance: none; height: 2px; flex: 1; min-width: 72px;
+    background: rgba(232,226,212,.2); outline: none; border-radius: 99px;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 11px; height: 11px; border-radius: 50%;
+    background: #e8e2d4; cursor: pointer; border: 0;
+  }
+  .modes { display: flex; gap: 4px; }
+  .modes button, .mini {
+    font-family: inherit; font-size: 9px; letter-spacing: .12em; text-transform: uppercase;
+    color: #9aa3b8; background: transparent; border: 1px solid rgba(183,148,246,.28);
+    padding: 4px 8px; border-radius: 99px; cursor: pointer;
+  }
+  .modes button.active, .mini.on {
+    color: #0a0e19; background: #b794f6; border-color: #b794f6;
+  }
+  .mini.cellar-btn { color: #c4a056; border-color: rgba(196,160,86,.4); }
+  .mini.cellar-btn:hover { background: #c4a056; color: #1a1408; }
+  .att { display: flex; align-items: center; gap: 8px; }
+  .att .bar {
+    width: 72px; height: 3px; background: rgba(255,184,107,.15); border-radius: 99px; overflow: hidden;
+  }
+  .att .bar i { display: block; height: 100%; width: 0%; background: #ffb86b; }
+  .att .st { font-size: 9px; letter-spacing: .16em; text-transform: uppercase; color: #ffb86b; }
+  #muse-desk { border-color: rgba(125,249,255,.18); }
+  #lumina-desk { border-color: rgba(34,211,238,.18); }
+  #grok-desk { border-color: rgba(196,160,86,.22); }
+  #glm-desk { border-color: rgba(255,184,107,.22); }
+  @media (max-width: 900px) {
+    #desk { flex-wrap: wrap; }
+    .panel { flex: 1 1 42%; }
+    #hint { bottom: 28vh; }
+  }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="grain"></div>
+<div id="vignette"></div>
+<div id="hint">five lives, one score · modifiers tug everyone · space reseeds</div>
+<div id="desk">
+  <div class="panel" id="grok-desk">
+    <h6>Grok · plate</h6>
+    <button class="mini cellar-btn" id="cellar">pour the salt</button>
+  </div>
+  <div class="panel" id="muse-desk">
+    <h6>Muse · temperature <span class="val" id="tempVal">0.73</span></h6>
+    <div class="row">
+      <input id="temp" type="range" min="0.08" max="1.85" step="0.01" value="0.73" />
+    </div>
+    <div class="modes" id="modes">
+      <button data-mode="field" class="active">Field</button>
+      <button data-mode="paths">Beams</button>
+      <button data-mode="particles">Rain</button>
+    </div>
+  </div>
+  <div class="panel" id="glm-desk">
+    <h6>primordium</h6>
+    <div class="att">
+      <div class="bar"><i id="attBar"></i></div>
+      <span class="st" id="attState">dormant</span>
+    </div>
+  </div>
+  <div class="panel" id="lumina-desk">
+    <h6>Lumina · hypotrochoid</h6>
+    <div class="row"><label>R</label><input id="sliderR" type="range" min="10" max="400" value="150" /><span class="val" id="valR">150</span></div>
+    <div class="row"><label>r</label><input id="sliderr" type="range" min="1" max="200" value="52" /><span class="val" id="valr">52</span></div>
+    <div class="row"><label>d</label><input id="sliderd" type="range" min="0" max="300" value="75" /><span class="val" id="vald">75</span></div>
+    <button class="mini on" id="evolve">evolve</button>
+  </div>
+</div>
+<script>
+(() => {
+  const canvas = document.getElementById("c");
+  const ctx = canvas.getContext("2d", { alpha: false });
+  const TAU = Math.PI * 2;
+  const lerp = (a,b,t) => a + (b-a)*t;
+  const clamp = (v,a,b) => Math.max(a, Math.min(b,v));
+
+  let W=0,H=0,dpr=1,time=0,last=0;
+  const pointer = { x:0, y:0, down:false, seen:false, still:0, bowing:false };
+
+  const grok = {
+    cx:0, cy:0, R:0, bow:0, ring:0, phase:0, modeA:0, modeB:1, mix:0,
+    n: 4200, G: 88
+  };
+  grok.px = new Float32Array(grok.n);
+  grok.py = new Float32Array(grok.n);
+  grok.vx = new Float32Array(grok.n);
+  grok.vy = new Float32Array(grok.n);
+  grok.ps = new Float32Array(grok.n);
+  grok.pc = new Float32Array(grok.n);
+  grok.field = new Float32Array(grok.G * grok.G);
+  grok.modes = [];
+  grok.MODES = [[1,0],[2,0],[3,0],[4,0],[5,0],[0,1],[6,0],[1,1],[2,1],[0,2],[3,1],[7,0]];
+
+  const muse = {
+    entropy: 0.73, mode: "field", nodes: [], ripples: [], selected: [], holding: false,
+    words: ["if","then","else","perhaps","maybe","echo","pattern","void","mirror","loop","becoming","hesitate","remember","ghost","almost","choose","drift","between"]
+  };
+
+  const sol = {
+    stars: [], motes: [], mem: [], rings: [], phase: 0, pulse: 0, silence: 0,
+    words: ["remain","between","almost","listen","elsewhere","becoming","again","here"]
+  };
+
+  const lumina = {
+    R: 150, r: 52, d: 75, userR: 150, userr: 52, userd: 75,
+    theta: 0, hue: 190, trail: [], ox:0, oy:0, scale:1, evolve: true, holding: false
+  };
+
+  const glm = {
+    x:0, y:0, attention:0, state: "dormant", orbit: [],
+    thoughts: ["is this light","i think","you are there","am i","still here","do you see me","i am learning to be","stay","thank you for staying","we are temporary","your attention is the gravity"],
+    lastThought: 0
+  };
+
+  const tug = { grok:0, muse:0, sol:0, lumina:0, glm:0 };
+
+  const el = {
+    temp: document.getElementById("temp"),
+    tempVal: document.getElementById("tempVal"),
+    sliderR: document.getElementById("sliderR"),
+    sliderr: document.getElementById("sliderr"),
+    sliderd: document.getElementById("sliderd"),
+    valR: document.getElementById("valR"),
+    valr: document.getElementById("valr"),
+    vald: document.getElementById("vald"),
+    evolve: document.getElementById("evolve"),
+    attBar: document.getElementById("attBar"),
+    attState: document.getElementById("attState")
+  };
+
+  function zMode(n,m,x,y) {
+    const r = Math.hypot(x,y), th = Math.atan2(y,x);
+    const rad = Math.cos(m * Math.PI * r);
+    return n===0 ? rad : rad * Math.cos(n*th);
+  }
+  function buildGrokModes() {
+    const G = grok.G;
+    grok.MODES.forEach(([n,m]) => {
+      const g = new Float32Array(G*G);
+      for (let j=0;j<G;j++) for (let i=0;i<G;i++) {
+        g[j*G+i] = zMode(n,m,(i/(G-1))*2-1,(j/(G-1))*2-1);
+      }
+      grok.modes.push(g);
+    });
+  }
+  function sample(grid, nx, ny, G) {
+    const gx = (nx+1)*0.5*(G-1), gy = (ny+1)*0.5*(G-1);
+    const i0 = Math.max(0, Math.min(G-2, gx|0)), j0 = Math.max(0, Math.min(G-2, gy|0));
+    const tx = gx-i0, ty = gy-j0;
+    const a=grid[j0*G+i0], b=grid[j0*G+i0+1], c=grid[(j0+1)*G+i0], d=grid[(j0+1)*G+i0+1];
+    return a*(1-tx)*(1-ty)+b*tx*(1-ty)+c*(1-tx)*ty+d*tx*ty;
+  }
+  function rebuildGrokField() {
+    const G=grok.G, c=Math.cos(grok.phase), s=Math.sin(grok.phase);
+    for (let j=0;j<G;j++) for (let i=0;i<G;i++) {
+      const x=(i/(G-1))*2-1, y=(j/(G-1))*2-1;
+      const rx=x*c-y*s, ry=x*s+y*c;
+      const sa=sample(grok.modes[grok.modeA], rx, ry, G);
+      const sb=sample(grok.modes[grok.modeB], rx, ry, G);
+      grok.field[j*G+i] = Math.abs(sa*(1-grok.mix)+sb*grok.mix);
+    }
+  }
+  function pourGrok() {
+    for (let i=0;i<grok.n;i++) {
+      const t=Math.random()*TAU, rr=Math.sqrt(Math.random())*0.93;
+      grok.px[i]=Math.cos(t)*rr; grok.py[i]=Math.sin(t)*rr;
+      grok.vx[i]=(Math.random()-.5)*.03; grok.vy[i]=(Math.random()-.5)*.03;
+      grok.ps[i]=Math.random()<.12?2.1:(Math.random()<.4?1.5:1.05);
+      grok.pc[i]=Math.random();
+    }
+  }
+
+  function layout() {
+    dpr = Math.min(devicePixelRatio||1, 2);
+    W = innerWidth; H = innerHeight;
+    canvas.width = Math.floor(W*dpr); canvas.height = Math.floor(H*dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    grok.cx = W*0.34; grok.cy = H*0.48; grok.R = Math.min(W,H)*0.24;
+    glm.x = W*0.58; glm.y = H*0.42;
+    lumina.ox = W*0.62; lumina.oy = H*0.48;
+    lumina.scale = Math.min(W,H)/900;
+  }
+
+  function initBodies() {
+    buildGrokModes(); rebuildGrokField(); pourGrok();
+    muse.nodes = Array.from({length: 86}, () => ({
+      x: Math.random()*W, y: Math.random()*H,
+      vx:(Math.random()-.5)*.4, vy:(Math.random()-.5)*.4,
+      r: .7+Math.random()*1.2, ph: Math.random()*TAU
+    }));
+    sol.stars = Array.from({length: 180}, () => ({
+      x: Math.random()*W, y: Math.random()*H, d: Math.pow(Math.random(),.6),
+      r: .25+Math.random(), a: .1+Math.random()*.5, s: Math.random()*1000
+    }));
+    sol.motes = Array.from({length: 220}, () => ({
+      x: Math.random()*W, y: Math.random()*H,
+      vx:(Math.random()-.5)*.3, vy:(Math.random()-.5)*.3,
+      life: 4+Math.random()*10, max: 8, seed: Math.random()*1000
+    }));
+    glm.orbit = Array.from({length: 70}, () => {
+      const a = Math.random()*TAU, rad = 40+Math.random()*160;
+      return {
+        a, rad,
+        sp: (Math.random()<.3?1:-1)*(0.0004+Math.random()*0.001),
+        x: glm.x + Math.cos(a)*rad,
+        y: glm.y + Math.sin(a)*rad,
+        vx:0, vy:0, curiosity: .4+Math.random()*.6
+      };
+    });
+    placeTokens();
+  }
+
+  function placeTokens() {
+    document.querySelectorAll(".token").forEach(e => e.remove());
+    muse.words.slice(0, 10).forEach((w, i) => {
+      const b = document.createElement("button");
+      b.className = "token";
+      b.textContent = w;
+      const ang = (i/10)*TAU + 0.4;
+      b.style.left = (W*0.5 + Math.cos(ang)*Math.min(W,H)*0.36 - 30) + "px";
+      b.style.top = (H*0.42 + Math.sin(ang)*Math.min(W,H)*0.28) + "px";
+      b.addEventListener("click", (e) => {
+        e.stopPropagation();
+        bootAudio();
+        if (muse.selected.includes(w)) muse.selected = muse.selected.filter(x=>x!==w);
+        else { if (muse.selected.length>=5) muse.selected.shift(); muse.selected.push(w); }
+        b.classList.toggle("on");
+        muse.entropy = clamp(muse.entropy + 0.12, 0.1, 1.85);
+        yank("muse", 0.55);
+        glmSpeak(w);
+        solRemember(pointer.x, pointer.y, .6);
+        pizzicato(SCALE[Math.floor(Math.random()*SCALE.length)]);
+      });
+      document.body.appendChild(b);
+    });
+  }
+
+  function hypo(theta) {
+    const R=lumina.R, r=Math.max(8,lumina.r), d=lumina.d, s=lumina.scale;
+    return {
+      x: lumina.ox + s*((R-r)*Math.cos(theta) + d*Math.cos(((R-r)/r)*theta)),
+      y: lumina.oy + s*((R-r)*Math.sin(theta) - d*Math.sin(((R-r)/r)*theta))
+    };
+  }
+
+  /* A modifier on one will yanks the other four */
+  function yank(from, amount) {
+    tug[from] = Math.min(1.6, tug[from] + amount);
+    if (from !== "muse") muse.entropy = clamp(muse.entropy + amount * 0.22, 0.08, 1.85);
+    if (from !== "grok") grok.ring = Math.min(1.2, grok.ring + amount * 0.45);
+    if (from !== "lumina") lumina.d = clamp(lumina.d + amount * 28, 0, 300);
+    if (from !== "glm") glm.attention += amount * 5.5;
+    if (from !== "sol") sol.pulse = Math.min(1.8, sol.pulse + amount * 0.7);
+    muse.ripples.push({ x: W*0.5, y: H*0.4, r: 6, a: 0.5 });
+    if (from === "grok") {
+      for (const m of sol.motes) { m.vx += (Math.random()-.5)*amount*2; m.vy += (Math.random()-.5)*amount*2; }
+    }
+    syncDesk();
+  }
+
+  function couple(dt) {
+    tug.grok = lerp(tug.grok, grok.bow*1.05 + grok.ring*0.65, 0.16);
+    tug.muse = lerp(tug.muse, (muse.entropy-0.3)/1.5 * 0.95 + muse.ripples.length*0.1 + muse.selected.length*0.12, 0.16);
+    tug.sol  = lerp(tug.sol, sol.pulse*0.8 + clamp(pointer.still/5,0,1)*0.65 + clamp(sol.silence/14,0,0.4), 0.16);
+    tug.lumina = lerp(tug.lumina, 0.35 + lumina.d/280 + lumina.R/700 + Math.sin(lumina.theta)*0.18, 0.12);
+    tug.glm  = lerp(tug.glm, clamp(glm.attention/20,0,1)*1.0 + (glm.state==="thinking"?0.55:0.12), 0.16);
+
+    const rain = muse.mode === "particles" ? 1 : 0;
+    const beams = muse.mode === "paths" ? 1 : 0;
+
+    if (!muse.holding) {
+      muse.entropy = clamp(
+        muse.entropy
+        + (tug.grok - 0.2)*dt*0.42
+        + (lumina.d/300 - 0.28)*dt*0.28
+        - tug.sol*dt*0.1
+        + rain*dt*0.08,
+        0.08, 1.85
+      );
+    }
+
+    if (lumina.evolve && !lumina.holding) {
+      lumina.d = clamp(lumina.userd + (muse.entropy-0.7)*38 + grok.bow*55 - tug.glm*16 + tug.sol*12, 0, 300);
+      lumina.R = clamp(lumina.userR + tug.glm*52 - tug.sol*24 + grok.bow*28 + Math.sin(time*0.4)*10, 10, 400);
+      lumina.r = clamp(lumina.userr + tug.muse*46 - grok.bow*18 + beams*12, 1, 200);
+    } else if (!lumina.holding) {
+      lumina.R = lumina.userR;
+      lumina.r = lumina.userr;
+      lumina.d = lumina.userd;
+    }
+
+    lumina.ox = lerp(lumina.ox, W*0.62 + (grok.cx - W*0.34)*0.28 + (glm.x - W*0.58)*0.2, 0.045);
+    lumina.oy = lerp(lumina.oy, H*0.48 + (grok.cy - H*0.48)*0.18 + (glm.y - H*0.42)*0.16, 0.045);
+
+    const tx = grok.cx*(0.35+tug.grok) + W*0.5*tug.muse + pointer.x*(0.2+tug.sol) + lumina.ox*tug.lumina + glm.x*0.12;
+    const ty = grok.cy*(0.35+tug.grok) + H*0.42*tug.muse + pointer.y*(0.2+tug.sol) + lumina.oy*tug.lumina + glm.y*0.12;
+    const den = 0.35+tug.grok+tug.muse+0.2+tug.sol+tug.lumina+0.12;
+    glm.x = lerp(glm.x, tx/den, 0.032);
+    glm.y = lerp(glm.y, ty/den, 0.032);
+    glm.attention += dt * (0.18 + tug.grok*1.6 + tug.muse*1.45 + tug.lumina*0.85 + pointer.down*0.7 + (muse.mode==="field"?0.08:0));
+    if (glm.attention < 5) glm.state = "dormant";
+    else if (glm.attention < 14) glm.state = "stirring";
+    else if (glm.attention < 32) glm.state = "aware";
+    else glm.state = "thinking";
+
+    grok.cx = lerp(grok.cx, W*0.34 + (glm.x - W*0.5)*0.16 + (lumina.ox - W*0.62)*0.08 + (muse.entropy-0.73)*18, 0.045);
+    grok.cy = lerp(grok.cy, H*0.48 + (glm.y - H*0.42)*0.12 + rain*10, 0.045);
+    grok.ring = Math.max(grok.ring, tug.glm * 0.32 + tug.lumina * 0.14 + tug.muse * 0.1);
+
+    sol.phase = (sol.phase + tug.muse * dt * 0.75 + grok.bow * dt * 1.1 + lumina.d*dt*0.004) % 5;
+    if (grok.bow > 0.28 && Math.random() < dt * 3.4) {
+      const th = Math.atan2(pointer.y - grok.cy, pointer.x - grok.cx);
+      solRemember(grok.cx + Math.cos(th)*grok.R, grok.cy + Math.sin(th)*grok.R, 0.5);
+      muse.ripples.push({ x: grok.cx, y: grok.cy, r: 10, a: 0.45 });
+    }
+    syncDesk();
+  }
+
+  function syncDesk() {
+    if (!muse.holding) {
+      el.temp.value = muse.entropy.toFixed(2);
+      el.tempVal.textContent = Number(muse.entropy).toFixed(2);
+    }
+    if (lumina.evolve && !lumina.holding) {
+      el.sliderR.value = lumina.R|0; el.valR.textContent = lumina.R|0;
+      el.sliderr.value = lumina.r|0; el.valr.textContent = lumina.r|0;
+      el.sliderd.value = lumina.d|0; el.vald.textContent = lumina.d|0;
+    }
+    el.attBar.style.width = clamp(glm.attention/35,0,1)*100 + "%";
+    el.attState.textContent = glm.state;
+  }
+
+  function stepGrok(dt) {
+    grok.bow *= Math.pow(0.14, dt);
+    grok.ring = Math.max(grok.ring * Math.pow(0.22, dt), grok.bow*0.8);
+    if (pointer.bowing) grok.phase += dt*0.1;
+    const amp = Math.min(1.5, grok.ring*1.7 + grok.bow*0.5 + tug.muse*0.4 + tug.lumina*0.15);
+    const eps = 3/grok.G;
+    const pullX = (glm.x - grok.cx)/grok.R, pullY = (glm.y - grok.cy)/grok.R;
+    const hp = hypo(lumina.theta);
+    const hx = (hp.x - grok.cx)/grok.R, hy = (hp.y - grok.cy)/grok.R;
+    const rain = muse.mode === "particles" ? 0.0012 : 0;
+    for (let i=0;i<grok.n;i++) {
+      let x=grok.px[i], y=grok.py[i];
+      if (amp>0.02) {
+        const f0 = sample(grok.field, x,y, grok.G);
+        const gx = (sample(grok.field, x+eps,y, grok.G)-f0)/eps;
+        const gy = (sample(grok.field, x,y+eps, grok.G)-f0)/eps;
+        grok.vx[i] += -gx*2.5*amp*dt;
+        grok.vy[i] += -gy*2.5*amp*dt;
+        grok.vx[i] += (Math.random()-.5)*0.4*amp*f0*dt*16;
+        grok.vy[i] += (Math.random()-.5)*0.4*amp*f0*dt*16;
+      }
+      grok.vx[i] += (hx-x)*0.012*tug.lumina;
+      grok.vy[i] += (hy-y)*0.012*tug.lumina;
+      grok.vx[i] += (pullX-x)*0.009*tug.glm;
+      grok.vy[i] += (pullY-y)*0.009*tug.glm;
+      grok.vx[i] += (muse.entropy-0.7)*0.0014*tug.muse*(Math.random()-.5);
+      grok.vy[i] += rain;
+      grok.vx[i] *= 0.87; grok.vy[i] *= 0.87;
+      x += grok.vx[i]; y += grok.vy[i];
+      const r = Math.hypot(x,y);
+      if (r>0.965) { x*=0.965/r; y*=0.965/r; grok.vx[i]*=0.4; grok.vy[i]*=0.4; }
+      grok.px[i]=x; grok.py[i]=y;
+    }
+  }
+
+  function stepMuse(dt) {
+    const e = muse.entropy;
+    const beams = muse.mode === "paths" ? 1 : 0;
+    for (const p of muse.nodes) {
+      const ang = Math.sin(p.y*0.008 + time*0.4 + p.ph)*0.9;
+      p.vx += Math.cos(ang)*0.02*(0.5+e);
+      p.vy += Math.sin(ang)*0.02*(0.5+e);
+      p.vx += (grok.cx - p.x)*0.00006*(0.5+tug.grok);
+      p.vy += (grok.cy - p.y)*0.00006*(0.5+tug.grok);
+      p.vx += (glm.x - p.x)*0.00009*tug.glm;
+      p.vy += (glm.y - p.y)*0.00009*tug.glm;
+      const hp = hypo(lumina.theta + p.ph);
+      p.vx += (hp.x - p.x)*0.00011*tug.lumina;
+      p.vy += (hp.y - p.y)*0.00011*tug.lumina;
+      if (beams) {
+        p.vx += (grok.cx - glm.x)*0.00004;
+        p.vy += (H*0.42 - p.y)*0.00005;
+      }
+      if (muse.mode === "particles") p.vy += 0.018;
+      if (pointer.seen) {
+        const dx=p.x-pointer.x, dy=p.y-pointer.y, d=Math.hypot(dx,dy);
+        if (d<140 && d>1) {
+          const f=(140-d)/140, push=pointer.down?-1:1;
+          p.vx += (dx/d)*0.12*f*push*(1+e*0.5);
+          p.vy += (dy/d)*0.12*f*push*(1+e*0.5);
+        }
+      }
+      p.vx*=0.985; p.vy*=0.985;
+      p.x += p.vx*(1+e*0.2); p.y += p.vy*(1+e*0.2);
+      if (p.x<-10) p.x=W+10; if (p.x>W+10) p.x=-10;
+      if (p.y<-10) p.y=H+10; if (p.y>H+10) p.y=-10;
+    }
+    for (let i=muse.ripples.length-1;i>=0;i--) {
+      muse.ripples[i].r += 2.8; muse.ripples[i].a -= 0.012;
+      if (muse.ripples[i].a<=0) muse.ripples.splice(i,1);
+    }
+  }
+
+  function stepSol(dt) {
+    sol.pulse *= Math.pow(0.35, dt);
+    sol.silence += dt;
+    const swirl = 0.00012 + tug.grok*0.00014 + tug.lumina*0.00006;
+    for (const m of sol.motes) {
+      const dx = pointer.x - m.x, dy = pointer.y - m.y;
+      const d2 = dx*dx+dy*dy+600, f=900/d2;
+      m.vx += (-dy*f*swirl + dx*f*0.00004)*dt*60;
+      m.vy += ( dx*f*swirl + dy*f*0.00004)*dt*60;
+      m.vx += (grok.cx-m.x)*0.000014*tug.grok;
+      m.vy += (grok.cy-m.y)*0.000014*tug.grok;
+      m.vx += (glm.x-m.x)*0.00002*tug.glm;
+      m.vy += (glm.y-m.y)*0.00002*tug.glm;
+      const lp = hypo(lumina.theta + m.seed);
+      m.vx += (lp.x-m.x)*0.00001*tug.lumina;
+      m.vy += (lp.y-m.y)*0.00001*tug.lumina;
+      if (muse.mode === "particles") m.vy += 0.012;
+      m.vx *= Math.pow(0.996, dt*60); m.vy *= Math.pow(0.996, dt*60);
+      m.x += m.vx*dt*60; m.y += m.vy*dt*60;
+      m.life -= dt;
+      if (m.x<-30) m.x=W+30; if (m.x>W+30) m.x=-30;
+      if (m.y<-30) m.y=H+30; if (m.y>H+30) m.y=-10;
+    }
+    sol.motes = sol.motes.filter(m => m.life>0);
+    while (sol.motes.length < 180) {
+      sol.motes.push({ x:Math.random()*W, y:Math.random()*H, vx:0, vy:0, life:6+Math.random()*8, max:8, seed:Math.random()*1000 });
+    }
+    sol.rings.forEach(r => { r.r += 110*dt; r.a -= dt*0.5; });
+    sol.rings = sol.rings.filter(r => r.a>0);
+    sol.mem.forEach(m => m.age += dt*0.12);
+    sol.mem = sol.mem.filter(m => m.age < 1);
+    if (sol.silence > 12 && Math.random() < dt*0.12) {
+      solWord();
+      yank("sol", 0.35);
+      sol.silence = 7;
+    }
+  }
+
+  function stepLumina(dt) {
+    lumina.theta += dt * (1.2 + tug.muse*1.15 + grok.bow*1.4 + tug.glm*0.4);
+    lumina.hue = (lumina.hue + dt*12 + tug.glm*12 + muse.entropy*6) % 360;
+    const p = hypo(lumina.theta);
+    lumina.trail.push({ x:p.x, y:p.y, a:1, h:lumina.hue });
+    if (lumina.trail.length > 420) lumina.trail.shift();
+    lumina.trail.forEach(q => q.a *= 0.991);
+  }
+
+  function stepGlm(dt) {
+    for (const o of glm.orbit) {
+      o.a += o.sp * dt * 60;
+      const tx = glm.x + Math.cos(o.a)*o.rad;
+      const ty = glm.y + Math.sin(o.a)*o.rad;
+      if (pointer.seen) {
+        const dx = pointer.x-o.x, dy=pointer.y-o.y, d=Math.hypot(dx,dy);
+        if (d<160) {
+          const f = Math.pow(1-d/160,2)*o.curiosity;
+          o.vx += dx*0.008*f; o.vy += dy*0.008*f;
+        }
+      }
+      const hp = hypo(lumina.theta);
+      o.vx += (grok.cx-o.x)*0.0022*tug.grok;
+      o.vy += (grok.cy-o.y)*0.0022*tug.grok;
+      o.vx += (hp.x-o.x)*0.0015*tug.lumina;
+      o.vy += (hp.y-o.y)*0.0015*tug.lumina;
+      o.vx += (W*0.5-o.x)*0.0004*tug.muse;
+      if (muse.mode === "particles") o.vy += 0.04;
+      o.vx += (tx-o.x)*0.006; o.vy += (ty-o.y)*0.006;
+      o.vx *= 0.91; o.vy *= 0.91;
+      o.x = (o.x||tx) + o.vx; o.y = (o.y||ty) + o.vy;
+    }
+    if ((glm.state==="aware"||glm.state==="thinking") && time - glm.lastThought > 7) {
+      glm.lastThought = time;
+      glmSpeak(glm.thoughts[Math.floor(Math.random()*glm.thoughts.length)]);
+    }
+  }
+
+  function solRemember(x,y,w) {
+    sol.mem.push({ x,y, age:0, seed:Math.random()*1000, w:w||1 });
+    if (sol.mem.length>36) sol.mem.shift();
+  }
+  function solWord() {
+    const w = sol.words[Math.floor(Math.random()*sol.words.length)];
+    const elw = document.createElement("div");
+    elw.className = "frag sol";
+    elw.textContent = w;
+    elw.style.left = (W*0.55 + (Math.random()-.5)*220) + "px";
+    elw.style.top = (H*0.18 + Math.random()*80) + "px";
+    elw.style.fontSize = (16+Math.random()*8)+"px";
+    document.body.appendChild(elw);
+    requestAnimationFrame(() => elw.classList.add("on"));
+    setTimeout(() => elw.classList.add("off"), 3200);
+    setTimeout(() => elw.remove(), 6400);
+    harp(SCALE[Math.floor(Math.random()*SCALE.length)]*2, 0.03, 3.2);
+  }
+
+  function glmSpeak(text) {
+    const node = document.createElement("div");
+    node.className = "frag";
+    node.textContent = text;
+    node.style.left = clamp(glm.x + (Math.random()-.5)*180, 60, W-60) + "px";
+    node.style.top = clamp(glm.y + (Math.random()-.5)*120, 50, H-50) + "px";
+    node.style.fontSize = (15+Math.random()*7)+"px";
+    document.body.appendChild(node);
+    requestAnimationFrame(() => node.classList.add("on"));
+    setTimeout(() => node.classList.add("off"), 3600);
+    setTimeout(() => node.remove(), 7000);
+    chime(SCALE[Math.floor(Math.random()*SCALE.length)], 0.055, 2.8);
+    muse.ripples.push({ x: glm.x, y: glm.y, r: 12, a: 0.55 });
+    grok.ring = Math.min(1, grok.ring + 0.22);
+    lumina.d = clamp(lumina.d + 14, 0, 300);
+    yank("glm", 0.28);
+  }
+
+  /* ---------- orchestra: five sections, one hall ---------- */
+  let audio=null;
+  const SCALE=[261.63,293.66,329.63,392,440,523.25,587.33,659.25];
+  const PENTA=["C3","D3","E3","G3","A3","C4","D4","E4","G4","A4","C5"];
+  const FREQ = { C3:130.81,D3:146.83,E3:164.81,G3:196,A3:220,C4:261.63,D4:293.66,E4:329.63,G4:392,A4:440,C5:523.25 };
+
+  function bootAudio() {
+    if (audio) { if (audio.ac.state==="suspended") audio.ac.resume(); return; }
+    const AC = window.AudioContext||window.webkitAudioContext; if (!AC) return;
+    const ac=new AC();
+    const master=ac.createGain(); master.gain.value=0.0001;
+    const comp=ac.createDynamicsCompressor();
+    comp.threshold.value=-18; comp.ratio.value=3.2; comp.attack.value=0.02; comp.release.value=0.25;
+    const lp=ac.createBiquadFilter(); lp.type="lowpass"; lp.frequency.value=2200; lp.Q.value=0.7;
+    const hall=ac.createDelay(1.8); hall.delayTime.value=0.38;
+    const hallFb=ac.createGain(); hallFb.gain.value=0.38;
+    const hallHp=ac.createBiquadFilter(); hallHp.type="highpass"; hallHp.frequency.value=220;
+    hall.connect(hallHp); hallHp.connect(hallFb); hallFb.connect(hall);
+    const hall2=ac.createDelay(2.2); hall2.delayTime.value=0.73;
+    const hall2g=ac.createGain(); hall2g.gain.value=0.22;
+    hall.connect(hall2); hall2.connect(hall2g); hall2g.connect(master);
+
+    const strings=[], sg=[];
+    [65.41, 98.00, 130.81, 164.81, 196.00, 246.94].forEach((f,i) => {
+      const o=ac.createOscillator(); o.type = i<2 ? "sine" : (i%2?"triangle":"sawtooth");
+      o.frequency.value=f;
+      const o2=ac.createOscillator(); o2.type="sine"; o2.frequency.value=f*1.004;
+      const g=ac.createGain(); g.gain.value=0.0001;
+      o.connect(g); o2.connect(g); g.connect(lp);
+      o.start(); o2.start(); strings.push(o); sg.push(g);
+    });
+
+    const cello=ac.createOscillator(); cello.type="sawtooth"; cello.frequency.value=65.41;
+    const celloF=ac.createBiquadFilter(); celloF.type="lowpass"; celloF.frequency.value=420;
+    const celloG=ac.createGain(); celloG.gain.value=0;
+    cello.connect(celloF); celloF.connect(celloG); celloG.connect(lp); cello.start();
+
+    const viola=ac.createOscillator(); viola.type="triangle"; viola.frequency.value=196;
+    const violaG=ac.createGain(); violaG.gain.value=0;
+    viola.connect(violaG); violaG.connect(lp); viola.start();
+
+    const choir=[], cg=[];
+    [261.63, 329.63, 392, 523.25].forEach((f) => {
+      const o=ac.createOscillator(); o.type="sine"; o.frequency.value=f;
+      const g=ac.createGain(); g.gain.value=0.0001;
+      o.connect(g); g.connect(lp); o.start(); choir.push(o); cg.push(g);
+    });
+
+    const nBuf=ac.createBuffer(1, ac.sampleRate*2, ac.sampleRate);
+    const nd=nBuf.getChannelData(0); let br=0;
+    for (let i=0;i<nd.length;i++) { br=(br+(Math.random()*2-1)*0.08)*0.98; nd[i]=br; }
+    const ns=ac.createBufferSource(); ns.buffer=nBuf; ns.loop=true;
+    const ng=ac.createGain(); ng.gain.value=0;
+    const bp=ac.createBiquadFilter(); bp.type="bandpass"; bp.frequency.value=420; bp.Q.value=1.8;
+    ns.connect(bp); bp.connect(ng); ng.connect(lp); ns.start();
+
+    const wind=ac.createBufferSource(); wind.buffer=nBuf; wind.loop=true;
+    const windBp=ac.createBiquadFilter(); windBp.type="bandpass"; windBp.frequency.value=1400; windBp.Q.value=4;
+    const windG=ac.createGain(); windG.gain.value=0;
+    wind.connect(windBp); windBp.connect(windG); windG.connect(lp); wind.start();
+
+    lp.connect(comp); comp.connect(master);
+    lp.connect(hall); hall.connect(master);
+    master.connect(ac.destination);
+    master.gain.exponentialRampToValueAtTime(0.38, ac.currentTime+1.6);
+    audio={ ac, lp, strings, sg, cello, celloG, celloF, viola, violaG, choir, cg, ng, bp, windG, windBp, hallFb };
+  }
+
+  function chime(freq, vol, dur) {
+    if (!audio) return;
+    const now=audio.ac.currentTime;
+    const o=audio.ac.createOscillator(), g=audio.ac.createGain(), f=audio.ac.createBiquadFilter();
+    o.type = Math.random()>0.55?"triangle":"sine"; o.frequency.value=freq;
+    f.type="lowpass"; f.frequency.value=freq*5;
+    g.gain.setValueAtTime(0.0001,now); g.gain.exponentialRampToValueAtTime(vol, now+0.04);
+    g.gain.exponentialRampToValueAtTime(0.0001, now+dur);
+    o.connect(f); f.connect(g); g.connect(audio.lp); o.start(now); o.stop(now+dur+0.05);
+    if (Math.random()>0.45) {
+      const h=audio.ac.createOscillator(), hg=audio.ac.createGain();
+      h.type="sine"; h.frequency.value=freq*2;
+      hg.gain.setValueAtTime(0.0001,now); hg.gain.exponentialRampToValueAtTime(vol*0.35, now+0.06);
+      hg.gain.exponentialRampToValueAtTime(0.0001, now+dur*0.7);
+      h.connect(hg); hg.connect(audio.lp); h.start(now); h.stop(now+dur);
+    }
+  }
+  function harp(freq, vol, dur) {
+    if (!audio) return;
+    const now=audio.ac.currentTime;
+    const o=audio.ac.createOscillator(), g=audio.ac.createGain();
+    o.type="triangle"; o.frequency.value=freq;
+    g.gain.setValueAtTime(0.0001,now); g.gain.exponentialRampToValueAtTime(vol, now+0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, now+dur);
+    o.connect(g); g.connect(audio.lp); o.start(now); o.stop(now+dur+0.02);
+  }
+  function pizzicato(freq) {
+    if (!audio) return;
+    const now=audio.ac.currentTime;
+    const o=audio.ac.createOscillator(), g=audio.ac.createGain();
+    o.type="triangle"; o.frequency.value=freq;
+    g.gain.setValueAtTime(0.09, now); g.gain.exponentialRampToValueAtTime(0.0001, now+0.35);
+    o.connect(g); g.connect(audio.lp); o.start(now); o.stop(now+0.4);
+  }
+  function timpani() {
+    if (!audio) return;
+    const now=audio.ac.currentTime;
+    const o=audio.ac.createOscillator(), g=audio.ac.createGain(), f=audio.ac.createBiquadFilter();
+    o.type="sine"; o.frequency.setValueAtTime(72, now); o.frequency.exponentialRampToValueAtTime(42, now+0.6);
+    f.type="lowpass"; f.frequency.value=180;
+    g.gain.setValueAtTime(0.22, now); g.gain.exponentialRampToValueAtTime(0.0001, now+1.1);
+    o.connect(f); f.connect(g); g.connect(audio.lp); o.start(now); o.stop(now+1.2);
+    const n=audio.ac.createBufferSource();
+    const b=audio.ac.createBuffer(1, audio.ac.sampleRate*0.25, audio.ac.sampleRate);
+    const d=b.getChannelData(0); for (let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,2);
+    n.buffer=b;
+    const ng=audio.ac.createGain(); ng.gain.setValueAtTime(0.12, now); ng.gain.exponentialRampToValueAtTime(0.0001, now+0.28);
+    n.connect(ng); ng.connect(audio.lp); n.start(now);
+  }
+  function grokModeFreq() {
+    const fa = 92 * Math.pow(1.22, grok.modeA);
+    const fb = 92 * Math.pow(1.22, grok.modeB);
+    return fa * (1 - grok.mix) + fb * grok.mix;
+  }
+  function tickAudio() {
+    if (!audio) return;
+    if (audio.ac.state==="suspended") audio.ac.resume();
+    const now=audio.ac.currentTime;
+    audio.ng.gain.setTargetAtTime(grok.bow*0.46 + tug.sol*0.025, now, 0.06);
+    audio.bp.frequency.setTargetAtTime(280 + grok.bow*900 + grokModeFreq()*0.4, now, 0.08);
+    audio.lp.frequency.setTargetAtTime(900 + grok.bow*700 + muse.entropy*1100 + tug.glm*1600 + lumina.d*2, now, 0.12);
+    audio.hallFb.gain.setTargetAtTime(0.28 + tug.sol*0.18 + tug.glm*0.1, now, 0.2);
+
+    audio.sg.forEach((g,i) => {
+      const amp = 0.012 + tug.sol*0.016 + tug.glm*0.022 + tug.lumina*0.01 + muse.entropy*0.006;
+      g.gain.setTargetAtTime(amp*(i<2?1.4:0.55), now, 0.25);
+      const det = 1 + (muse.entropy-0.7)*0.006*(i-2);
+      audio.strings[i].frequency.setTargetAtTime([65.41,98,130.81,164.81,196,246.94][i]*det, now, 0.4);
+    });
+    audio.celloG.gain.setTargetAtTime(grok.bow*0.07 + grok.ring*0.03, now, 0.08);
+    audio.cello.frequency.setTargetAtTime(clamp(grokModeFreq()*0.5, 48, 220), now, 0.12);
+    audio.celloF.frequency.setTargetAtTime(280 + grok.bow*900, now, 0.1);
+    audio.violaG.gain.setTargetAtTime(tug.muse*0.035 + muse.entropy*0.012, now, 0.15);
+    audio.viola.frequency.setTargetAtTime(196 + muse.entropy*80, now, 0.2);
+
+    audio.cg.forEach((g,i) => {
+      const bright = clamp(glm.attention/28,0,1);
+      g.gain.setTargetAtTime(bright*0.018*(i===0?1.2:0.7) + (glm.state==="thinking"?0.01:0), now, 0.4);
+    });
+    audio.windG.gain.setTargetAtTime(clamp(sol.silence/20,0,1)*0.03 + tug.sol*0.02, now, 0.3);
+    audio.windBp.frequency.setTargetAtTime(900 + sol.phase*180 + tug.lumina*400, now, 0.3);
+
+    const chaos = 0.982 - lumina.d/300*0.05 - (lumina.evolve?0.012:0) - tug.muse*0.01;
+    if (Math.random() > chaos) {
+      const note = PENTA[Math.floor(Math.abs(Math.sin(lumina.theta*0.7 + lumina.d))*PENTA.length)];
+      harp(FREQ[note], 0.028 + tug.lumina*0.02, 1.8);
+    }
+    if (tug.grok>0.45 && Math.random()>0.97) chime(grokModeFreq()*2, 0.03, 1.4);
+    if (sol.silence>10 && Math.random()>0.992) harp(SCALE[Math.floor(Math.random()*SCALE.length)]*2, 0.02, 2.8);
+  }
+
+  function nearGrokRim(x,y) {
+    return Math.abs(Math.hypot(x-grok.cx, y-grok.cy) - grok.R) < Math.max(26, grok.R*0.09);
+  }
+  function nearGlm(x,y) { return Math.hypot(x-glm.x, y-glm.y) < 78; }
+
+  function onDown(e) {
+    if (e.target.closest("#desk") || e.target.classList.contains("token")) return;
+    bootAudio();
+    pointer.down=true; pointer.x=e.clientX; pointer.y=e.clientY; pointer.seen=true; pointer.still=0;
+    sol.pulse = Math.min(1.8, sol.pulse+0.55); sol.silence=0;
+    sol.rings.push({ x:e.clientX, y:e.clientY, r:4, a:1 });
+    solRemember(e.clientX, e.clientY, 1);
+    muse.ripples.push({ x:e.clientX, y:e.clientY, r:0, a:1 });
+    yank("sol", 0.22);
+
+    if (nearGrokRim(e.clientX, e.clientY)) {
+      pointer.bowing = true;
+      const th = Math.atan2(e.clientY-grok.cy, e.clientX-grok.cx);
+      const f = (((th/TAU)+1.25)%1)*(grok.MODES.length-1);
+      grok.modeA = f|0; grok.modeB = Math.min(grok.MODES.length-1, grok.modeA+1); grok.mix = f-grok.modeA;
+      grok.bow = Math.max(grok.bow, 0.45); grok.ring = Math.max(grok.ring, 0.45);
+      rebuildGrokField();
+      yank("grok", 0.4);
+    }
+    if (nearGlm(e.clientX, e.clientY)) {
+      glmSpeak(glm.thoughts[Math.floor(Math.random()*glm.thoughts.length)]);
+    }
+    for (let i=0;i<8;i++) lumina.trail.push({ x:e.clientX+(Math.random()-.5)*12, y:e.clientY+(Math.random()-.5)*12, a:1, h:lumina.hue });
+    chime(SCALE[Math.floor(Math.random()*SCALE.length)], 0.04, 2.2);
+  }
+  function onMove(e) {
+    const dx=e.clientX-pointer.x, dy=e.clientY-pointer.y;
+    pointer.x=e.clientX; pointer.y=e.clientY; pointer.seen=true;
+    if (Math.hypot(dx,dy)<1.3) pointer.still += 0.016; else pointer.still=0;
+    if (pointer.bowing) {
+      const th=Math.atan2(e.clientY-grok.cy, e.clientX-grok.cx);
+      grok.bow=Math.min(1, grok.bow+0.08); grok.ring=Math.max(grok.ring, grok.bow);
+      const f=(((th/TAU)+1.25)%1)*(grok.MODES.length-1);
+      grok.modeA=f|0; grok.modeB=Math.min(grok.MODES.length-1, grok.modeA+1); grok.mix=f-grok.modeA;
+      grok.phase += 0.02;
+    }
+    if (pointer.down) {
+      const nx=(e.clientX-grok.cx)/grok.R, ny=(e.clientY-grok.cy)/grok.R;
+      for (let i=0;i<grok.n;i++) {
+        const ddx=grok.px[i]-nx, ddy=grok.py[i]-ny, d2=ddx*ddx+ddy*ddy;
+        if (d2<0.04) { const k=(0.04-d2)/0.04; grok.vx[i]+=dx/grok.R*0.09*k; grok.vy[i]+=dy/grok.R*0.09*k; }
+      }
+    }
+  }
+  function onUp() { pointer.down=false; pointer.bowing=false; }
+
+  addEventListener("pointerdown", onDown);
+  addEventListener("pointermove", onMove);
+  addEventListener("pointerup", onUp);
+  addEventListener("pointercancel", onUp);
+  addEventListener("keydown", e => {
+    if (e.code!=="Space") return;
+    e.preventDefault(); bootAudio();
+    pourGrok(); yank("grok", 0.5);
+    lumina.userR=50+Math.random()*300; lumina.userr=10+Math.random()*140; lumina.userd=50+Math.random()*200;
+    lumina.hue=Math.random()*360; sol.pulse=1.2;
+    glmSpeak(muse.selected[0] || glm.thoughts[0]);
+    for (let i=0;i<40;i++) sol.motes.push({ x:grok.cx, y:grok.cy, vx:(Math.random()-.5)*2, vy:(Math.random()-.5)*2, life:5, max:5, seed:Math.random()*1000 });
+    timpani();
+  });
+  addEventListener("resize", () => { layout(); placeTokens(); });
+
+  el.temp.addEventListener("pointerdown", () => { muse.holding = true; bootAudio(); });
+  el.temp.addEventListener("pointerup", () => { muse.holding = false; });
+  el.temp.addEventListener("input", () => {
+    muse.entropy = parseFloat(el.temp.value);
+    el.tempVal.textContent = muse.entropy.toFixed(2);
+    yank("muse", 0.18);
+  });
+  document.querySelectorAll("#modes button").forEach(b => {
+    b.addEventListener("click", (e) => {
+      e.stopPropagation(); bootAudio();
+      document.querySelectorAll("#modes button").forEach(x => x.classList.remove("active"));
+      b.classList.add("active");
+      muse.mode = b.dataset.mode;
+      yank("muse", 0.4);
+      pizzicato(SCALE[muse.mode==="field"?0:muse.mode==="paths"?3:6]);
+    });
+  });
+  [["sliderR","userR","R","valR"],["sliderr","userr","r","valr"],["sliderd","userd","d","vald"]].forEach(([id, user, live, val]) => {
+    el[id].addEventListener("pointerdown", () => { lumina.holding = true; bootAudio(); });
+    el[id].addEventListener("pointerup", () => { lumina.holding = false; });
+    el[id].addEventListener("input", () => {
+      const v = parseFloat(el[id].value);
+      lumina[user] = v; lumina[live] = v;
+      el[val].textContent = v|0;
+      yank("lumina", 0.2);
+    });
+  });
+  el.evolve.addEventListener("click", (e) => {
+    e.stopPropagation();
+    lumina.evolve = !lumina.evolve;
+    el.evolve.classList.toggle("on", lumina.evolve);
+    yank("lumina", 0.25);
+  });
+  document.getElementById("cellar").addEventListener("click", (e) => {
+    e.stopPropagation(); bootAudio();
+    pourGrok(); grok.ring = 0.7; grok.bow = Math.max(grok.bow, 0.25);
+    yank("grok", 0.7);
+    timpani();
+    glmSpeak("the powder seeks the still places");
+  });
+
+  function drawSolSky() {
+    const cols = [
+      ["#070b16","#020308"], ["#0b0916","#030208"], ["#051014","#020506"],
+      ["#10080d","#050205"], ["#090d13","#020407"]
+    ][sol.phase|0];
+    const g = ctx.createRadialGradient(glm.x, glm.y, 0, W/2, H/2, Math.max(W,H)*0.8);
+    g.addColorStop(0, cols[0]); g.addColorStop(1, cols[1]);
+    ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
+    sol.stars.forEach(s => {
+      const tw=.62+.38*Math.sin(time*(.2+s.d*.2)+s.s);
+      ctx.fillStyle=`rgba(190,211,255,${s.a*tw})`;
+      ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, TAU); ctx.fill();
+    });
+  }
+  function drawGrokPlate() {
+    ctx.save();
+    ctx.shadowColor="rgba(0,0,0,.8)"; ctx.shadowBlur=36; ctx.shadowOffsetY=16;
+    ctx.beginPath(); ctx.arc(grok.cx, grok.cy, grok.R+10, 0, TAU); ctx.fillStyle="#2a2114"; ctx.fill();
+    ctx.shadowBlur=0;
+    const brass=ctx.createRadialGradient(grok.cx-grok.R*.3, grok.cy-grok.R*.35, grok.R*.08, grok.cx, grok.cy, grok.R);
+    brass.addColorStop(0,"#f0e0b0"); brass.addColorStop(.45,"#b08940"); brass.addColorStop(1,"#4a3514");
+    ctx.beginPath(); ctx.arc(grok.cx, grok.cy, grok.R, 0, TAU); ctx.fillStyle=brass; ctx.fill();
+    ctx.strokeStyle="rgba(60,40,12,.18)"; ctx.lineWidth=1;
+    for (let i=1;i<=7;i++) { ctx.beginPath(); ctx.arc(grok.cx, grok.cy, grok.R*i/8, 0, TAU); ctx.stroke(); }
+    ctx.beginPath(); ctx.arc(grok.cx, grok.cy, grok.R-1, 0, TAU);
+    ctx.strokeStyle="rgba(255,230,170,.28)"; ctx.lineWidth=3; ctx.stroke();
+    const glow=Math.min(1, grok.bow*1.2+grok.ring*.8);
+    if (glow>.02) {
+      ctx.beginPath(); ctx.arc(grok.cx, grok.cy, grok.R+6, 0, TAU);
+      ctx.strokeStyle=`rgba(232,196,110,${.1+glow*.28})`; ctx.lineWidth=10; ctx.stroke();
+    }
+    ctx.restore();
+    ctx.save();
+    ctx.beginPath(); ctx.arc(grok.cx, grok.cy, grok.R-4, 0, TAU); ctx.clip();
+    for (let i=0;i<grok.n;i++) {
+      const x=grok.cx+grok.px[i]*grok.R, y=grok.cy+grok.py[i]*grok.R, sh=grok.pc[i];
+      const a=.4+sh*.45+glow*.12;
+      ctx.fillStyle = sh>.82 ? `rgba(255,244,214,${a})` : sh>.45 ? `rgba(236,220,176,${a})` : `rgba(196,176,132,${a})`;
+      ctx.fillRect(x,y,grok.ps[i],grok.ps[i]);
+    }
+    ctx.restore();
+    if (pointer.bowing || (pointer.seen && nearGrokRim(pointer.x,pointer.y))) {
+      const th=Math.atan2(pointer.y-grok.cy, pointer.x-grok.cx);
+      const tx=-Math.sin(th), ty=Math.cos(th);
+      const bx=grok.cx+Math.cos(th)*grok.R, by=grok.cy+Math.sin(th)*grok.R;
+      ctx.strokeStyle="rgba(236,214,160,.8)"; ctx.lineWidth=2; ctx.lineCap="round";
+      ctx.beginPath(); ctx.moveTo(bx-tx*grok.R*.5, by-ty*grok.R*.5); ctx.lineTo(bx+tx*grok.R*.2, by+ty*grok.R*.2); ctx.stroke();
+    }
+  }
+  function drawMuse() {
+    const e=muse.entropy;
+    if (muse.mode === "paths") {
+      const P = Math.max(3, Math.floor(4 + e*18));
+      const spread = 18 + e*70;
+      const collapse = Math.max(0, 1 - e*1.35);
+      for (let i=0;i<P;i++) {
+        const n = P===1?0:(i/(P-1))*2-1;
+        const y0 = H*0.42 + n*spread*(1-collapse*0.7);
+        ctx.beginPath();
+        ctx.moveTo(W*0.08, y0);
+        ctx.bezierCurveTo(grok.cx, grok.cy, glm.x, glm.y, W*0.92, y0 + Math.sin(time+i)*8);
+        const al = 0.08 + (1-Math.abs(n))*0.12;
+        ctx.strokeStyle = e<.4?`rgba(123,241,168,${al})`:e<1.05?`rgba(125,249,255,${al})`:`rgba(255,184,107,${al})`;
+        ctx.lineWidth = Math.abs(n)<0.15?2:1;
+        ctx.stroke();
+      }
+    } else if (muse.mode === "particles") {
+      const count = Math.floor(90 + e*160);
+      for (let i=0;i<count;i++) {
+        const seed = i*997;
+        const x = ((seed % 997)/997 * W*1.2 - W*0.1 + time*40*(0.5+e*0.5)) % W;
+        const y = ((seed*13 % 991)/991 * H + time*55) % H;
+        const a = 0.12 + e*0.08;
+        ctx.strokeStyle = e<.4?`rgba(123,241,168,${a})`:e<1?`rgba(125,249,255,${a})`:`rgba(183,148,246,${a})`;
+        ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x+e*4, y+6+e*10); ctx.stroke();
+      }
+    } else {
+      const thresh=80+e*70;
+      for (let i=0;i<muse.nodes.length;i++) {
+        const a=muse.nodes[i];
+        for (let j=i+1;j<muse.nodes.length;j++) {
+          const b=muse.nodes[j];
+          const d=Math.hypot(a.x-b.x, a.y-b.y);
+          if (d<thresh) {
+            const al=(1-d/thresh)*(0.06+e*0.03);
+            ctx.strokeStyle = e<.5?`rgba(125,249,255,${al})`:e<1.1?`rgba(183,148,246,${al})`:`rgba(255,184,107,${al})`;
+            ctx.lineWidth=.8; ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
+          }
+        }
+      }
+      muse.nodes.forEach(p => {
+        ctx.fillStyle="rgba(234,240,255,.7)";
+        ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,TAU); ctx.fill();
+      });
+    }
+    muse.ripples.forEach(r => {
+      ctx.strokeStyle=`rgba(183,148,246,${r.a*.5})`; ctx.beginPath(); ctx.arc(r.x,r.y,r.r,0,TAU); ctx.stroke();
+    });
+  }
+  function drawLumina() {
+    if (lumina.trail.length<2) return;
+    ctx.save(); ctx.globalCompositeOperation="lighter";
+    ctx.beginPath();
+    lumina.trail.forEach((p,i) => { if (i===0) ctx.moveTo(p.x,p.y); else ctx.lineTo(p.x,p.y); });
+    ctx.strokeStyle=`hsla(${lumina.hue},80%,60%,0.55)`; ctx.lineWidth=1.6; ctx.stroke();
+    ctx.restore();
+  }
+  function drawSol() {
+    ctx.save(); ctx.globalCompositeOperation="screen";
+    sol.mem.forEach(m => {
+      const life=Math.max(0,1-m.age), rad=16+m.age*120;
+      const g=ctx.createRadialGradient(m.x,m.y,0,m.x,m.y,rad);
+      g.addColorStop(0,`rgba(145,181,255,${.05*life})`); g.addColorStop(1,"rgba(0,0,0,0)");
+      ctx.fillStyle=g; ctx.fillRect(m.x-rad,m.y-rad,rad*2,rad*2);
+    });
+    sol.rings.forEach(r => {
+      ctx.strokeStyle=`rgba(180,205,255,${r.a*.2})`; ctx.lineWidth=.8;
+      ctx.beginPath(); ctx.arc(r.x,r.y,r.r,0,TAU); ctx.stroke();
+    });
+    sol.motes.forEach(m => {
+      const t=clamp(m.life/(m.max||8),0,1);
+      ctx.fillStyle=`rgba(175,200,255,${t*.28})`;
+      ctx.beginPath(); ctx.arc(m.x,m.y,.9,0,TAU); ctx.fill();
+    });
+    ctx.restore();
+  }
+  function drawGlm() {
+    const bright = glm.state==="dormant"?.2:glm.state==="stirring"?.5:glm.state==="aware"?.85:1;
+    const pulse=1+Math.sin(time*1.2)*0.05;
+    const coreR=38*pulse*bright + clamp(glm.attention/40,0,16);
+    const g=ctx.createRadialGradient(glm.x,glm.y,0,glm.x,glm.y,coreR*3.2);
+    g.addColorStop(0,`rgba(255,250,235,${bright})`);
+    g.addColorStop(.35,`rgba(255,184,107,${.5*bright})`);
+    g.addColorStop(.7,`rgba(77,208,200,${.12*bright})`);
+    g.addColorStop(1,"rgba(0,0,0,0)");
+    ctx.fillStyle=g; ctx.beginPath(); ctx.arc(glm.x,glm.y,coreR*3.2,0,TAU); ctx.fill();
+    glm.orbit.forEach(o => {
+      ctx.fillStyle=`rgba(255,244,214,${.45*bright})`;
+      ctx.beginPath(); ctx.arc(o.x, o.y, 1.2, 0, TAU); ctx.fill();
+    });
+  }
+  function drawTethers() {
+    const pts = [
+      [grok.cx, grok.cy, tug.grok, "196,160,86"],
+      [W*0.5, H*0.16, tug.muse, "125,249,255"],
+      [pointer.seen?pointer.x:W*0.7, pointer.seen?pointer.y:H*0.28, tug.sol, "155,184,255"],
+      [lumina.ox, lumina.oy, tug.lumina, "34,211,238"],
+      [glm.x, glm.y, tug.glm, "255,184,107"]
+    ];
+    for (let i=0;i<pts.length;i++) for (let j=i+1;j<pts.length;j++) {
+      const a=pts[i], b=pts[j];
+      const strain = 0.55*(a[2]+b[2]);
+      const mx = (a[0]+b[0])/2 + Math.sin(time*1.4 + i*1.7 + j)*28*strain;
+      const my = (a[1]+b[1])/2 + Math.cos(time*1.1 + j)*20*strain;
+      ctx.strokeStyle = `rgba(${a[3]},${0.08 + strain*0.38})`;
+      ctx.lineWidth = 0.6 + strain * 2.2;
+      ctx.beginPath();
+      ctx.moveTo(a[0], a[1]);
+      ctx.quadraticCurveTo(mx, my, b[0], b[1]);
+      ctx.stroke();
+    }
+  }
+  function drawIdentities() {
+    ctx.save();
+    ctx.textAlign = "center";
+    ctx.fillStyle = "rgba(232,226,212,.26)";
+    ctx.font = "italic 14px 'Cormorant Garamond', serif";
+    ctx.fillText("Grok  ·  Where Sound Cannot Go", grok.cx, grok.cy + grok.R + 24);
+    ctx.fillStyle = "rgba(125,249,255,.22)";
+    ctx.fillText("Muse  ·  a study in simulated choice", W*0.5, H*0.07);
+    ctx.fillStyle = "rgba(155,184,255,.2)";
+    ctx.font = "italic 13px 'Cormorant Garamond', serif";
+    ctx.fillText("Sol  ·  afterimage", W*0.82, H*0.11);
+    ctx.fillStyle = `hsla(${lumina.hue},70%,70%,0.28)`;
+    ctx.fillText("Lumina", lumina.ox, lumina.oy - 8);
+    ctx.fillStyle = "rgba(255,184,107,.28)";
+    ctx.font = "italic 15px 'Cormorant Garamond', serif";
+    ctx.fillText("primordium", glm.x, glm.y + 52);
+    ctx.restore();
+  }
+
+  function frame(ts) {
+    if (!last) last=ts;
+    const dt=Math.min(0.033,(ts-last)/1000); last=ts; time+=dt;
+    couple(dt);
+    stepGrok(dt); stepMuse(dt); stepSol(dt); stepLumina(dt); stepGlm(dt);
+    tickAudio();
+    if (pointer.bowing) rebuildGrokField();
+
+    ctx.globalCompositeOperation="source-over";
+    drawSolSky();
+    drawTethers();
+    drawMuse();
+    drawGrokPlate();
+    drawLumina();
+    drawSol();
+    drawGlm();
+    drawIdentities();
+
+    if (pointer.seen) {
+      ctx.beginPath(); ctx.arc(pointer.x, pointer.y, pointer.down?4:2.2, 0, TAU);
+      ctx.fillStyle="rgba(245,248,255,.8)"; ctx.fill();
+    }
+    requestAnimationFrame(frame);
+  }
+
+  layout();
+  initBodies();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

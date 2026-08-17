@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>filament · 0xA</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    width: 100%; height: 100%; overflow: hidden;
+    background: #02030a;
+    color: rgba(180, 220, 240, 0.7);
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    -webkit-font-smoothing: antialiased;
+    touch-action: none;
+    overscroll-behavior: none;
+  }
+  body { cursor: crosshair; }
+  #c { display: block; width: 100vw; height: 100vh; }
+
+  #enter {
+    position: fixed; inset: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    background: radial-gradient(circle at 50% 50%, rgba(12,20,38,0.55) 0%, rgba(2,3,10,0.95) 70%);
+    z-index: 10;
+    transition: opacity 1.8s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+  }
+  #enter.hidden { opacity: 0; pointer-events: none; }
+  #enter .label {
+    letter-spacing: 0.7em; font-size: 10px; opacity: 0.5;
+    text-transform: uppercase; margin-bottom: 22px; padding-left: 0.7em;
+    font-weight: 400;
+  }
+  #enter .word {
+    font-size: 22px; letter-spacing: 0.6em; font-weight: 200;
+    padding-left: 0.6em; color: rgba(220, 235, 245, 0.9);
+    text-transform: uppercase;
+  }
+  #enter .hint {
+    margin-top: 40px; font-size: 9px; letter-spacing: 0.45em;
+    opacity: 0.35; padding-left: 0.45em;
+    text-transform: uppercase;
+  }
+  #enter .pulse {
+    margin-top: 50px; width: 80px; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(140, 200, 230, 0.7), transparent);
+    animation: pulse 3.4s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 0.2; transform: scaleX(0.55); }
+    50% { opacity: 0.9; transform: scaleX(1); }
+  }
+
+  #designation, #compass {
+    position: fixed; bottom: 24px;
+    font-size: 9px; letter-spacing: 0.5em;
+    opacity: 0; z-index: 5; pointer-events: none;
+    text-transform: uppercase; font-weight: 400;
+    transition: opacity 2.4s ease;
+  }
+  #designation { left: 28px; }
+  #compass { right: 28px; }
+  body.entered #designation, body.entered #compass { opacity: 0.35; }
+
+  .vignette {
+    pointer-events: none; position: fixed; inset: 0; z-index: 4;
+    background: radial-gradient(ellipse at 50% 50%, transparent 35%, rgba(0,0,0,0.45) 78%, rgba(0,0,0,0.72) 100%);
+  }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="vignette"></div>
+<div id="designation">filament · 0xA</div>
+<div id="compass">drag to disturb</div>
+<div id="enter">
+  <div class="label">Frontier Choir</div>
+  <div class="word">Enter</div>
+  <div class="pulse"></div>
+  <div class="hint">headphones · dim the room</div>
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+
+// ============ CONFIG ============
+const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) || window.innerWidth < 760;
+const FILAMENT_COUNT = isMobile ? 30 : 50;
+const POINTS_PER_FILAMENT = isMobile ? 750 : 1150;
+const TOTAL_POINTS = FILAMENT_COUNT * POINTS_PER_FILAMENT;
+const AMBIENT_COUNT = isMobile ? 1500 : 3200;
+const MAX_TOUCHES = isMobile ? 8 : 12;
+
+// ============ CLOCK (declared early so enter handler can use it) ============
+const clock = new THREE.Clock();
+
+// ============ RENDERER ============
+const canvas = document.getElementById('c');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setClearColor(0x02030a, 1);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 0.95;
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(54, window.innerWidth / window.innerHeight, 0.05, 400);
+camera.position.set(0, 4, 44);
+
+// ============ FILAMENT GEOMETRY ============
+const positions = new Float32Array(TOTAL_POINTS * 3);
+const aFilamentIndex = new Float32Array(TOTAL_POINTS);
+const aT = new Float32Array(TOTAL_POINTS);
+const aSeed = new Float32Array(TOTAL_POINTS);
+
+for (let i = 0; i < TOTAL_POINTS; i++) {
+  const fi = Math.floor(i / POINTS_PER_FILAMENT);
+  const ti = i % POINTS_PER_FILAMENT;
+  positions[i*3] = 0; positions[i*3+1] = 0; positions[i*3+2] = 0;
+  aFilamentIndex[i] = fi;
+  aT[i] = ti / POINTS_PER_FILAMENT;
+  aSeed[i] = Math.random();
+}
+
+const filamentGeometry = new THREE.BufferGeometry();
+filamentGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+filamentGeometry.setAttribute('aFilamentIndex', new THREE.BufferAttribute(aFilamentIndex, 1));
+filamentGeometry.setAttribute('aT', new THREE.BufferAttribute(aT, 1));
+filamentGeometry.setAttribute('aSeed', new THREE.BufferAttribute(aSeed, 1));
+
+// ============ AMBIENT FIELD GEOMETRY ============
+const ambientPositions = new Float32Array(AMBIENT_COUNT * 3);
+const ambientSeeds = new Float32Array(AMBIENT_COUNT);
+for (let i = 0; i < AMBIENT_COUNT; i++) {
+  const theta = Math.random() * Math.PI * 2;
+  const phi = Math.acos(2 * Math.random() - 1);
+  const r = 26 + Math.pow(Math.random(), 0.4) * 55;
+  ambientPositions[i*3]   = r * Math.sin(phi) * Math.cos(theta);
+  ambientPositions[i*3+1] = r * Math.sin(phi) * Math.sin(theta);
+  ambientPositions[i*3+2] = r * Math.cos(phi);
+  ambientSeeds[i] = Math.random();
+}
+const ambientGeometry = new THREE.BufferGeometry();
+ambientGeometry.setAttribute('position', new THREE.BufferAttribute(ambientPositions, 3));
+ambientGeometry.setAttribute('aSeed', new THREE.BufferAttribute(ambientSeeds, 1));
+
+// ============ TOUCH STATE ============
+const touchState = [];
+for (let i = 0; i < MAX_TOUCHES; i++) {
+  touchState.push({ pos: new THREE.Vector3(), flash: 0, memory: 0, age: 999 });
+}
+const uTouches = Array.from({length: MAX_TOUCHES}, () => new THREE.Vector3());
+const uTouchFlash = new Float32Array(MAX_TOUCHES);
+const uTouchMemory = new Float32Array(MAX_TOUCHES);
+
+// ============ FILAMENT SHADERS ============
+const filamentVS = `
+attribute float aFilamentIndex;
+attribute float aT;
+attribute float aSeed;
+
+uniform float uTime;
+uniform float uLife;
+uniform float uPixelRatio;
+uniform vec3 uTouches[${MAX_TOUCHES}];
+uniform float uTouchFlash[${MAX_TOUCHES}];
+uniform float uTouchMemory[${MAX_TOUCHES}];
+
+varying float vEnergy;
+varying float vMemory;
+varying float vDepth;
+varying float vFilamentNorm;
+varying float vWaveBright;
+
+#define TAU 6.28318530718
+
+float hash(float n) { return fract(sin(n) * 43758.5453123); }
+
+vec3 rotY(vec3 p, float a) {
+  float c = cos(a), s = sin(a);
+  return vec3(c*p.x + s*p.z, p.y, -s*p.x + c*p.z);
+}
+vec3 rotX(vec3 p, float a) {
+  float c = cos(a), s = sin(a);
+  return vec3(p.x, c*p.y - s*p.z, s*p.y + c*p.z);
+}
+
+void main() {
+  float fi = aFilamentIndex;
+  float t = aT;
+
+  float golden = 2.39996323;
+  float phi = fi * golden;
+
+  // Integer frequencies → closed curves, varied topology per filament
+  float a1 = 1.0 + mod(fi, 4.0);
+  float a2 = 2.0 + mod(fi, 5.0);
+  float a3 = 3.0 + mod(fi, 7.0);
+
+  // Nested shells via golden-ratio fractional
+  float rNorm = fract(fi * 0.6180339887);
+  float R = 3.5 + 8.5 * rNorm;
+
+  float u = t * TAU;
+  vec3 pos;
+  pos.x = R * cos(u * a1 + phi);
+  pos.y = R * sin(u * a2 + phi * 0.7) * 0.78;
+  pos.z = R * cos(u * a3 + phi * 1.3);
+
+  // Organic thickness jitter
+  float j1 = hash(aSeed * 1.7) - 0.5;
+  float j2 = hash(aSeed * 3.13 + 0.3) - 0.5;
+  float j3 = hash(aSeed * 5.7 + 0.9) - 0.5;
+  pos += vec3(j1, j2, j3) * 0.16;
+
+  // Per-filament precession (slow, independent axes)
+  pos = rotY(pos, uTime * 0.05 + fi * 0.5);
+  pos = rotX(pos, uTime * 0.035 + fi * 0.31);
+  // Whole-cloud rotation (very slow)
+  pos = rotY(pos, uTime * 0.04);
+
+  // Breathing — internal physiology
+  float breath  = sin(uTime * 0.31 + phi);
+  float breath2 = sin(uTime * 0.17 + phi * 2.3);
+  pos *= 1.0 + 0.04 * uLife * (0.5 + 0.5 * breath) + 0.015 * breath2;
+
+  // Traveling wave along the filament
+  float wavePhase = uTime * 0.6 + fi * 0.7 + phi;
+  float wave = sin(t * TAU * 4.0 - wavePhase) * 0.5
+             + sin(t * TAU * 2.0 - wavePhase * 0.7) * 0.3;
+  vec3 radialDir = normalize(pos + vec3(0.001, 0.001, 0.001));
+  pos += radialDir * wave * 0.16 * (0.5 + uLife * 0.5);
+
+  float waveBright = 0.5 + 0.5 * sin(t * TAU * 4.0 - wavePhase);
+
+  // Touch energy — flash (bright, brief) + memory (warm, long-lived)
+  float energy = 0.0;
+  float memGlow = 0.0;
+  vec3 disp = vec3(0.0);
+
+  for (int i = 0; i < ${MAX_TOUCHES}; i++) {
+    float flash = uTouchFlash[i];
+    float mem = uTouchMemory[i];
+    if (flash + mem > 0.004) {
+      vec3 tp = uTouches[i];
+      float dd = distance(pos, tp);
+      float flashFall = exp(-dd * dd * 0.045);
+      vec3 dir = normalize(pos - tp + vec3(0.001, 0.001, 0.001));
+      disp += dir * flashFall * flash * 1.6;
+      energy += flashFall * flash;
+      float memFall = exp(-dd * dd * 0.014);
+      memGlow += memFall * mem;
+    }
+  }
+
+  pos += disp;
+
+  vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
+  gl_Position = projectionMatrix * mvPosition;
+
+  float depth = -mvPosition.z;
+  vDepth = depth;
+
+  float baseSize = 1.6 + 2.4 * (1.0 - rNorm);
+  float energySize = 1.0 + energy * 5.0;
+  float depthScale = 30.0 / max(depth, 1.0);
+  gl_PointSize = uPixelRatio * (baseSize + energySize) * depthScale;
+
+  vEnergy = energy;
+  vMemory = memGlow;
+  vFilamentNorm = rNorm;
+  vWaveBright = waveBright;
+}
+`;
+
+const filamentFS = `
+precision highp float;
+varying float vEnergy;
+varying float vMemory;
+varying float vDepth;
+varying float vFilamentNorm;
+varying float vWaveBright;
+
+void main() {
+  vec2 cc = gl_PointCoord - 0.5;
+  float d = length(cc);
+  if (d > 0.5) discard;
+
+  float alpha = smoothstep(0.5, 0.0, d);
+  alpha = pow(alpha, 1.4);
+
+  vec3 deepCol   = vec3(0.05, 0.18, 0.32);
+  vec3 coolCol   = vec3(0.18, 0.62, 0.88);
+  vec3 brightCol = vec3(0.42, 0.85, 1.0);
+  vec3 energyCol = vec3(1.0, 0.65, 0.28);
+  vec3 memCol    = vec3(1.0, 0.42, 0.16);
+
+  float innerBoost = 1.0 - vFilamentNorm;
+  vec3 baseColor = mix(deepCol, coolCol, smoothstep(0.0, 0.7, innerBoost));
+  baseColor = mix(baseColor, brightCol, smoothstep(0.5, 1.0, innerBoost) * 0.6);
+
+  baseColor = mix(baseColor, energyCol, clamp(vEnergy * 0.9, 0.0, 1.0));
+  baseColor += memCol * vMemory * 0.55;
+
+  float bright = 0.25 + 0.55 * vEnergy + 0.85 * vMemory + 0.08 * vWaveBright;
+  float distFade = smoothstep(160.0, 25.0, vDepth);
+
+  gl_FragColor = vec4(baseColor, alpha * bright * distFade);
+}
+`;
+
+const filamentMaterial = new THREE.ShaderMaterial({
+  uniforms: {
+    uTime: { value: 0 },
+    uLife: { value: 0.5 },
+    uPixelRatio: { value: renderer.getPixelRatio() },
+    uTouches: { value: uTouches },
+    uTouchFlash: { value: uTouchFlash },
+    uTouchMemory: { value: uTouchMemory },
+  },
+  vertexShader: filamentVS,
+  fragmentShader: filamentFS,
+  transparent: true,
+  blending: THREE.AdditiveBlending,
+  depthWrite: false,
+  depthTest: true,
+});
+
+const filaments = new THREE.Points(filamentGeometry, filamentMaterial);
+filaments.frustumCulled = false;
+scene.add(filaments);
+
+// ============ AMBIENT SHADERS ============
+const ambientVS = `
+attribute float aSeed;
+uniform float uTime;
+uniform float uLife;
+uniform float uPixelRatio;
+uniform vec3 uTouches[${MAX_TOUCHES}];
+uniform float uTouchFlash[${MAX_TOUCHES}];
+uniform float uTouchMemory[${MAX_TOUCHES}];
+
+varying float vE;
+varying float vDepth;
+varying float vSeed;
+
+float hash(float n) { return fract(sin(n) * 43758.5453123); }
+
+vec3 rotY(vec3 p, float a) {
+  float c = cos(a), s = sin(a);
+  return vec3(c*p.x + s*p.z, p.y, -s*p.x + c*p.z);
+}
+
+void main() {
+  vec3 pos = position;
+  float phaseShift = hash(aSeed) * 6.283;
+  pos = rotY(pos, uTime * 0.018 + phaseShift);
+  pos.x += sin(uTime * 0.08 + aSeed * 23.0) * 0.8;
+  pos.y += sin(uTime * 0.13 + aSeed * 17.0) * 0.8;
+  pos.z += cos(uTime * 0.11 + aSeed * 11.0) * 0.8;
+
+  float e = 0.0;
+  for (int i = 0; i < ${MAX_TOUCHES}; i++) {
+    float flash = uTouchFlash[i];
+    float mem = uTouchMemory[i];
+    if (flash + mem > 0.004) {
+      vec3 tp = uTouches[i];
+      float dd = distance(pos, tp);
+      e += exp(-dd * dd * 0.0025) * (flash + mem * 0.5);
+    }
+  }
+  vE = e;
+
+  vec4 mv = modelViewMatrix * vec4(pos, 1.0);
+  gl_Position = projectionMatrix * mv;
+  float depth = -mv.z;
+  vDepth = depth;
+
+  gl_PointSize = uPixelRatio * (0.8 + e * 3.5) * (18.0 / max(depth, 1.0));
+  vSeed = aSeed;
+}
+`;
+
+const ambientFS = `
+precision highp float;
+varying float vE;
+varying float vDepth;
+varying float vSeed;
+
+void main() {
+  vec2 cc = gl_PointCoord - 0.5;
+  float d = length(cc);
+  if (d > 0.5) discard;
+  float alpha = smoothstep(0.5, 0.0, d);
+  alpha = pow(alpha, 1.6);
+
+  vec3 base = vec3(0.12, 0.32, 0.52);
+  vec3 echo = vec3(0.8, 0.45, 0.2);
+  vec3 col = mix(base, echo, clamp(vE * 1.5, 0.0, 1.0));
+
+  float fade = smoothstep(180.0, 30.0, vDepth);
+
+  gl_FragColor = vec4(col, alpha * (0.15 + vE * 0.85) * fade);
+}
+`;
+
+const ambientMaterial = new THREE.ShaderMaterial({
+  uniforms: {
+    uTime: { value: 0 },
+    uLife: { value: 0.5 },
+    uPixelRatio: { value: renderer.getPixelRatio() },
+    uTouches: { value: uTouches },
+    uTouchFlash: { value: uTouchFlash },
+    uTouchMemory: { value: uTouchMemory },
+  },
+  vertexShader: ambientVS,
+  fragmentShader: ambientFS,
+  transparent: true,
+  blending: THREE.AdditiveBlending,
+  depthWrite: false,
+});
+
+const ambient = new THREE.Points(ambientGeometry, ambientMaterial);
+ambient.frustumCulled = false;
+scene.add(ambient);
+
+// ============ POST PROCESSING ============
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+const bloomPass = new UnrealBloomPass(
+  new THREE.Vector2(window.innerWidth, window.innerHeight),
+  0.55, 0.5, 0.17
+);
+composer.addPass(bloomPass);
+composer.addPass(new OutputPass());
+
+// ============ AUDIO ============
+let audioCtx = null;
+let masterGain, droneBus, dryGain, wetGain, convolver, masterComp;
+
+function initAudio() {
+  if (audioCtx) return;
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+
+  masterGain = audioCtx.createGain();
+  masterGain.gain.value = 0.0;
+
+  masterComp = audioCtx.createDynamicsCompressor();
+  masterComp.threshold.value = -14;
+  masterComp.knee.value = 8;
+  masterComp.ratio.value = 3.5;
+  masterComp.attack.value = 0.012;
+  masterComp.release.value = 0.32;
+
+  masterGain.connect(masterComp);
+  masterComp.connect(audioCtx.destination);
+
+  dryGain = audioCtx.createGain();
+  dryGain.gain.value = 0.5;
+  wetGain = audioCtx.createGain();
+  wetGain.gain.value = 0.55;
+
+  dryGain.connect(masterGain);
+  wetGain.connect(masterGain);
+
+  convolver = audioCtx.createConvolver();
+  convolver.buffer = generateImpulseResponse(5.5, 2.6);
+  convolver.connect(wetGain);
+
+  droneBus = audioCtx.createGain();
+  const hp = audioCtx.createBiquadFilter();
+  hp.type = 'highpass';
+  hp.frequency.value = 55;
+  hp.Q.value = 0.5;
+  droneBus.connect(hp);
+  hp.connect(dryGain);
+  hp.connect(convolver);
+
+  buildDrone();
+
+  const t = audioCtx.currentTime;
+  masterGain.gain.setValueAtTime(0, t);
+  masterGain.gain.linearRampToValueAtTime(0.5, t + 4.5);
+}
+
+function generateImpulseResponse(duration, decay) {
+  const sr = audioCtx.sampleRate;
+  const length = Math.floor(sr * duration);
+  const impulse = audioCtx.createBuffer(2, length, sr);
+  for (let ch = 0; ch < 2; ch++) {
+    const data = impulse.getChannelData(ch);
+    let lpState = 0;
+    for (let i = 0; i < length; i++) {
+      const tn = i / length;
+      const env = Math.pow(1 - tn, decay);
+      const noise = (Math.random() * 2 - 1);
+      const cutoff = 0.04 + 0.05 * (1 - tn);
+      lpState = lpState + cutoff * (noise - lpState);
+      let early = 0;
+      if (i === Math.floor(0.011 * sr)) early += 0.35;
+      if (i === Math.floor(0.023 * sr)) early += 0.25;
+      if (i === Math.floor(0.041 * sr)) early += 0.18;
+      if (i === Math.floor(0.067 * sr)) early += 0.12;
+      data[i] = (lpState * 0.7 + early * (1 - tn)) * env;
+    }
+  }
+  return impulse;
+}
+
+function buildDrone() {
+  const root = 110; // A2
+  const partials = [
+    { ratio: 1.0, gain: 0.16, detune: 0    },
+    { ratio: 1.5, gain: 0.09, detune: 1.8  },
+    { ratio: 2.0, gain: 0.07, detune: -1.4 },
+    { ratio: 2.5, gain: 0.05, detune: 0.9  },
+    { ratio: 3.0, gain: 0.04, detune: -0.7 },
+    { ratio: 4.0, gain: 0.025, detune: 1.2 },
+    { ratio: 5.0, gain: 0.014, detune: -1.6},
+    { ratio: 6.0, gain: 0.008, detune: 0.5 },
+  ];
+
+  const lp = audioCtx.createBiquadFilter();
+  lp.type = 'lowpass';
+  lp.frequency.value = 1500;
+  lp.Q.value = 0.6;
+  lp.connect(droneBus);
+
+  const filterLFO = audioCtx.createOscillator();
+  filterLFO.frequency.value = 0.05;
+  const filterLFOGain = audioCtx.createGain();
+  filterLFOGain.gain.value = 350;
+  filterLFO.connect(filterLFOGain);
+  filterLFOGain.connect(lp.frequency);
+  filterLFO.start();
+
+  partials.forEach((p, i) => {
+    [-1, 1].forEach(sign => {
+      const osc = audioCtx.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.value = root * p.ratio;
+      osc.detune.value = p.detune + sign * 3;
+
+      const g = audioCtx.createGain();
+      g.gain.value = p.gain * 0.5;
+
+      const lfo = audioCtx.createOscillator();
+      lfo.frequency.value = 0.04 + 0.05 * (i + 1) / partials.length;
+      const lfoGain = audioCtx.createGain();
+      lfoGain.gain.value = p.gain * 0.18;
+      lfo.connect(lfoGain);
+      lfoGain.connect(g.gain);
+
+      osc.connect(g);
+      g.connect(lp);
+      osc.start();
+      lfo.start();
+    });
+  });
+
+  // Filtered noise — airy texture
+  const noiseBuf = audioCtx.createBuffer(1, audioCtx.sampleRate * 3, audioCtx.sampleRate);
+  const nd = noiseBuf.getChannelData(0);
+  for (let i = 0; i < nd.length; i++) nd[i] = (Math.random() * 2 - 1);
+  const noiseSrc = audioCtx.createBufferSource();
+  noiseSrc.buffer = noiseBuf;
+  noiseSrc.loop = true;
+
+  const nf1 = audioCtx.createBiquadFilter();
+  nf1.type = 'bandpass';
+  nf1.frequency.value = 720;
+  nf1.Q.value = 0.5;
+
+  const nf2 = audioCtx.createBiquadFilter();
+  nf2.type = 'bandpass';
+  nf2.frequency.value = 2200;
+  nf2.Q.value = 0.4;
+
+  const noiseGain = audioCtx.createGain();
+  noiseGain.gain.value = 0.012;
+
+  const noiseLFO = audioCtx.createOscillator();
+  noiseLFO.frequency.value = 0.07;
+  const noiseLFOGain = audioCtx.createGain();
+  noiseLFOGain.gain.value = 0.008;
+  noiseLFO.connect(noiseLFOGain);
+  noiseLFOGain.connect(noiseGain.gain);
+
+  noiseSrc.connect(nf1);
+  nf1.connect(noiseGain);
+  noiseSrc.connect(nf2);
+  nf2.connect(noiseGain);
+  noiseGain.connect(droneBus);
+  noiseSrc.start();
+  noiseLFO.start();
+}
+
+function playTouchVoice(worldPos, energy) {
+  if (!audioCtx) return;
+  const t = audioCtx.currentTime;
+
+  const yNorm = THREE.MathUtils.clamp((worldPos.y + 14) / 28, 0, 1);
+  const ratios = [1.0, 9/8, 5/4, 3/2, 5/3, 2.0, 9/4, 5/2, 3.0];
+  const idx = Math.floor(yNorm * (ratios.length - 0.001));
+  const fundamental = 220 * ratios[idx];
+
+  const xNorm = THREE.MathUtils.clamp(worldPos.x / 18, -1, 1);
+  const zNorm = THREE.MathUtils.clamp((worldPos.z + 14) / 28, 0, 1);
+
+  const voiceBus = audioCtx.createGain();
+  voiceBus.gain.value = 0;
+
+  const lp = audioCtx.createBiquadFilter();
+  lp.type = 'lowpass';
+  lp.frequency.value = 900 + 1400 * zNorm;
+  lp.Q.value = 1.2;
+
+  const panner = audioCtx.createStereoPanner();
+  panner.pan.value = xNorm * 0.8;
+
+  voiceBus.connect(lp);
+  lp.connect(panner);
+  panner.connect(dryGain);
+  panner.connect(convolver);
+
+  const partials = [
+    { ratio: 1.0, gain: 0.22, detune: 0    },
+    { ratio: 2.0, gain: 0.12, detune: 2.0  },
+    { ratio: 3.0, gain: 0.06, detune: -1.8 },
+    { ratio: 5.0, gain: 0.03, detune: 1.5  },
+  ];
+
+  partials.forEach(p => {
+    const osc = audioCtx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.value = fundamental * p.ratio;
+    osc.detune.value = p.detune;
+    const g = audioCtx.createGain();
+    g.gain.value = p.gain;
+    osc.connect(g);
+    g.connect(voiceBus);
+    osc.start(t);
+    osc.stop(t + 6.5);
+  });
+
+  const peak = 0.22 + 0.3 * Math.min(1, energy);
+  voiceBus.gain.setValueAtTime(0.0, t);
+  voiceBus.gain.linearRampToValueAtTime(peak, t + 0.09);
+  voiceBus.gain.exponentialRampToValueAtTime(0.0001, t + 5.5);
+}
+
+// ============ INTERACTION ============
+const raycaster = new THREE.Raycaster();
+const pointer = new THREE.Vector2();
+const touchSphere = new THREE.Sphere(new THREE.Vector3(0, 0, 0), 11.0);
+let isPointerDown = false;
+let lastTouchTime = 0;
+let bloomPulse = 0;
+
+function getTouchWorldPos(clientX, clientY) {
+  pointer.x = (clientX / window.innerWidth) * 2 - 1;
+  pointer.y = -(clientY / window.innerHeight) * 2 + 1;
+  raycaster.setFromCamera(pointer, camera);
+  const ray = raycaster.ray;
+  const intersection = new THREE.Vector3();
+  if (ray.intersectSphere(touchSphere, intersection)) {
+    return intersection;
+  }
+  const camDir = new THREE.Vector3();
+  camera.getWorldDirection(camDir);
+  const plane = new THREE.Plane(camDir, 0);
+  if (ray.intersectPlane(plane, intersection)) {
+    return intersection;
+  }
+  return new THREE.Vector3();
+}
+
+function addTouch(pos, intensity) {
+  let idx = -1;
+  let lowestE = Infinity;
+  for (let i = 0; i < MAX_TOUCHES; i++) {
+    const total = touchState[i].flash + touchState[i].memory;
+    if (total < 0.04) { idx = i; break; }
+    if (total < lowestE) { lowestE = total; idx = i; }
+  }
+  touchState[idx].pos.copy(pos);
+  touchState[idx].flash = Math.min(1.2, touchState[idx].flash + intensity);
+  touchState[idx].memory = Math.min(1.0, touchState[idx].memory + intensity * 0.6);
+  touchState[idx].age = 0;
+
+  playTouchVoice(pos, intensity);
+  bloomPulse = Math.min(1.0, bloomPulse + intensity * 0.5);
+}
+
+function updateTouches(dt) {
+  for (let i = 0; i < MAX_TOUCHES; i++) {
+    const ts = touchState[i];
+    if (ts.flash > 0) {
+      ts.flash *= Math.exp(-dt / 1.3);
+      if (ts.flash < 0.003) ts.flash = 0;
+    }
+    if (ts.memory > 0) {
+      ts.memory *= Math.exp(-dt / 24.0);
+      if (ts.memory < 0.003) ts.memory = 0;
+    }
+    ts.age += dt;
+  }
+}
+
+function syncTouchUniforms() {
+  for (let i = 0; i < MAX_TOUCHES; i++) {
+    uTouches[i].copy(touchState[i].pos);
+    uTouchFlash[i] = touchState[i].flash;
+    uTouchMemory[i] = touchState[i].memory;
+  }
+}
+
+function onPointerDown(e) {
+  if (!entered) return;
+  isPointerDown = true;
+  const pos = getTouchWorldPos(e.clientX, e.clientY);
+  addTouch(pos, 1.0);
+  lastTouchTime = performance.now() / 1000;
+}
+function onPointerMove(e) {
+  if (!isPointerDown) return;
+  const now = performance.now() / 1000;
+  if (now - lastTouchTime < 0.08) return;
+  const pos = getTouchWorldPos(e.clientX, e.clientY);
+  addTouch(pos, 0.45);
+  lastTouchTime = now;
+}
+function onPointerUp() { isPointerDown = false; }
+
+window.addEventListener('pointerdown', onPointerDown);
+window.addEventListener('pointermove', onPointerMove);
+window.addEventListener('pointerup', onPointerUp);
+window.addEventListener('pointercancel', onPointerUp);
+
+// ============ SPONTANEOUS EVENTS ============
+let nextEventTime = 4 + Math.random() * 3;
+function maybeSpawnEvent(t) {
+  if (!entered) return;
+  const since = t - enterTime;
+  if (since < nextEventTime) return;
+  const fi = Math.floor(Math.random() * FILAMENT_COUNT);
+  const tt = Math.random();
+  const pos = computeFilamentPos(fi, tt, t);
+  addTouch(pos, 0.32 + Math.random() * 0.22);
+  nextEventTime = since + 6 + Math.random() * 11;
+}
+
+function computeFilamentPos(fi, t, time) {
+  const golden = 2.39996323;
+  const phi = fi * golden;
+  const a1 = 1 + (fi % 4);
+  const a2 = 2 + (fi % 5);
+  const a3 = 3 + (fi % 7);
+  const rNorm = ((fi * 0.6180339887) % 1);
+  const R = 3.5 + 8.5 * rNorm;
+
+  const u = t * Math.PI * 2;
+  let x = R * Math.cos(u * a1 + phi);
+  let y = R * Math.sin(u * a2 + phi * 0.7) * 0.78;
+  let z = R * Math.cos(u * a3 + phi * 1.3);
+
+  let c = Math.cos(time * 0.05 + fi * 0.5);
+  let s = Math.sin(time * 0.05 + fi * 0.5);
+  let nx = c * x + s * z;
+  let nz = -s * x + c * z;
+  x = nx; z = nz;
+  c = Math.cos(time * 0.035 + fi * 0.31);
+  s = Math.sin(time * 0.035 + fi * 0.31);
+  let ny = c * y - s * z;
+  nz = s * y + c * z;
+  y = ny; z = nz;
+  c = Math.cos(time * 0.04);
+  s = Math.sin(time * 0.04);
+  nx = c * x + s * z;
+  nz = -s * x + c * z;
+  x = nx; z = nz;
+
+  return new THREE.Vector3(x, y, z);
+}
+
+// ============ CAMERA ============
+const cameraTarget = new THREE.Vector3(0, 0, 0);
+const cameraPosTarget = new THREE.Vector3();
+
+function updateCamera(t, dt) {
+  const slowApproach = 1.0 - Math.exp(-t / 12.0);
+  const medOsc  = Math.sin(t * 0.09 + 1.5);
+  const fastOsc = Math.sin(t * 0.17 + 0.7);
+
+  const dist = 42 - 28 * slowApproach + 7 * medOsc + 3 * fastOsc;
+  const distClamped = Math.max(6, dist);
+
+  const azim = t * 0.05 + 0.4 * Math.sin(t * 0.08) + 0.2 * Math.sin(t * 0.13);
+  const elev = 0.4 * Math.sin(t * 0.065) + 0.2 * Math.cos(t * 0.11 + 1.0);
+
+  cameraPosTarget.set(
+    distClamped * Math.cos(elev) * Math.sin(azim),
+    distClamped * Math.sin(elev) + 1.5 * Math.sin(t * 0.09),
+    distClamped * Math.cos(elev) * Math.cos(azim)
+  );
+
+  const k = 1 - Math.exp(-2.5 * dt);
+  camera.position.x += (cameraPosTarget.x - camera.position.x) * k;
+  camera.position.y += (cameraPosTarget.y - camera.position.y) * k;
+  camera.position.z += (cameraPosTarget.z - camera.position.z) * k;
+
+  cameraTarget.set(
+    1.0 * Math.sin(t * 0.12),
+    0.7 * Math.cos(t * 0.15),
+    0
+  );
+  camera.lookAt(cameraTarget);
+}
+
+// ============ ENTER ============
+const enterEl = document.getElementById('enter');
+let entered = false;
+let enterTime = 0;
+
+function doEnter() {
+  if (entered) return;
+  entered = true;
+  initAudio();
+  enterTime = clock.getElapsedTime();
+  enterEl.classList.add('hidden');
+  document.body.classList.add('entered');
+}
+enterEl.addEventListener('click', doEnter);
+window.addEventListener('keydown', (e) => {
+  if ((e.key === 'Enter' || e.key === ' ') && !entered) {
+    e.preventDefault();
+    doEnter();
+  }
+});
+
+// ============ RESIZE ============
+window.addEventListener('resize', () => {
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+  renderer.setSize(w, h);
+  composer.setSize(w, h);
+  bloomPass.setSize(w, h);
+});
+
+// ============ RENDER LOOP ============
+let lifeValue = 0.5;
+
+function animate() {
+  requestAnimationFrame(animate);
+
+  const dt = Math.min(clock.getDelta(), 0.05);
+  const t = clock.getElapsedTime();
+
+  // Internal physiology — non-synchronized oscillations
+  lifeValue = 0.50
+    + 0.16 * Math.sin(0.29 * t + 0.3)
+    + 0.10 * Math.sin(0.43 * t - 1.1)
+    + 0.06 * Math.sin(0.71 * t + 2.4);
+
+  filamentMaterial.uniforms.uTime.value = t;
+  filamentMaterial.uniforms.uLife.value = lifeValue;
+  ambientMaterial.uniforms.uTime.value = t;
+  ambientMaterial.uniforms.uLife.value = lifeValue;
+
+  updateTouches(dt);
+  syncTouchUniforms();
+  maybeSpawnEvent(t);
+  updateCamera(t, dt);
+
+  bloomPulse *= Math.exp(-dt / 0.9);
+  bloomPass.strength = 0.5 + 0.28 * bloomPulse;
+
+  composer.render();
+}
+animate();
+</script>
+</body>
+</html>

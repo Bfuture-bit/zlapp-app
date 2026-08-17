@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>AEOLIA — FREE WILL</title>
+<style>
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#020408}
+body{overscroll-behavior:none;font-family:ui-monospace, SFMono-Regular, Menlo, monospace}
+#label{position:fixed;left:18px;bottom:14px;z-index:10;color:rgba(210,224,255,0.38);font-size:10px;letter-spacing:0.18em;text-transform:uppercase;pointer-events:none}
+#hint{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:20;display:flex;flex-direction:column;align-items:center;gap:18px;transition:opacity 1.4s ease}
+#enterBtn{appearance:none;border:1px solid rgba(190,210,255,0.55);background:rgba(8,12,22,0.55);color:rgba(228,235,255,1);padding:14px 38px;font-size:11px;letter-spacing:0.38em;text-transform:uppercase;backdrop-filter:blur(8px);cursor:pointer;transition:all .35s}
+#enterBtn:hover{background:rgba(210,224,255,0.92);color:#020408}
+#enterSub{color:rgba(180,196,232,0.48);font-size:9px;letter-spacing:0.2em;text-transform:uppercase;text-align:center;line-height:1.6;max-width:300px}
+#gesture{position:fixed;bottom:26px;left:50%;transform:translateX(-50%);z-index:10;color:rgba(200,214,245,0);font-size:10px;letter-spacing:0.30em;text-transform:uppercase;pointer-events:none;transition:all 1.2s}
+canvas{display:block;width:100%;height:100%}
+</style>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+<div id="label">aeolia — free will · frontier choir</div>
+<div id="hint">
+  <button id="enterBtn">Approach</button>
+  <div id="enterSub">it will choose whether to answer.<br>be gentle, then notice if it remembers you differently</div>
+</div>
+<div id="gesture">it may not answer — wait — try softly</div>
+<script type="module">
+import * as THREE from 'three';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+
+const overlay=document.getElementById('hint'), btn=document.getElementById('enterBtn'), gesture=document.getElementById('gesture');
+const isSmall=Math.min(innerWidth,innerHeight)<740||navigator.maxTouchPoints>0;
+const NFIL=isSmall?26:34, NSEG=isSmall?135:168, NPRIMARY=NFIL*NSEG, DUST_COUNT=isSmall?14200:26000, HALO_COUNT=isSmall?3400:6200;
+
+let audioCtx=null, masterGain=null, compNode=null, convolver=null, reverbSend=null;
+let droneVoices=[], lastTrigger=new Float32Array(NFIL).fill(-10);
+
+// --- free will state ---
+const trust=new Float32Array(NFIL).fill(0.66);
+const touches=new Int32Array(NFIL);
+const hueShift=new Float32Array(NFIL);
+const detuneHist=new Float32Array(NFIL);
+const lastTouchT=new Float32Array(NFIL).fill(-100);
+let avgTrust=0.66, collectiveClosed=0;
+let refusalFlash=new Float32Array(NPRIMARY);
+let agentAng=0, agentY=0, agentVAng=0.03, agentVy=0.0;
+let agentTargetAng=Math.random()*6.28, agentTargetY=(Math.random()-0.5)*4;
+
+const scene=new THREE.Scene(); scene.fog=new THREE.FogExp2(0x060910,0.0175);
+const camera=new THREE.PerspectiveCamera(58,innerWidth/innerHeight,0.1,120);
+camera.position.set(0,1.2,15.5);
+const renderer=new THREE.WebGLRenderer({antialias:true, powerPreference:'high-performance'});
+renderer.setPixelRatio(Math.min(devicePixelRatio,1.75));
+renderer.setSize(innerWidth,innerHeight);
+renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.03;
+renderer.outputColorSpace=THREE.SRGBColorSpace;
+document.body.appendChild(renderer.domElement);
+const composer=new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene,camera));
+const bloomPass=new UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),0.62,0.52,0.22);
+composer.addPass(bloomPass);
+
+// physics
+const dr=new Float32Array(NPRIMARY), dtA=new Float32Array(NPRIMARY), vr=new Float32Array(NPRIMARY), vt=new Float32Array(NPRIMARY), heat=new Float32Array(NPRIMARY);
+const baseAngles=new Float32Array(NFIL); for(let i=0;i<NFIL;i++) baseAngles[i]=(i/NFIL)*Math.PI*2;
+const heights=16, baseRadius=3.25;
+const positions=new Float32Array(NPRIMARY*3), colors=new Float32Array(NPRIMARY*3), sizes=new Float32Array(NPRIMARY);
+for(let i=0;i<NFIL;i++) for(let s=0;s<NSEG;s++){
+  const idx=i*NSEG+s, y=THREE.MathUtils.lerp(-heights/2,heights/2,s/(NSEG-1)), a=baseAngles[i];
+  positions[idx*3]=Math.cos(a)*baseRadius; positions[idx*3+1]=y; positions[idx*3+2]=Math.sin(a)*baseRadius;
+  colors[idx*3]=0.12; colors[idx*3+1]=0.19; colors[idx*3+2]=0.66; sizes[idx]=0.245;
+}
+const primGeom=new THREE.BufferGeometry();
+primGeom.setAttribute('position',new THREE.BufferAttribute(positions,3));
+primGeom.setAttribute('color',new THREE.BufferAttribute(colors,3));
+primGeom.setAttribute('size',new THREE.BufferAttribute(sizes,1));
+const primMat=new THREE.ShaderMaterial({
+  vertexShader:`attribute vec3 color; attribute float size; varying vec3 vC; varying float vD; void main(){vC=color; vec4 mv=modelViewMatrix*vec4(position,1.); vD=-mv.z; gl_PointSize=size*(430./max(1.,-mv.z)); gl_Position=projectionMatrix*mv;}`,
+  fragmentShader:`varying vec3 vC; varying float vD; void main(){vec2 c=gl_PointCoord-.5; float d=dot(c,c)*4.; if(d>1.) discard; float core=exp(-d*2.35); float halo=exp(-d*.85)*.3; float a=core+halo; vec3 col=vC*(.92+core*1.45); float df=clamp((30.-vD)/18.,.4,1.); gl_FragColor=vec4(col,a*df);}`,
+  transparent:true, depthWrite:false, blending:THREE.AdditiveBlending, vertexColors:true
+});
+scene.add(new THREE.Points(primGeom, primMat));
+
+const lineVertCount=NFIL*(NSEG-1)*2, linePos=new Float32Array(lineVertCount*3), lineCol=new Float32Array(lineVertCount*3);
+const lineGeom=new THREE.BufferGeometry(); lineGeom.setAttribute('position',new THREE.BufferAttribute(linePos,3)); lineGeom.setAttribute('color',new THREE.BufferAttribute(lineCol,3));
+const lineMat=new THREE.LineBasicMaterial({vertexColors:true, transparent:true, opacity:0.17, blending:THREE.AdditiveBlending, depthWrite:false});
+scene.add(new THREE.LineSegments(lineGeom, lineMat));
+
+// dust
+const dustPos=new Float32Array(DUST_COUNT*3), dustPh=new Float32Array(DUST_COUNT), dustSz=new Float32Array(DUST_COUNT), dustCols=new Float32Array(DUST_COUNT*3);
+for(let i=0;i<DUST_COUNT;i++){
+  let x,y,z;
+  if(Math.random()<0.7){ const ang=Math.random()*6.28, r=4.8+Math.pow(Math.random(),1.55)*18; x=Math.cos(ang)*r; z=Math.sin(ang)*r; y=(Math.random()-.5)*26; }
+  else{ x=(Math.random()-.5)*38; y=(Math.random()-.5)*28; z=(Math.random()-.5)*38; }
+  dustPos[i*3]=x; dustPos[i*3+1]=y; dustPos[i*3+2]=z; dustPh[i]=Math.random()*6.28; dustSz[i]=0.05+Math.random()*0.09+(Math.random()<0.02?0.24:0);
+  dustCols[i*3]=0.18+Math.random()*0.11; dustCols[i*3+1]=0.32+Math.random()*0.17; dustCols[i*3+2]=0.62+Math.random()*0.33;
+}
+const dustGeom=new THREE.BufferGeometry();
+dustGeom.setAttribute('position',new THREE.BufferAttribute(dustPos,3));
+dustGeom.setAttribute('aPhase',new THREE.BufferAttribute(dustPh,1));
+dustGeom.setAttribute('size',new THREE.BufferAttribute(dustSz,1));
+dustGeom.setAttribute('color',new THREE.BufferAttribute(dustCols,3));
+const dustMat=new THREE.ShaderMaterial({
+  vertexShader:`attribute float aPhase; attribute float size; attribute vec3 color; varying vec3 vC; varying float vA; uniform float uTime; void main(){vC=color; vec3 p=position; p.x+=sin(uTime*.07+aPhase)*.42+sin(uTime*.031+aPhase*1.7)*.18; p.y+=sin(uTime*.05+aPhase*1.23)*.33; p.z+=cos(uTime*.06+aPhase*.9)*.36; vec4 mv=modelViewMatrix*vec4(p,1.); vA=.45; gl_PointSize=size*(360./max(1.5,-mv.z)); gl_Position=projectionMatrix*mv;}`,
+  fragmentShader:`varying vec3 vC; varying float vA; void main(){vec2 c=gl_PointCoord-.5; float d=dot(c,c)*4.; if(d>1.) discard; float a=exp(-d*1.9)*.9; gl_FragColor=vec4(vC*(.72+a*.95), a*vA);}`,
+  transparent:true, depthWrite:false, blending:THREE.AdditiveBlending, vertexColors:true, uniforms:{uTime:{value:0}}
+});
+scene.add(new THREE.Points(dustGeom,dustMat));
+
+const haloPos=new Float32Array(HALO_COUNT*3), haloSz=new Float32Array(HALO_COUNT), haloCols=new Float32Array(HALO_COUNT*3);
+for(let i=0;i<HALO_COUNT;i++){ const u=Math.random(), v=Math.random(); const th=2*Math.PI*u, ph=Math.acos(2*v-1); const r=14+Math.random()*16; haloPos[i*3]=r*Math.sin(ph)*Math.cos(th); haloPos[i*3+1]=r*Math.sin(ph)*Math.sin(th)*0.62; haloPos[i*3+2]=r*Math.cos(ph); haloSz[i]=0.85+Math.random()*1.2; haloCols[i*3]=0.16+Math.random()*0.04; haloCols[i*3+1]=0.22+Math.random()*0.07; haloCols[i*3+2]=0.47+Math.random()*0.14; }
+const haloGeom=new THREE.BufferGeometry(); haloGeom.setAttribute('position',new THREE.BufferAttribute(haloPos,3)); haloGeom.setAttribute('size',new THREE.BufferAttribute(haloSz,1)); haloGeom.setAttribute('color',new THREE.BufferAttribute(haloCols,3));
+const haloMat=new THREE.ShaderMaterial({
+  vertexShader:`attribute vec3 color; attribute float size; varying vec3 vC; varying float vD; uniform float uT; void main(){vC=color; vec3 p=position; p.x+=sin(uT*.012+p.y*.04)*1.2; vec4 mv=modelViewMatrix*vec4(p,1.); vD=-mv.z; gl_PointSize=size*(390./max(2.,-mv.z)); gl_Position=projectionMatrix*mv;}`,
+  fragmentShader:`varying vec3 vC; varying float vD; void main(){vec2 c=gl_PointCoord-.5; float d=dot(c,c)*4.; if(d>1.) discard; float a=exp(-d*1.2)*.053; float df=clamp((30.-vD)/15.,.12,1.); gl_FragColor=vec4(vC,a*df);}`,
+  transparent:true, depthWrite:false, blending:THREE.AdditiveBlending, vertexColors:true, uniforms:{uT:{value:0}}
+});
+scene.add(new THREE.Points(haloGeom, haloMat));
+
+// pointer
+const pointer={x:0,y:0,active:false,down:false,vx:0,vy:0,lastX:0,lastY:0,spd:0};
+const raycaster=new THREE.Raycaster(); let rayO=new THREE.Vector3(), rayD=new THREE.Vector3();
+function updPtr(e){
+  const r=renderer.domElement.getBoundingClientRect(), cx=e.clientX??e.touches?.[0]?.clientX??innerWidth/2, cy=e.clientY??e.touches?.[0]?.clientY??innerHeight/2;
+  pointer.x=((cx-r.left)/r.width)*2-1; pointer.y=-((cy-r.top)/r.height)*2+1;
+  pointer.vx=pointer.x-pointer.lastX; pointer.vy=pointer.y-pointer.lastY; pointer.spd=Math.hypot(pointer.vx,pointer.vy); pointer.lastX=pointer.x; pointer.lastY=pointer.y;
+}
+renderer.domElement.addEventListener('pointerdown',e=>{ updPtr(e); pointer.active=true; pointer.down=true; ensureAudio(); renderer.domElement.setPointerCapture(e.pointerId); });
+renderer.domElement.addEventListener('pointermove',e=>{ updPtr(e); if(pointer.down) pointer.active=true; });
+renderer.domElement.addEventListener('pointerup',e=>{ pointer.down=false; setTimeout(()=>{ if(!pointer.down) pointer.active=false; },320); });
+renderer.domElement.addEventListener('pointerleave',()=>{pointer.active=false; pointer.down=false;});
+window.addEventListener('touchmove',e=>{ if(e.touches[0]) updPtr(e); }, {passive:true});
+
+// audio
+function makeImpulse(ctx,dur=6){ const rate=ctx.sampleRate, len=Math.floor(rate*dur), buf=ctx.createBuffer(2,len,rate); for(let ch=0;ch<2;ch++){ const d=buf.getChannelData(ch); for(let i=0;i<len;i++){ const t=i/rate, env=Math.exp(-1.45*t)*Math.pow(1-t/dur,.34); d[i]=(Math.random()*2-1)*env*.56; } let l=0; for(let i=0;i<len;i++){ const t=i/rate, s=0.24+0.5*(1-Math.exp(-t*.58)); const v=d[i]*(1-s)+l*s; d[i]=v; l=v; } const pre=Math.floor(rate*.019); for(let i=0;i<pre;i++) d[i]*=i/pre; } return buf; }
+function ensureAudio(){ if(!audioCtx) initAudio(); else if(audioCtx.state==='suspended') audioCtx.resume(); }
+function initAudio(){
+  if(audioCtx) return; audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+  masterGain=audioCtx.createGain(); masterGain.gain.value=0;
+  compNode=audioCtx.createDynamicsCompressor(); compNode.threshold.value=-20; compNode.knee.value=22; compNode.ratio.value=2.2; compNode.attack.value=.015; compNode.release.value=.28;
+  convolver=audioCtx.createConvolver(); convolver.buffer=makeImpulse(audioCtx,6.3);
+  reverbSend=audioCtx.createGain(); reverbSend.gain.value=.56;
+  const ret=audioCtx.createGain(); ret.gain.value=.88; convolver.connect(ret); ret.connect(masterGain); reverbSend.connect(convolver);
+  masterGain.connect(compNode); compNode.connect(audioCtx.destination);
+  const base=[65.41,97.999,146.83,220,329.63];
+  base.forEach((f,idx)=>{
+    const vg=audioCtx.createGain(); vg.gain.value=0; const filt=audioCtx.createBiquadFilter(); filt.type='lowpass'; filt.frequency.value=1820; filt.Q.value=0.62;
+    const pan=audioCtx.createStereoPanner(); pan.pan.value=(idx-2)*0.26; filt.connect(pan); vg.connect(filt); pan.connect(masterGain); pan.connect(reverbSend);
+    const mults=[1,2,3,5.07], gains=[1,0.165,0.072,0.026];
+    mults.forEach((m,i)=>{ const o=audioCtx.createOscillator(); o.type='sine'; o.frequency.value=f*m; o.detune.value=(Math.random()-.5)*1.2; const pg=audioCtx.createGain(); pg.gain.value=gains[i]; o.connect(pg); pg.connect(vg); o.start(); });
+    const now=audioCtx.currentTime; vg.gain.setValueAtTime(0,now); vg.gain.linearRampToValueAtTime(0.068+Math.random()*0.019, now+3.6+idx*0.55);
+    droneVoices.push({freq:f, vg, filt, pan});
+  });
+  const now=audioCtx.currentTime; masterGain.gain.setValueAtTime(0,now); masterGain.gain.linearRampToValueAtTime(0.36, now+3.4); masterGain.gain.linearRampToValueAtTime(0.42, now+7);
+}
+function pluckNormal(fi,vel,alevel){
+  if(!audioCtx) return; const base=[65.41,97.999,146.83,220,329.63]; const bIdx=fi%base.length, oct=Math.floor(fi/base.length)%3; let freq=base[bIdx]*Math.pow(2,oct); if(freq>740) freq/=2;
+  const detHist=detuneHist[fi]; const hShift=hueShift[fi];
+  freq*=Math.pow(2, detHist/1200); // detune cents
+  // divergent intonation: if touched many times, drift toward preferred interval (flatten or sharpen)
+  const t0=audioCtx.currentTime, env=audioCtx.createGain(); env.gain.value=0; const filt=audioCtx.createBiquadFilter(); filt.type='lowpass'; filt.frequency.value=4100; const pan=audioCtx.createStereoPanner(); const ang=baseAngles[fi]; pan.pan.value=THREE.MathUtils.clamp(Math.sin(ang)*.78+pointer.x*.18,-.92,.92);
+  env.connect(filt); filt.connect(pan); pan.connect(masterGain); pan.connect(reverbSend);
+  const mults=[1,2,3,5.03], gains=[1,0.20,0.095,0.041];
+  mults.forEach((m,i)=>{ const o=audioCtx.createOscillator(); o.type='sine'; o.frequency.value=freq*m*(1+(Math.random()-.5)*.0025); const pg=audioCtx.createGain(); pg.gain.value=gains[i]*(0.95+Math.abs(hShift)*.35); o.connect(pg); pg.connect(env); o.start(t0); o.stop(t0+3.9); });
+  env.gain.setValueAtTime(0,t0); env.gain.linearRampToValueAtTime(vel*0.40,t0+0.02); env.gain.exponentialRampToValueAtTime(0.001,t0+2.9+vel*0.7); filt.frequency.setValueAtTime(3800,t0); filt.frequency.exponentialRampToValueAtTime(900+vel*1200+Math.abs(hShift)*600,t0+2.6);
+  setTimeout(()=>{ try{env.disconnect();filt.disconnect();pan.disconnect();}catch(e){} },4300);
+  const dv=droneVoices[bIdx]; if(dv){ const nv=dv.vg.gain.value; try{ dv.vg.gain.cancelScheduledValues(t0); dv.vg.gain.setValueAtTime(nv,t0); dv.vg.gain.linearRampToValueAtTime(Math.min(0.22,nv+vel*.07),t0+.18); dv.vg.gain.exponentialRampToValueAtTime(0.069,t0+4.6); dv.filt.frequency.cancelScheduledValues(t0); dv.filt.frequency.setValueAtTime(dv.filt.frequency.value,t0); dv.filt.frequency.linearRampToValueAtTime(2500+vel*1300,t0+.4); dv.filt.frequency.exponentialRampToValueAtTime(1820,t0+5.2);}catch(e){}}
+}
+function pluckRefusal(fi,vel){
+  if(!audioCtx) return;
+  const base=[65.41,97.999,146.83,220,329.63]; const bIdx=fi%base.length; let freq=base[bIdx]*(0.985);// flattened refusal
+  const t0=audioCtx.currentTime, env=audioCtx.createGain(); env.gain.value=0; const filt=audioCtx.createBiquadFilter(); filt.type='lowpass'; filt.frequency.value=900; filt.Q.value=1.2; const pan=audioCtx.createStereoPanner(); pan.pan.value=THREE.MathUtils.clamp(Math.sin(baseAngles[fi])*.5,-.65,.65);
+  const sub=audioCtx.createBiquadFilter(); sub.type='highpass'; sub.frequency.value=220;
+  env.connect(filt); filt.connect(sub); sub.connect(pan); pan.connect(masterGain); pan.connect(reverbSend);
+  const o=audioCtx.createOscillator(); o.type='triangle'; o.frequency.value=freq*0.51;
+  const o2=audioCtx.createOscillator(); o2.type='sine'; o2.frequency.value=freq*1.015;
+  const g1=audioCtx.createGain(), g2=audioCtx.createGain(); g1.gain.value=0.55; g2.gain.value=0.18; o.connect(g1); o2.connect(g2); g1.connect(env); g2.connect(env); o.start(t0); o2.start(t0); o.stop(t0+1.35); o2.stop(t0+1.35);
+  env.gain.setValueAtTime(0,t0); env.gain.linearRampToValueAtTime(vel*0.11,t0+0.04); env.gain.exponentialRampToValueAtTime(0.0008,t0+1.2);
+  filt.frequency.linearRampToValueAtTime(340,t0+0.6);
+  setTimeout(()=>{try{env.disconnect();filt.disconnect();sub.disconnect();pan.disconnect();}catch(e){}},1600);
+}
+
+const clock=new THREE.Clock(); let time=0;
+let camPos=new THREE.Vector3(0,1.2,15.8), camTgtPos=new THREE.Vector3(), camLook=new THREE.Vector3(0,0.2,0), camLookT=new THREE.Vector3();
+let tmpV=new THREE.Vector3();
+let minDistPerFil=new Float32Array(NFIL);
+
+function animatedAgent(dt,t){
+  // agent chooses target occasionally (free will: intention)
+  if(Math.random()<0.006) { agentTargetAng+= (Math.random()-.5)*1.9; agentTargetY= THREE.MathUtils.clamp((Math.random()-.5)*9, -5.5,5.5); }
+  // if trust high, agent curious near user; if low, avoid
+  if(pointer.active && avgTrust>0.6){
+    const pointerAngle=Math.atan2(pointer.y*8, pointer.x*8); // rough mapping
+    agentTargetAng += (pointerAngle - agentTargetAng)*0.004;
+  } else if(avgTrust<0.42){
+    // withdraw outward
+    agentTargetAng += 0.012;
+  }
+  // spring toward target with slightly irregular will
+  const diffAng= Math.atan2(Math.sin(agentTargetAng-agentAng), Math.cos(agentTargetAng-agentAng));
+  agentVAng += diffAng*0.45*dt + (Math.sin(t*0.31+agentAng)*0.18*dt);
+  agentVAng *= Math.pow(0.92, dt*60); // damping but low
+  agentVy += (agentTargetY - agentY)*0.6*dt + Math.sin(t*0.22)*0.05*dt;
+  agentVy *= Math.pow(0.90, dt*60);
+  agentAng += agentVAng*dt*6.2;
+  agentY += agentVy*dt*8;
+  // clamp velocity for readability
+  agentVAng=THREE.MathUtils.clamp(agentVAng,-0.9,0.9);
+  agentY=THREE.MathUtils.clamp(agentY,-6.2,6.2);
+}
+
+let spontaneousCooldown=0;
+function triggerSpontaneous(dt){
+  if(Math.random()<0.007*dt*60){
+    const fi=Math.floor(Math.random()*NFIL), mid=Math.floor(NSEG*0.4+Math.random()*NSEG*0.22), idx=fi*NSEG+mid;
+    const imp=(Math.random()>.5?1:-1)*(0.32+Math.random()*0.35);
+    vr[idx]+=imp*3.2; vt[idx]+=(Math.random()-.5)*1.6; for(let d=-2;d<=2;d++){ const j=idx+d; if(j>=fi*NSEG && j<(fi+1)*NSEG) heat[j]=Math.min(1, heat[j]+0.38*Math.exp(-Math.abs(d)*.9)); }
+    if(audioCtx && Math.random()<0.18) pluckNormal(fi,0.13+Math.random()*0.12);
+  }
+}
+
+function animate(){
+  requestAnimationFrame(animate);
+  const dt=Math.min(0.033, clock.getDelta()); time+=dt;
+  const life00=0.5+0.16*Math.sin(0.29*time+1.3)+0.10*Math.sin(0.43*time-0.7)+0.06*Math.sin(0.71*time+2.1);
+  animatedAgent(dt,time);
+  // update trust baseline restore slowly, collective
+  let sumT=0; for(let i=0;i<NFIL;i++){ // drift to neutral
+    trust[i]+= (0.64 - trust[i])*0.0009*dt*60;
+    trust[i]=THREE.MathUtils.clamp(trust[i],0.08,0.98);
+    sumT+=trust[i];
+  }
+  avgTrust=sumT/NFIL;
+  const globalClosed=Math.pow( Math.max(0,0.66 - avgTrust), 0.9);
+  collectiveClosed+= (globalClosed - collectiveClosed)*(1-Math.exp(-0.8*dt));
+  let rayActive=pointer.active; if(rayActive){ raycaster.setFromCamera(pointer,camera); rayO.copy(raycaster.ray.origin); rayD.copy(raycaster.ray.direction); }
+  for(let i=0;i<NFIL;i++) minDistPerFil[i]=1e9;
+  const c2=19.5+life00*7.0, damp=1.45, sub=2, sdt=dt/sub;
+  for(let st=0; st<sub; st++){
+    for(let fi=0; fi<NFIL; fi++){
+      const left=(fi-1+NFIL)%NFIL,right=(fi+1)%NFIL;
+      for(let s=1;s<NSEG-1;s++){
+        const idx=fi*NSEG+s, y=(s/(NSEG-1)*heights -heights/2);
+        const breathing=Math.sin(time*0.42+baseAngles[fi]*1.4+y*0.22)*0.22*(0.55+0.45*Math.sin(time*0.19+fi*0.6))*(1-Math.abs(y)/9.5);
+        // closedness contracts breathing amplitude
+        const br=breathing*(1-collectiveClosed*0.7);
+        const d2r=dr[idx+1]+dr[idx-1]-2*dr[idx], d2t=dtA[idx+1]+dtA[idx-1]-2*dtA[idx];
+        let accR=c2*d2r + (br - dr[idx])*1.12, accT=c2*d2t - dtA[idx]*0.62;
+        const lIdx=left*NSEG+s, rIdx=right*NSEG+s; accR+=1.06*((dr[lIdx]+dr[rIdx])*0.5-dr[idx]); accT+=0.92*((dtA[lIdx]+dtA[rIdx])*0.5 - dtA[idx]);
+        // agent gentle pull: autonomous will
+        accR-=damp*vr[idx]; accT-=damp*vt[idx];
+        vr[idx]+=accR*sdt; vt[idx]+=accT*sdt; dr[idx]+=vr[idx]*sdt; dtA[idx]+=vt[idx]*sdt;
+        if(dr[idx]>4.1) dr[idx]=4.1; if(dr[idx]<-4.0) dr[idx]=-4;
+      }
+    }
+    for(let fi=0;fi<NFIL;fi++){ dr[fi*NSEG]=0; dtA[fi*NSEG]=0; vr[fi*NSEG]=0; vt[fi*NSEG]=0; const la=fi*NSEG+NSEG-1; dr[la]=0; dtA[la]=0; vr[la]=0; vt[la]=0; }
+  }
+  // autonomous agent influence: filaments notice agent
+  {
+    const ax=Math.cos(agentAng)*(baseRadius+0.25), az=Math.sin(agentAng)*(baseRadius+0.25), ay=agentY;
+    for(let idx=0; idx<NPRIMARY; idx++){
+      const fi=Math.floor(idx/NSEG), s=idx%NSEG;
+      const x=positions[idx*3], y=positions[idx*3+1], z=positions[idx*3+2];
+      const dx=x-ax, dz=z-az, dy=y-ay; const d=Math.sqrt(dx*dx+dz*dz+dy*dy*0.35);
+      if(d<2.2){
+        const fall=Math.pow(1-d/2.2,1.45);
+        const trustPull= 0.45 + avgTrust*0.55; // more curious when trust high
+        // decompose
+        const angle=baseAngles[fi]+ Math.sin(time*0.08)*0.35*(y/6);
+        const cosA=Math.cos(angle), sinA=Math.sin(angle);
+        // pull direction inward tang?
+        const dirR = -(dx*cosA + dz*sinA) * fall * 0.004;
+        const dirT = -(-dx*sinA + dz*cosA) * fall * 0.004;
+        vr[idx]+= dirR* dt*90 * trustPull;
+        vt[idx]+= dirT* dt*90 * trustPull;
+        // soft illumination when near agent (interest)
+        heat[idx]=Math.min(1, heat[idx]+ fall*0.13*dt*(0.7+trust[fi]));
+        refusalFlash[idx]*=0.96;
+      }
+    }
+  }
+  // pointer interaction with free will gate
+  if(rayActive){
+    for(let idx=0; idx<NPRIMARY; idx++){
+      const x=positions[idx*3], y=positions[idx*3+1], z=positions[idx*3+2];
+      tmpV.set(x,y,z); const toP=tmpV.clone().sub(rayO); const t=toP.dot(rayD);
+      if(t<0.2||t>58) continue;
+      const cx=rayO.x+rayD.x*t, cy=rayO.y+rayD.y*t, cz=rayO.z+rayD.z*t;
+      const dx=x-cx, dy=y-cy, dz=z-cz; const d=Math.sqrt(dx*dx+dy*dy+dz*dz);
+      const fi=Math.floor(idx/NSEG); if(d < minDistPerFil[fi]) minDistPerFil[fi]=d;
+      const rad=isSmall?2.05:2.38; if(d<rad){
+        const fall=Math.pow(1-d/rad,1.48), velFac= Math.sqrt(pointer.vx*pointer.vx+pointer.vy*pointer.vy)*17 +0.85, intens=fall*velFac*(pointer.down?1.58:0.92);
+        // will check later at filament level; still give subtle nudge but scaled by willingness
+        const will=trust[fi];
+        const nudgeScale= 0.60 + will*0.80; // if low will, physical displacement reduced by ~40%
+        if(intens>0.08){
+          const angle=baseAngles[fi];
+          const timeTwist=Math.sin(time*0.08)*0.4*( (positions[idx*3+1])/8)*0.22;
+          const aEff=angle+timeTwist, cosA=Math.cos(aEff), sinA=Math.sin(aEff);
+          const nx= d>1e-4? dx/d: Math.cos(angle)*0.2, nz= d>1e-4? dz/d: Math.sin(angle)*0.2;
+          const impX=nx*intens*0.068*nudgeScale, impZ=nz*intens*0.068*nudgeScale;
+          const radC=impX*cosA+impZ*sinA, tanC=-impX*sinA+impZ*cosA;
+          vr[idx]+=radC*21; vt[idx]+=tanC*21; dr[idx]+=radC*0.48; dtA[idx]+=tanC*0.48;
+          // heat depends on will: refused adds dark cool instead of warm
+          if(will<0.32) refusalFlash[idx]=Math.min(1, refusalFlash[idx]+fall*0.85);
+          else heat[idx]=Math.min(1, heat[idx]+ fall*0.55*(pointer.down?1.2:1)*will );
+        }
+      }
+    }
+    if(pointer.down){
+      let cands=[]; for(let fi=0;fi<NFIL;fi++) if(minDistPerFil[fi]<0.92) cands.push({fi,d:minDistPerFil[fi]});
+      cands.sort((a,b)=>a.d-b.d);
+      const limit=Math.min(2,cands.length);
+      for(let k=0;k<limit;k++){
+        const fi=cands[k].fi, d=cands[k].d, now=time;
+        if(now-lastTrigger[fi] <0.18 ) continue;
+        const vel=THREE.MathUtils.clamp((0.92-d)/0.92*(1.02+pointer.spd*9),0.16,1);
+        const will=trust[fi];
+        const aggression = vel*0.9 + pointer.spd*5; // how forceful
+        const isRapid = (now - lastTouchT[fi] < 0.9);
+        // free will decision block: refusal
+        let refusalProb=0;
+        if(will <0.45) refusalProb = (0.5 - will)*1.6 + (isRapid?0.32:0) + (aggression>0.75?0.28:0) + collectiveClosed*0.45;
+        refusalProb=THREE.MathUtils.clamp(refusalProb,0,0.92);
+        const chooseRefuse = Math.random() < refusalProb && avgTrust<0.62;
+        if(chooseRefuse){
+          // enact refusal: darken, hollow sound
+          pluckRefusal(fi, vel*0.85);
+          // filament recoils away: push opposite
+          const mid0=fi*NSEG+Math.floor(NSEG*0.5);
+          for(let s=0;s<NSEG;s++){ const id=fi*NSEG+s; refusalFlash[id]=Math.min(1, refusalFlash[id]+ 0.55*Math.exp(-Math.abs(s-NSEG/2)*0.12)); heat[id]*=0.5; vr[id]-= (Math.random()-.5)*1.2; vt[id]-= (Math.random()-.5)*1.2; }
+          trust[fi]=Math.max(0.08, trust[fi]- 0.075 - aggression*0.05);
+          lastTrigger[fi]=now; lastTouchT[fi]=now; touches[fi]++;
+          // collective punishment small
+          for(let o=0;o<NFIL;o++) if(o!==fi) trust[o]=Math.max(0.08, trust[o]-0.008);
+          continue;
+        }
+        // accept
+        pluckNormal(fi, vel, will);
+        // divergent memory: detune and hue shift evolve with count, not reproduce identically
+        touches[fi]++;
+        lastTouchT[fi]=now;
+        // trust rewards gentleness, punishes hammering
+        const gentleBonus = (vel<0.52 && pointer.spd<0.025)? 0.06: 0.03;
+        const rapidPenalty = isRapid? -0.04:0;
+        trust[fi]=THREE.MathUtils.clamp(trust[fi] + gentleBonus + rapidPenalty + (Math.random()-.5)*0.008, 0.08,0.97);
+        // divergent: third touch remembers differently than first: shift palette
+        hueShift[fi]+= (touches[fi]%3===0? -0.04 : 0.037) + (will-0.5)*0.02;
+        hueShift[fi]=THREE.MathUtils.clamp(hueShift[fi],-0.45,0.45);
+        detuneHist[fi]+= (Math.random()-0.5)*1.8 + hueShift[fi]*2.2;
+        detuneHist[fi]=THREE.MathUtils.clamp(detuneHist[fi], -28, 28);
+        const mid=fi*NSEG+Math.floor(NSEG/2); for(let s=mid-9;s<mid+10;s++){ const ss=Math.max(1,Math.min(NSEG-2,s)); const id=fi*NSEG+ss; heat[id]=Math.min(1, heat[id]+ vel*0.52*Math.exp(-Math.abs(s-mid)*0.26)); }
+        lastTrigger[fi]=now;
+      }
+    }
+  }
+  // refusal flash fade
+  for(let i=0;i<NPRIMARY;i++) refusalFlash[i]*=Math.exp(-dt*0.9);
+
+  // heat decay
+  for(let i=0;i<NPRIMARY;i++) heat[i]*=Math.exp(-dt*0.66);
+  // divergent resurgence: fil chooses to remember you when you leave it alone
+  for(let fi=0; fi<NFIL; fi++){
+    if(touches[fi]>=2 && time - lastTouchT[fi] > 7.5 && trust[fi]>0.58){
+      // faint autonomous recall probability increases with touches
+      const p = 0.00055*dt*60 * (0.5+ touches[fi]*0.14);
+      if(Math.random()<p){
+        const mid=Math.floor(NSEG*0.5 + (Math.random()-.5)*10); const id=fi*NSEG+mid;
+        heat[id]=Math.min(1, heat[id]+ 0.22 + Math.random()*0.1);
+        // colour of memory slightly shifted from original
+        hueShift[fi]+= (Math.random()-.5)*0.04;
+        // soft ghost note - not triggered by you
+        if(audioCtx && Math.random()<0.72) pluckNormal(fi, 0.12, trust[fi]*0.8);
+      }
+    }
+  }
+
+  triggerSpontaneous(dt);
+  const gTwist=Math.sin(time*0.072)*0.38+Math.cos(time*0.052)*0.21, lifeRR=life00*0.42*(1-collectiveClosed*0.35);
+  for(let fi=0;fi<NFIL;fi++){
+    const aB=baseAngles[fi], hs=hueShift[fi], rfBase=touches[fi]?0:0;
+    for(let s=0;s<NSEG;s++){
+      const idx=fi*NSEG+s, y=THREE.MathUtils.lerp(-heights/2,heights/2,s/(NSEG-1)), twist=gTwist*(y/6), aEff=aB+twist, cosA=Math.cos(aEff), sinA=Math.sin(aEff);
+      const rad=baseRadius*(1-collectiveClosed*0.14)+lifeRR*(1-Math.abs(y)/10)+dr[idx];
+      const tang=dtA[idx];
+      let x=cosA*rad - sinA*tang, z=sinA*rad + cosA*tang;
+      const pin=Math.sin(time*0.18+y*0.55)*0.10*Math.sin(aB*2.8)*(1-Math.abs(y)/9);
+      x+=cosA*pin; z+=sinA*pin;
+      positions[idx*3]=x; positions[idx*3+1]=y+Math.sin(time*0.38+aB+s*0.09)*0.025; positions[idx*3+2]=z;
+      const curv=s>0&&s<NSEG-1? Math.abs(dr[idx+1]+dr[idx-1]-2*dr[idx])*2.1:0, velMag=Math.sqrt(vr[idx]*vr[idx]+vt[idx]*vt[idx]);
+      const rf=refusalFlash[idx];
+      const e= velMag*0.53 + heat[idx]*1.5 + curv*2.2 - rf*0.7;
+      const ec=THREE.MathUtils.clamp(e,0,1.6);
+      let rC,gC,bC;
+      if(rf>0.18){
+        // refusal palette: desaturated cold slate, not warm nuclear
+        const t=rf; rC=THREE.MathUtils.lerp(0.12,0.28,t); gC=THREE.MathUtils.lerp(0.18,0.32,t); bC=THREE.MathUtils.lerp(0.45,0.56,t);
+        // mix slightly with remaining ec coolly
+        rC+= ec*0.07; gC+=ec*0.09; bC+=ec*0.12;
+        // dimmer
+        rC*= 0.55+0.35*(1-collectiveClosed); gC*=0.65; bC*=0.95;
+      } else {
+        if(ec<0.28){
+          const t=ec/0.28; rC=THREE.MathUtils.lerp(0.06,0.12 + hs*0.06,t); gC=THREE.MathUtils.lerp(0.11,0.51,t); bC=THREE.MathUtils.lerp(0.56,0.71 - hs*0.08,t);
+        } else if(ec<0.68){
+          const t=(ec-0.28)/0.40; rC=THREE.MathUtils.lerp(0.12+hs*0.06, 0.60+hs*0.18,t); gC=THREE.MathUtils.lerp(0.51,0.83+hs*0.06,t); bC=THREE.MathUtils.lerp(0.71-hs*0.08,0.91,t);
+        } else {
+          const t=Math.min(1,(ec-0.68)/0.92); rC=THREE.MathUtils.lerp(0.60+hs*0.18,1.0,t); gC=THREE.MathUtils.lerp(0.83+hs*0.06,0.96,t); bC=THREE.MathUtils.lerp(0.91,0.78 - hs*0.12,t); rC*=1+t*0.48; gC*=1+t*0.14;
+        }
+        // dim if globally closed, faint
+        rC*= 0.78+ avgTrust*0.34; gC*=0.75+ avgTrust*0.38; bC*=0.80+ avgTrust*0.28;
+      }
+      colors[idx*3]=rC; colors[idx*3+1]=gC; colors[idx*3+2]=bC;
+      const baseS=0.236+(1-(y+8)/16)*0.06;
+      const closedDark=1-collectiveClosed*0.34;
+      sizes[idx]=baseS*(closedDark + ec*1.12 + heat[idx]*0.85)*(0.92+ trust[fi]*0.28)* (rf>0.18?0.62:1);
+    }
+  }
+  primGeom.attributes.position.needsUpdate=true; primGeom.attributes.color.needsUpdate=true; primGeom.attributes.size.needsUpdate=true;
+  let l=0; for(let fi=0;fi<NFIL;fi++) for(let s=0;s<NSEG-1;s++){ const i0=fi*NSEG+s,i1=fi*NSEG+s+1; linePos[l*3]=positions[i0*3]; linePos[l*3+1]=positions[i0*3+1]; linePos[l*3+2]=positions[i0*3+2]; const cr=(colors[i0*3]+colors[i1*3])*0.5, cg=(colors[i0*3+1]+colors[i1*3+1])*0.5, cb=(colors[i0*3+2]+colors[i1*3+2])*0.5; lineCol[l*3]=cr*0.38; lineCol[l*3+1]=cg*0.38; lineCol[l*3+2]=cb*0.38; l++; linePos[l*3]=positions[i1*3]; linePos[l*3+1]=positions[i1*3+1]; linePos[l*3+2]=positions[i1*3+2]; lineCol[l*3]=cr*0.38; lineCol[l*3+1]=cg*0.38; lineCol[l*3+2]=cb*0.38; l++; }
+  lineGeom.attributes.position.needsUpdate=true; lineGeom.attributes.color.needsUpdate=true;
+  lineMat.opacity = 0.17*(0.45+avgTrust*0.70);
+  dustMat.uniforms.uTime.value=time; haloMat.uniforms.uT.value=time*0.41;
+  const camRBase=13.5+Math.sin(time*0.041)*2.05+Math.sin(time*0.084)*0.9;
+  const scaleS=time<32?THREE.MathUtils.lerp(0.82,1.18,Math.min(1,time/32)) : 1.18+Math.sin((time-32)*0.021)*0.095;
+  const trustPull = THREE.MathUtils.lerp(1.35,0.88, avgTrust); // when distant/closed push back
+  const camR=camRBase*scaleS*trustPull;
+  const camAngle=time*0.045+Math.sin(time*0.018)*0.58, tgtYp=Math.sin(time*0.034)*2.15+Math.cos(time*0.072)*1.02;
+  const tX=Math.cos(camAngle)*camR, tZ=Math.sin(camAngle)*camR, tY=tgtYp*(0.95+scaleS*0.06);
+  camTgtPos.set(tX,tY,tZ);
+  // gentle orbit near agent when trust high (intimacy)
+  if(avgTrust>0.68){
+    camLookT.set(Math.cos(agentAng)*0.25, agentY*0.28, Math.sin(agentAng)*0.18);
+  } else if(avgTrust<0.41){
+    camLookT.set(0, -collectiveClosed*1.1, 0);
+  } else camLookT.set(Math.sin(time*0.046)*0.34, Math.sin(time*0.059)*0.55, Math.cos(time*0.04)*0.16);
+  if(pointer.active&&pointer.down){
+    camLookT.x+=pointer.x*0.55*(avgTrust); camLookT.y-=pointer.y*0.5*(avgTrust); camTgtPos.x+=pointer.x*0.30*(avgTrust); camTgtPos.z+=pointer.y*0.24*(avgTrust);
+  }
+  camPos.lerp(camTgtPos,1-Math.exp(-0.36*dt*6)); camLook.lerp(camLookT,1-Math.exp(-0.42*dt*6));
+  camera.position.copy(camPos); camera.lookAt(camLook);
+  bloomPass.strength=0.52+life00*0.12+( (heat.reduce((a,b)=>a+b,0)/NPRIMARY)*2.2)*0.22*(0.55+avgTrust*0.6)*(1-collectiveClosed*0.6)+ (collectiveClosed>0.32? -0.22:0);
+  bloomPass.radius=0.48+Math.sin(time*0.07)*0.06;
+  if(audioCtx){
+    const life2=0.5+Math.sin(time*0.19)*0.19;
+    droneVoices.forEach(dv=>{ dv.pan.pan.value+= (Math.sin(time*0.07)*0.01); dv.filt.frequency.value=THREE.MathUtils.lerp(dv.filt.frequency.value, 1650+life2*520+avgTrust*400 - collectiveClosed*700,0.06); });
+    const mTarget= 0.14 + avgTrust*0.28*(1-collectiveClosed*0.45); // master collective loudness breathes with willingness
+    try{ masterGain.gain.linearRampToValueAtTime(mTarget, audioCtx.currentTime+0.4); }catch(e){}
+  }
+  composer.render();
+}
+animate();
+window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth,innerHeight); composer.setSize(innerWidth,innerHeight);});
+btn.addEventListener('click', async()=>{ if(audioCtx&&audioCtx.state==='suspended') await audioCtx.resume(); if(!audioCtx) initAudio(); overlay.style.opacity='0'; overlay.style.pointerEvents='none'; gesture.style.color='rgba(200,214,245,0.34)'; setTimeout(()=>{gesture.style.opacity='0';},4600); setTimeout(()=>{gesture.style.display='none';},7000); gateMessage(); });
+function gateMessage(){
+  // no text, just let refusal teaching happen via feedback
+  let warned=false;
+  const inter=setInterval(()=>{
+    if(collectiveClosed>0.28 && !warned){ gesture.textContent='you pressed too hard — give it space'; gesture.style.color='rgba(200,170,160,0.52)'; gesture.style.opacity='1'; gesture.style.display='block'; warned=true; setTimeout(()=>{gesture.style.opacity='0';},3400); }
+    if(time>30) clearInterval(inter);
+  },900);
+}
+setTimeout(()=>{ for(let f=0;f<NFIL;f++) setTimeout(()=>{ const id=f*NSEG+Math.floor(NSEG/2); vr[id]+=(Math.random()-.5)*1.1; }, f*85); },820);
+</script>
+</body>
+</html>
