@@ -92,18 +92,19 @@ for (const site of satellites.sites) {
     throw new Error(`Satellite host collides with an exhibit: ${site.host}`);
   }
   const dest = site.publicPath;
-  rewrites.push(
-    {
-      source: "/",
-      has: [{ type: "host", value: site.host }],
+  // Host rewrite for `/` only. Do not catch-all `/(.*)` — that would steal
+  // `/.well-known/acme-challenge/*` and block Let's Encrypt HTTP-01.
+  rewrites.push({
+    source: "/",
+    has: [{ type: "host", value: site.host }],
+    destination: dest,
+  });
+  if (site.apexPath) {
+    rewrites.push({
+      source: site.apexPath,
       destination: dest,
-    },
-    {
-      source: "/(.*)",
-      has: [{ type: "host", value: site.host }],
-      destination: dest,
-    }
-  );
+    });
+  }
 }
 
 const vercel = {

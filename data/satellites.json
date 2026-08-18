@@ -5,7 +5,8 @@
       "id": "brent",
       "title": "Brent Ward | Strategic Energy Professional",
       "host": "brent.zlapp.app",
-      "publicPath": "/sites/brent/index.html"
+      "publicPath": "/sites/brent/index.html",
+      "apexPath": "/brent"
     }
   ]
 }
