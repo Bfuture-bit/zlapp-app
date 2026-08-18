@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Brent Ward | Strategic Energy Professional</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=Inter:wght@300;400;600&family=JetBrains+Mono:wght@300;400;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Syncopate', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        space: '#010308',
+                        cyan: '#00F0FF',
+                        gold: '#FFB800',
+                        purple: '#B533FF'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body, html { margin: 0; padding: 0; overflow: hidden; background-color: #010308; color: #fff; touch-action: none; -webkit-user-select: none; user-select: none; }
+        #webgl-container { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; }
+
+        /* Typography & UI Filters */
+        .text-glow-cyan { text-shadow: 0 0 15px rgba(0, 240, 255, 0.6); }
+        .text-glow-gold { text-shadow: 0 0 15px rgba(255, 184, 0, 0.6); }
+        
+        .glass-panel {
+            background: linear-gradient(135deg, rgba(10, 15, 20, 0.5) 0%, rgba(2, 5, 10, 0.7) 100%);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 240, 255, 0.1);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.05);
+        }
+
+        /* 3D Tracked HUD Labels */
+        .node-label {
+            position: absolute; top: 0; left: 0;
+            transform: translate(-50%, -50%);
+            pointer-events: auto; cursor: pointer;
+            z-index: 10; opacity: 0; 
+            display: flex; align-items: center; gap: 8px;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.5s ease;
+        }
+        .node-label:hover { transform: translate(-50%, -50%) scale(1.15); }
+        
+        .node-label .line-connector {
+            width: 25px; height: 1px;
+            background: linear-gradient(90deg, currentColor, transparent);
+        }
+        
+        .node-label .text-box {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px; font-weight: 700; letter-spacing: 2px;
+            text-transform: uppercase; white-space: nowrap;
+            background: rgba(1, 3, 8, 0.8);
+            padding: 6px 12px; border-radius: 2px;
+            border-left: 2px solid currentColor;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 20px rgba(0,0,0,0.9);
+        }
+        .hidden-label { opacity: 0 !important; pointer-events: none; }
+
+        /* Cinematic Info Drawer */
+        #info-drawer {
+            transition: transform 0.8s cubic-bezier(0.25, 1, 0.15, 1), opacity 0.8s ease;
+            opacity: 0;
+        }
+        @media (max-width: 768px) {
+            #info-drawer { transform: translateY(100%); border-top: 1px solid rgba(0, 240, 255, 0.15); border-radius: 24px 24px 0 0; }
+            #info-drawer.active { transform: translateY(0); opacity: 1; }
+        }
+        @media (min-width: 769px) {
+            #info-drawer { transform: translateX(100%); border-left: 1px solid rgba(0, 240, 255, 0.15); }
+            #info-drawer.active { transform: translateX(0); opacity: 1; }
+        }
+
+        .drawer-content ul { list-style-type: none; padding: 0; margin-top: 1.5rem; }
+        .drawer-content li { position: relative; padding-left: 1.5rem; margin-bottom: 1rem; color: rgba(255, 255, 255, 0.7); font-size: 0.95rem; }
+        .drawer-content li::before { content: '▹'; position: absolute; left: 0; color: inherit; font-family: 'JetBrains Mono'; }
+        .drawer-content strong { color: #fff; font-weight: 600; }
+
+        /* QWEN Style Enter Gate */
+        #gate {
+            position: fixed; inset: 0; background: #000; z-index: 9999;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            cursor: pointer; transition: opacity 1.5s ease;
+        }
+        #gate.gone { opacity: 0; pointer-events: none; }
+        .gate-ring {
+            width: 140px; height: 140px; border-radius: 50%;
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            display: flex; align-items: center; justify-content: center;
+            animation: pulse-ring 3s ease-in-out infinite;
+        }
+        .gate-ring span { color: rgba(0, 240, 255, 0.9); font-family: 'JetBrains Mono'; font-size: 11px; letter-spacing: 0.5em; padding-left: 0.5em; }
+        .gate-sub { margin-top: 40px; color: rgba(255, 255, 255, 0.3); font-family: 'JetBrains Mono'; font-size: 9px; letter-spacing: 0.5em; text-transform: uppercase; }
+        
+        @keyframes pulse-ring {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(0, 240, 255, 0); }
+            50% { box-shadow: 0 0 40px 2px rgba(0, 240, 255, 0.15); }
+        }
+
+        #hint {
+            position: fixed; left: 0; right: 0; bottom: 8vh; text-align: center; z-index: 5;
+            color: rgba(0, 240, 255, 0.4); font-family: 'JetBrains Mono'; font-size: 10px;
+            letter-spacing: 0.4em; pointer-events: none; opacity: 0; transition: opacity 2s ease;
+        }
+        body.in #hint { opacity: 1; transition-delay: 2s; }
+        #hint.off { opacity: 0 !important; }
+        
+        /* Custom Scrollbar for Drawer */
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(0, 240, 255, 0.2); border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(0, 240, 255, 0.5); }
+    </style>
+
+    <!-- Three.js + Post Processing -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+</head>
+<body>
+
+    <!-- Enter Gate -->
+    <div id="gate">
+        <div class="gate-ring"><span>ENTER</span></div>
+        <div class="gate-sub">INITIALIZE STRATEGIC NEURAL GRID</div>
+    </div>
+    <div id="hint">TOUCH THE LOOM TO EXPLORE</div>
+
+    <!-- WebGL Canvas -->
+    <div id="webgl-container"></div>
+    
+    <!-- 3D Tracked HTML Labels -->
+    <div id="labels-container" class="absolute inset-0 z-10 pointer-events-none overflow-hidden"></div>
+
+    <!-- Minimalist HUD Overlay -->
+    <div class="absolute inset-0 z-20 flex flex-col justify-between pointer-events-none p-6 md:p-12">
+        
+        <!-- Header -->
+        <header class="flex justify-between items-start w-full" id="ui-header" style="opacity: 0; transform: translateY(-20px);">
+            <div class="pointer-events-auto group">
+                <h1 class="font-display text-2xl md:text-4xl text-white font-bold tracking-tighter uppercase drop-shadow-2xl flex items-center gap-3">
+                    Brent Ward
+                    <div class="w-2 h-2 rounded-full bg-cyan animate-pulse box-shadow-glow"></div>
+                </h1>
+                <h2 class="font-mono text-[9px] md:text-[11px] text-cyan text-glow-cyan tracking-[0.3em] mt-2 uppercase flex items-center gap-2">
+                    <span class="w-6 h-[1px] bg-cyan/50 block"></span>
+                    Tech & Sales • Strategic Professional
+                </h2>
+            </div>
+            
+            <button id="btn-about" class="pointer-events-auto w-10 h-10 md:w-12 md:h-12 rounded-full glass-panel flex items-center justify-center text-white/70 hover:text-cyan transition-all duration-300">
+                <i data-lucide="scan-line" class="w-4 h-4 md:w-5 md:h-5"></i>
+            </button>
+        </header>
+
+        <!-- About Modal -->
+        <div id="about-modal" class="absolute top-20 md:top-24 right-6 md:right-12 w-[calc(100%-48px)] md:w-[380px] glass-panel p-6 md:p-8 rounded-2xl opacity-0 pointer-events-none transition-all duration-500 transform translate-y-4">
+            <div class="w-10 h-1 bg-gradient-to-r from-cyan to-transparent mb-6"></div>
+            <p class="text-xs md:text-sm text-gray-300 font-sans leading-relaxed">
+                Problem owner, technical translator, and process improver bridging technical complexity and commercial execution across <strong>distributed energy, utility infrastructure, and commercial building systems</strong>.
+            </p>
+        </div>
+
+        <!-- Footer Actions -->
+        <footer class="pointer-events-auto flex justify-center w-full" id="ui-footer" style="opacity: 0; transform: translateY(20px);">
+            <div class="glass-panel rounded-full px-6 md:px-8 py-3 md:py-4 flex items-center space-x-8 backdrop-blur-2xl">
+                <a href="#" class="text-white/50 hover:text-cyan hover:-translate-y-1 transition-all duration-300">
+                    <i data-lucide="linkedin" class="w-4 h-4 md:w-5 md:h-5"></i>
+                </a>
+                <a href="#" class="text-white/50 hover:text-gold hover:-translate-y-1 transition-all duration-300">
+                    <i data-lucide="file-code-2" class="w-4 h-4 md:w-5 md:h-5"></i>
+                </a>
+                <a href="mailto:contact@example.com" class="text-white/50 hover:text-white hover:-translate-y-1 transition-all duration-300">
+                    <i data-lucide="send" class="w-4 h-4 md:w-5 md:h-5"></i>
+                </a>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Data Drawer -->
+    <div id="info-drawer" class="fixed bottom-0 md:top-0 right-0 w-full md:w-[500px] h-[75vh] md:h-full glass-panel z-30 pointer-events-auto p-6 md:p-12 flex flex-col shadow-2xl">
+        <div class="flex justify-between items-start mb-6 md:mb-8">
+            <div class="relative">
+                <div class="absolute inset-0 bg-white/10 blur-xl rounded-full"></div>
+                <div class="relative inline-flex p-3 md:p-4 rounded-xl bg-white/5 border border-white/10" id="drawer-icon-container">
+                    <i id="drawer-icon" data-lucide="hexagon" class="w-6 h-6 md:w-8 md:h-8 text-white"></i>
+                </div>
+            </div>
+            <button id="close-drawer" class="text-white/50 hover:text-white bg-white/5 hover:bg-white/10 rounded-full p-2 md:p-3 transition-all duration-300 group">
+                <i data-lucide="x" class="w-4 h-4 md:w-5 md:h-5 group-hover:rotate-90 transition-transform duration-300"></i>
+            </button>
+        </div>
+        
+        <div class="flex-1 overflow-y-auto pr-4 custom-scrollbar" id="drawer-scroll-area">
+            <div class="flex items-center gap-3 mb-2 md:mb-3">
+                <div class="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full" id="drawer-dot"></div>
+                <p id="drawer-subtitle" class="font-mono text-[9px] md:text-[10px] tracking-[0.2em] uppercase text-white/70"></p>
+            </div>
+            <h3 id="drawer-title" class="font-display text-2xl md:text-4xl font-bold text-white mb-4 md:mb-6 leading-tight tracking-tight"></h3>
+            
+            <div class="w-full h-[1px] bg-gradient-to-r from-white/20 via-white/10 to-transparent mb-4 md:mb-6"></div>
+            
+            <div id="drawer-desc" class="text-gray-300 font-sans leading-relaxed font-light drawer-content pb-10">
+                <!-- Rich HTML Content injected here -->
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+        import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+        import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+
+        lucide.createIcons();
+
+        // --- ENRICHED DATA PAYLOAD ---
+        const portfolioData = [
+            { 
+                id: 'twin', title: 'Brent\'s Digital Twin', subtitle: 'Talk to Brent\'s Digital Twin', 
+                desc: `
+                    <p>Engage directly with my AI counterpart. This digital twin is trained on my comprehensive professional history, technical expertise, and operational methodologies.</p>
+                    
+                    <div class="mt-6 w-full h-[450px] rounded-xl overflow-hidden border border-cyan/30 relative shadow-[0_0_20px_rgba(0,240,255,0.15)] bg-[#0b0f19]">
+                        <iframe src="https://stratfors-twin.hf.space" class="w-full h-full border-none relative z-10" allow="microphone; camera; clipboard-read; clipboard-write" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
+                    </div>
+
+                    <div class="mt-6 flex items-center justify-between">
+                        <span class="text-[10px] font-mono text-cyan/70 tracking-widest uppercase">Powered by Hugging Face</span>
+                        <a href="https://huggingface.co/spaces/StratFors/twin" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-cyan/10 border border-cyan/30 text-cyan text-[10px] uppercase tracking-widest hover:bg-cyan hover:text-space transition-colors">
+                            Launch Externally <i data-lucide="external-link" class="w-3 h-3"></i>
+                        </a>
+                    </div>
+                `, 
+                icon: 'bot', color: '#00F0FF', pos: [0, 1.5, 5] 
+            },
+            { 
+                id: 'gaf', title: 'GAF Energy', subtitle: 'Account Executive & Tech Support', 
+                desc: `
+                    <p>Led commercial roofing integration and solar tile systems (2023-2026), bridging technical requirements and high-level developer relationships.</p>
+                    <ul>
+                        <li style="color:#00F0FF"><strong>Grid Integration:</strong> Developed an address-based Xcel Energy hosting-capacity screening workflow to identify distribution-feeder constraints before sale.</li>
+                        <li style="color:#00F0FF"><strong>Technical Escalation:</strong> Diagnosed rapid-shutdown and inverter failures remotely via Delta Visagrid, coordinating with field engineering.</li>
+                        <li style="color:#00F0FF"><strong>Commercial Impact:</strong> Directly drove 337 kW capacity and >$1M revenue. Successfully resolved a complex $125k system escalation with zero financial concession.</li>
+                    </ul>
+                `, 
+                icon: 'building-2', color: '#00F0FF', pos: [6, 2.5, -4] 
+            },
+            { 
+                id: 'adt', title: 'ADT Solar', subtitle: 'Distributed Generation Specialist', 
+                desc: `
+                    <p>Managed full-cycle distributed energy projects involving generation equipment, financing, smart inverters, battery storage, and utility interconnection.</p>
+                    <ul>
+                        <li style="color:#FFB800"><strong>Scale Execution:</strong> Generated >$2M in annual revenue and managed 50+ fully completed solar projects in 2021.</li>
+                        <li style="color:#FFB800"><strong>Utility Expertise:</strong> Worked across 14 utility territories with a massive concentration in <strong>Oncor territory</strong>.</li>
+                        <li style="color:#FFB800"><strong>Interconnection:</strong> Personally executed interconnection documentation, wet signatures, and tariff agreements.</li>
+                    </ul>
+                `, 
+                icon: 'sun-dim', color: '#FFB800', pos: [-5, 4, 3] 
+            },
+            { 
+                id: 'ops', title: 'High-Volume Ops', subtitle: 'Best Buy & Target Leadership', 
+                desc: `
+                    <p>Drove operational logistics, strict P&L discipline, and massive team deployments across leading retail operations.</p>
+                    <ul>
+                        <li style="color:#00F0FF"><strong>Best Buy Achievers:</strong> Earned top-tier company recognition for exceptional operational performance.</li>
+                        <li style="color:#00F0FF"><strong>Disaster Recovery:</strong> Commanded an emergency 25+ employee overnight flood remediation operation at Target.</li>
+                        <li style="color:#00F0FF"><strong>Performance:</strong> Reduced employee turnover by ~20% and led team performance to 34% above loyalty-program goals.</li>
+                    </ul>
+                `, 
+                icon: 'bar-chart-3', color: '#00F0FF', pos: [4, -4.5, 3] 
+            },
+            { 
+                id: 'foundation', title: 'Foundation', subtitle: 'UTSA & Clinical Admin', 
+                desc: `
+                    <p>Built a rigorous foundation in policy frameworks, negotiation, and financial problem resolution.</p>
+                    <ul>
+                        <li style="color:#FFB800"><strong>Academic:</strong> B.A. Political Science (Economics focus) from UTSA. Served as Student Government Senator.</li>
+                        <li style="color:#FFB800"><strong>Financial Resolution:</strong> Recovered >$200,000 in aging accounts receivable as a Clinic Administrator.</li>
+                        <li style="color:#FFB800"><strong>Core Skills:</strong> Mastered cross-party coordination, sensitive customer communication, and problem ownership.</li>
+                    </ul>
+                `, 
+                icon: 'graduation-cap', color: '#FFB800', pos: [-6, -2.5, -2] 
+            },
+            { 
+                id: 'systems', title: 'Technical Dev', subtitle: 'Data & AI Architecture', 
+                desc: `
+                    <p>Dedicated to continuous capability building, translating complex data into actionable operational workflows.</p>
+                    <ul>
+                        <li style="color:#00F0FF"><strong>Data Analytics:</strong> Advanced Excel, Tableau, Looker Studio, Salesforce, and enterprise data organization.</li>
+                        <li style="color:#00F0FF"><strong>DER Technologies:</strong> Delta monitoring, Visagrid, Aurora, single-line diagrams, and GIS mapping tools.</li>
+                        <li style="color:#00F0FF"><strong>AI & Code Dev:</strong> Hands-on workflows using Cursor, VS Code, Frontier LLMs, and multi-agent orchestration.</li>
+                    </ul>
+                `, 
+                icon: 'cpu', color: '#00F0FF', pos: [0, 6, -1] 
+            },
+            { 
+                id: 'industry', title: 'Industry Alignment', subtitle: 'Utility & Commercial Target', 
+                desc: `
+                    <p>Ready to deploy deep domain expertise into utility-scale operations (Oncor transmission/distribution), advanced battery storage (Golden Cell), or complex commercial construction.</p>
+                    <ul>
+                        <li style="color:#FFB800"><strong>The Identity:</strong> Problem owner + technical translator + customer advocate + operator + process improver.</li>
+                        <li style="color:#FFB800"><strong>The Pattern:</strong> Learn the system &rarr; identify the root cause &rarr; coordinate people &rarr; build a practical solution &rarr; scale the process.</li>
+                    </ul>
+                `, 
+                icon: 'zap', color: '#FFB800', pos: [2, -6, -2] 
+            }
+        ];
+
+        // --- THREE.JS INITIALIZATION ---
+        const container = document.getElementById('webgl-container');
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x010308, 0.02); 
+
+        const worldGroup = new THREE.Group();
+        scene.add(worldGroup);
+
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 200);
+        const initialZ = window.innerWidth < 768 ? 28 : 20;
+        camera.position.set(0, 5, initialZ);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: "high-performance" });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.2;
+        container.appendChild(renderer.domElement);
+
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.03; 
+        controls.minDistance = 8;
+        controls.maxDistance = 60;
+        controls.maxPolarAngle = Math.PI / 1.5;
+        controls.enablePan = false;
+
+        // --- AAA POST-PROCESSING (UNREAL BLOOM) ---
+        const renderScene = new RenderPass(scene, camera);
+        const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
+        bloomPass.threshold = 0.1;
+        bloomPass.strength = 1.8; 
+        bloomPass.radius = 1.0;
+
+        const composer = new EffectComposer(renderer);
+        composer.addPass(renderScene);
+        composer.addPass(bloomPass);
+
+        // --- QWEN INSPIRED SHADER PHYSICS (THE LOOM) ---
+        const MAX_EVENTS = 10;
+        const uEvents = new Float32Array(MAX_EVENTS * 4);
+        let eventIndex = 0;
+        let eventCount = 0;
+
+        const loomUniforms = {
+            uTime: { value: 0 },
+            uEvents: { value: uEvents },
+            uEvN: { value: 0 }
+        };
+
+        const COMMON_GLSL = `
+            uniform float uTime;
+            uniform vec4 uEvents[${MAX_EVENTS}];
+            uniform int uEvN;
+
+            float hash21(vec2 p){ p=fract(p*vec2(123.34,456.21)); p+=dot(p,p+45.32); return fract(p.x*p.y); }
+            float vnoise(vec2 p){
+                vec2 i=floor(p); vec2 f=fract(p); vec2 u=f*f*(3.0-2.0*f);
+                return mix(mix(hash21(i),hash21(i+vec2(1.0,0.0)),u.x),
+                           mix(hash21(i+vec2(0.0,1.0)),hash21(i+vec2(1.0,1.0)),u.x),u.y);
+            }
+
+            float getRipple(vec2 p) {
+                float e = 0.0;
+                for(int i=0; i<${MAX_EVENTS}; i++){
+                    if(i >= uEvN) break;
+                    vec4 ev = uEvents[i]; // x, z, t0, strength
+                    float age = uTime - ev.z;
+                    if(age > 0.0 && age < 6.0) {
+                        float d = distance(p, ev.xy);
+                        float r = age * 12.0; 
+                        float g = exp(-pow(d-r, 2.0)/5.0) * exp(-age*0.8) * ev.w;
+                        e += g;
+                    }
+                }
+                return e;
+            }
+
+            float getBaseHeight(vec2 p, float t) {
+                float h = sin(p.x*0.05 + t*0.3)*1.0 + cos(p.y*0.06 - t*0.2)*1.0;
+                h += (vnoise(p*0.1 + t*0.1) - 0.5) * 2.0;
+                return h;
+            }
+        `;
+
+        // Loom Floor (Threads)
+        const gridW = 80, gridD = 80;
+        const pts = [];
+        for(let i=0; i<40; i++){
+            const z = (i/39 - 0.5) * gridD;
+            for(let j=0; j<40; j++){
+                const x = (j/39 - 0.5) * gridW;
+                pts.push(x, 0, z);
+                if(j < 39) pts.push(x + (gridW/39), 0, z); 
+                if(i < 39) { pts.push(x, 0, z); pts.push(x, 0, z + (gridD/39)); } 
+            }
+        }
+        const threadGeo = new THREE.BufferGeometry();
+        threadGeo.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
+        
+        const threadMat = new THREE.ShaderMaterial({
+            uniforms: loomUniforms,
+            transparent: true, blending: THREE.AdditiveBlending, depthWrite: false,
+            vertexShader: COMMON_GLSL + `
+                varying vec3 vCol;
+                void main(){
+                    vec3 pos = position; vec2 p = pos.xz;
+                    float t = uTime;
+                    float ripple = getRipple(p);
+                    pos.y = getBaseHeight(p, t) + ripple * 3.0 - 10.0;
+                    
+                    vec3 cold = vec3(0.0, 0.3, 0.5);
+                    vec3 warm = vec3(0.0, 0.94, 1.0); 
+                    vec3 col = mix(cold, warm, clamp(ripple*1.5, 0.0, 1.0));
+                    
+                    vCol = col * (0.2 + ripple);
+                    vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
+                    gl_Position = projectionMatrix * mvPosition;
+                }
+            `,
+            fragmentShader: `
+                varying vec3 vCol;
+                void main(){
+                    gl_FragColor = vec4(vCol, 1.0);
+                }
+            `
+        });
+        const loomThreads = new THREE.LineSegments(threadGeo, threadMat);
+        worldGroup.add(loomThreads);
+
+        // Loom Spores (Dust)
+        const sporeGeo = new THREE.BufferGeometry();
+        const sporePts = new Float32Array(4000 * 3);
+        const sporeAux = new Float32Array(4000);
+        for(let i=0; i<4000; i++){
+            sporePts[i*3] = (Math.random()-0.5)*100;
+            sporePts[i*3+1] = Math.random()*20 - 10;
+            sporePts[i*3+2] = (Math.random()-0.5)*100;
+            sporeAux[i] = Math.random() * Math.PI * 2;
+        }
+        sporeGeo.setAttribute('position', new THREE.BufferAttribute(sporePts, 3));
+        sporeGeo.setAttribute('aPhase', new THREE.BufferAttribute(sporeAux, 1));
+
+        const sporeMat = new THREE.ShaderMaterial({
+            uniforms: loomUniforms,
+            transparent: true, blending: THREE.AdditiveBlending, depthWrite: false,
+            vertexShader: COMMON_GLSL + `
+                attribute float aPhase;
+                varying vec3 vCol;
+                void main(){
+                    vec3 pos = position; vec2 p = pos.xz;
+                    float ripple = getRipple(p);
+                    
+                    pos.y += sin(uTime + aPhase) * 1.0 + ripple * 4.0;
+                    
+                    vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
+                    gl_PointSize = (15.0 / -mvPosition.z) * (1.0 + ripple*2.0);
+                    
+                    vec3 col = vec3(1.0, 0.72, 0.0);
+                    vCol = mix(vec3(0.0, 0.4, 0.6), col, clamp(ripple*2.0, 0.0, 1.0)) * (0.3 + ripple);
+                    gl_Position = projectionMatrix * mvPosition;
+                }
+            `,
+            fragmentShader: `
+                varying vec3 vCol;
+                void main(){
+                    float d = length(gl_PointCoord - 0.5);
+                    if(d > 0.5) discard;
+                    gl_FragColor = vec4(vCol * (0.5 - d) * 2.0, 1.0);
+                }
+            `
+        });
+        const loomSpores = new THREE.Points(sporeGeo, sporeMat);
+        worldGroup.add(loomSpores);
+
+        const floorPlane = new THREE.Mesh(
+            new THREE.PlaneGeometry(200, 200),
+            new THREE.MeshBasicMaterial({ visible: false })
+        );
+        floorPlane.rotation.x = -Math.PI / 2;
+        floorPlane.position.y = -10;
+        worldGroup.add(floorPlane);
+
+        function triggerRipple(x, z, strength = 1.0) {
+            uEvents[eventIndex * 4] = x;
+            uEvents[eventIndex * 4 + 1] = z;
+            uEvents[eventIndex * 4 + 2] = clock.getElapsedTime();
+            uEvents[eventIndex * 4 + 3] = strength;
+            
+            eventIndex = (eventIndex + 1) % MAX_EVENTS;
+            if(eventCount < MAX_EVENTS) eventCount++;
+            loomUniforms.uEvN.value = eventCount;
+        }
+
+        // --- PORTFOLIO DATA NODES ---
+        const labelsContainer = document.getElementById('labels-container');
+        const nodeObjects = []; 
+        const gyroscopes = []; 
+
+        portfolioData.forEach((data, index) => {
+            const pos = new THREE.Vector3(...data.pos);
+            const color = new THREE.Color(data.color);
+            const nodeGroup = new THREE.Group();
+            nodeGroup.position.copy(pos);
+            worldGroup.add(nodeGroup);
+
+            const centerCore = new THREE.Mesh(
+                new THREE.SphereGeometry(0.3, 16, 16),
+                new THREE.MeshBasicMaterial({ color: color })
+            );
+            nodeGroup.add(centerCore);
+
+            const ring1 = new THREE.Mesh(
+                new THREE.TorusGeometry(0.7, 0.02, 16, 64),
+                new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: 0.6 })
+            );
+            const ring2 = new THREE.Mesh(
+                new THREE.TorusGeometry(1.0, 0.015, 16, 64),
+                new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.2 })
+            );
+            ring1.rotation.x = Math.random() * Math.PI;
+            ring2.rotation.y = Math.random() * Math.PI;
+            nodeGroup.add(ring1, ring2);
+
+            const hitbox = new THREE.Mesh(
+                new THREE.SphereGeometry(1.5, 16, 16),
+                new THREE.MeshBasicMaterial({ visible: false })
+            );
+            hitbox.userData = { id: index, data: data, group: nodeGroup, rings: [ring1, ring2], isHovered: false };
+            nodeGroup.add(hitbox);
+            nodeObjects.push(hitbox);
+            gyroscopes.push({ group: nodeGroup, rings: [ring1, ring2], speedMultiplier: 1 });
+
+            const label = document.createElement('div');
+            label.className = `node-label text-${data.color === '#00F0FF' ? 'cyan' : 'gold'}`;
+            label.style.color = data.color;
+            label.innerHTML = `<div class="line-connector"></div><div class="text-box">${data.title || 'NODE'}</div>`;
+            labelsContainer.appendChild(label);
+            hitbox.userData.labelEl = label;
+            
+            label.addEventListener('click', () => handleNodeClick(hitbox));
+
+            const curve = new THREE.CubicBezierCurve3(
+                new THREE.Vector3(0,-5,0), 
+                new THREE.Vector3(pos.x * 0.2, pos.y * 0.5, pos.z * 0.2), 
+                new THREE.Vector3(pos.x * 0.8, pos.y * 0.8, pos.z * 0.8), 
+                pos 
+            );
+            const curvePoints = curve.getPoints(50);
+            const lineGeo = new THREE.BufferGeometry().setFromPoints(curvePoints);
+            const lineMat = new THREE.LineBasicMaterial({ color: color, transparent: true, opacity: 0.15, blending: THREE.AdditiveBlending });
+            worldGroup.add(new THREE.Line(lineGeo, lineMat));
+        });
+
+        // --- INTERACTION & PHYSICS ---
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+        const targetMouse = new THREE.Vector2(); 
+        let hoveredNode = null;
+        let activeNode = null;
+        let entered = false;
+
+        const drawer = document.getElementById('info-drawer');
+        const drawerTitle = document.getElementById('drawer-title');
+        const drawerSubtitle = document.getElementById('drawer-subtitle');
+        const drawerDesc = document.getElementById('drawer-desc');
+        const drawerIcon = document.getElementById('drawer-icon');
+        const drawerIconContainer = document.getElementById('drawer-icon-container');
+        const drawerDot = document.getElementById('drawer-dot');
+        const aboutBtn = document.getElementById('btn-about');
+        const aboutModal = document.getElementById('about-modal');
+        const drawerScrollArea = document.getElementById('drawer-scroll-area');
+
+        let aboutVisible = false;
+        aboutBtn.addEventListener('click', () => {
+            aboutVisible = !aboutVisible;
+            if(aboutVisible) {
+                aboutModal.style.opacity = '1';
+                aboutModal.style.transform = 'translateY(0)';
+                aboutModal.style.pointerEvents = 'auto';
+            } else {
+                aboutModal.style.opacity = '0';
+                aboutModal.style.transform = 'translateY(16px)';
+                aboutModal.style.pointerEvents = 'none';
+            }
+        });
+
+        window.addEventListener('pointermove', (e) => {
+            if(!entered) return;
+            mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+            
+            targetMouse.x = (e.clientX - window.innerWidth / 2) / (window.innerWidth / 2);
+            targetMouse.y = (e.clientY - window.innerHeight / 2) / (window.innerHeight / 2);
+
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(nodeObjects);
+
+            if (intersects.length > 0) {
+                document.body.style.cursor = 'pointer';
+                const object = intersects[0].object;
+                
+                if (hoveredNode !== object) {
+                    if (hoveredNode) {
+                        hoveredNode.userData.isHovered = false;
+                        gsap.to(hoveredNode.userData.group.scale, {x: 1, y: 1, z: 1, duration: 0.4, ease: "back.out(1.5)"});
+                    }
+                    hoveredNode = object;
+                    hoveredNode.userData.isHovered = true;
+                    gsap.to(hoveredNode.userData.group.scale, {x: 1.3, y: 1.3, z: 1.3, duration: 0.4, ease: "back.out(2)"});
+                }
+            } else {
+                document.body.style.cursor = 'default';
+                if (hoveredNode) {
+                    hoveredNode.userData.isHovered = false;
+                    gsap.to(hoveredNode.userData.group.scale, {x: 1, y: 1, z: 1, duration: 0.4, ease: "back.out(1.5)"});
+                    hoveredNode = null;
+                }
+            }
+        });
+
+        window.addEventListener('pointerdown', (e) => {
+            if(!entered) return;
+            raycaster.setFromCamera(mouse, camera);
+            
+            const nodeIntersects = raycaster.intersectObjects(nodeObjects);
+            if(nodeIntersects.length > 0) {
+                const node = nodeIntersects[0].object;
+                triggerRipple(node.parent.position.x, node.parent.position.z, 1.5);
+                handleNodeClick(node);
+                return;
+            }
+
+            const floorIntersects = raycaster.intersectObject(floorPlane);
+            if(floorIntersects.length > 0) {
+                const pt = floorIntersects[0].point;
+                triggerRipple(pt.x, pt.z, 0.8);
+                document.getElementById('hint').classList.add('off');
+            }
+        });
+
+        function handleNodeClick(node) {
+            if(activeNode === node) return;
+            activeNode = node;
+            const data = node.userData.data;
+
+            drawerTitle.innerText = data.title;
+            drawerSubtitle.innerText = data.subtitle;
+            drawerSubtitle.style.color = data.color;
+            drawerDesc.innerHTML = data.desc;
+            drawerIcon.setAttribute('data-lucide', data.icon);
+            drawerIcon.style.color = data.color;
+            drawerIconContainer.style.borderColor = data.color;
+            drawerDot.style.backgroundColor = data.color;
+            lucide.createIcons();
+            
+            drawerScrollArea.scrollTop = 0;
+            
+            drawer.classList.add('active');
+            if(aboutVisible) aboutBtn.click();
+            document.getElementById('hint').classList.add('off');
+
+            const nodePos = new THREE.Vector3();
+            node.getWorldPosition(nodePos);
+            
+            const isMobile = window.innerWidth < 768;
+            const offset = isMobile ? new THREE.Vector3(0, 2, 7) : new THREE.Vector3(-3, 0, 8);
+            const camPos = nodePos.clone().add(offset);
+
+            gsap.to(camera.position, {
+                x: camPos.x, y: camPos.y, z: camPos.z,
+                duration: 1.8, ease: "power3.inOut"
+            });
+            gsap.to(controls.target, {
+                x: nodePos.x, y: nodePos.y, z: nodePos.z,
+                duration: 1.8, ease: "power3.inOut"
+            });
+
+            gyroscopes.forEach(g => {
+                const targetOpacity = g.group === node.userData.group ? 1 : 0.2;
+                g.group.children.forEach(mesh => {
+                    if(mesh.material && mesh.material.opacity !== undefined && mesh.geometry.type !== 'SphereGeometry') {
+                       gsap.to(mesh.material, {opacity: targetOpacity * (mesh.geometry.type==='TorusGeometry'? 0.6 : 1), duration: 0.5});
+                    }
+                });
+            });
+        }
+
+        document.getElementById('close-drawer').addEventListener('click', () => {
+            drawer.classList.remove('active');
+            activeNode = null;
+            
+            gsap.to(camera.position, {
+                x: 0, y: 5, z: initialZ,
+                duration: 1.8, ease: "power3.inOut"
+            });
+            gsap.to(controls.target, {
+                x: 0, y: 0, z: 0,
+                duration: 1.8, ease: "power3.inOut"
+            });
+
+            gyroscopes.forEach(g => {
+                g.group.children.forEach(mesh => {
+                    if(mesh.material && mesh.material.opacity !== undefined && mesh.geometry.type !== 'SphereGeometry') {
+                       gsap.to(mesh.material, {opacity: (mesh.geometry.type==='TorusGeometry'? 0.6 : 1), duration: 0.5});
+                    }
+                });
+            });
+        });
+
+        function updateLabels() {
+            if(!entered) return;
+            const tempV = new THREE.Vector3();
+            nodeObjects.forEach((node, index) => {
+                const el = node.userData.labelEl;
+                tempV.copy(node.parent.position);
+                tempV.applyMatrix4(worldGroup.matrixWorld);
+                tempV.project(camera);
+
+                if(tempV.z > 1) {
+                    el.style.opacity = 0;
+                    return;
+                }
+                
+                const x = (tempV.x * .5 + .5) * window.innerWidth;
+                const y = (tempV.y * -.5 + .5) * window.innerHeight;
+                
+                el.style.left = `${x + 60}px`;
+                el.style.top = `${y - 20}px`;
+            });
+        }
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            composer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // --- RENDER LOOP ---
+        const clock = new THREE.Clock();
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const delta = clock.getDelta();
+            const time = clock.getElapsedTime();
+
+            if(entered) {
+                controls.update();
+                worldGroup.rotation.x += (targetMouse.y * 0.05 - worldGroup.rotation.x) * 0.05;
+                worldGroup.rotation.y += (targetMouse.x * 0.05 - worldGroup.rotation.y) * 0.05;
+            }
+
+            loomUniforms.uTime.value = time;
+
+            gyroscopes.forEach(g => {
+                const isTargeted = g.group.children[2].userData.isHovered || activeNode === g.group.children[2];
+                const targetSpeed = isTargeted ? 4 : 1;
+                g.speedMultiplier += (targetSpeed - g.speedMultiplier) * 0.1; 
+
+                g.rings[0].rotation.x += delta * 0.5 * g.speedMultiplier;
+                g.rings[0].rotation.y += delta * 0.2 * g.speedMultiplier;
+                g.rings[1].rotation.y += delta * 0.6 * g.speedMultiplier;
+                g.rings[1].rotation.z += delta * 0.3 * g.speedMultiplier;
+                
+                g.group.position.y += Math.sin(time * 2 + g.group.position.x) * 0.002;
+            });
+
+            updateLabels();
+            composer.render();
+        }
+
+        // --- ENTER GATE SEQUENCE ---
+        const gate = document.getElementById('gate');
+        function enterWorld() {
+            if(entered) return;
+            entered = true;
+            gate.classList.add('gone');
+            document.body.classList.add('in');
+
+            gyroscopes.forEach(g => g.group.scale.set(0,0,0));
+            
+            gsap.from(camera.position, { y: 20, z: 60, duration: 3.5, ease: "power4.out" });
+            
+            const tl = gsap.timeline({ delay: 0.5 });
+
+            gyroscopes.forEach((g, index) => {
+                tl.to(g.group.scale, { x: 1, y: 1, z: 1, duration: 1.2, ease: "elastic.out(1, 0.4)" }, 0.5 + (index * 0.15));
+                tl.to(nodeObjects[index].userData.labelEl, { opacity: 0.9, duration: 0.5 }, 0.8 + (index * 0.15));
+            });
+
+            tl.to(['#ui-header', '#ui-footer'], {
+                opacity: 1, y: 0, duration: 1.5, stagger: 0.2, ease: "power3.out"
+            }, 1.0);
+            
+            setTimeout(() => triggerRipple(0, 0, 2.0), 1000);
+        }
+
+        gate.addEventListener('click', enterWorld);
+        
+        renderer.compile(scene, camera);
+        animate(); 
+
+    </script>
+</body>
+</html>

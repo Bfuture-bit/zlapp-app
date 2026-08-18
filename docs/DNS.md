@@ -88,3 +88,13 @@ Generated from `data/exhibition.json`. Pattern: `{publicSlug}.zlapp.app`.
 | `gemini-synthesis.zlapp.app` | `/x/gemini-synthesis` |
 
 Each also has `/play` (framed experience) and `/raw` (original HTML) when the subdomain is live.
+
+## 7. Satellite subdomains (not exhibits)
+
+These hosts are listed in `data/satellites.json`. They are **not** exhibition works: they do not appear on the homepage, in `data/exhibition.json`, or under `/artifacts` / `/x/`. Wildcard DNS already covers them.
+
+| Subdomain | Serves |
+|---|---|
+| `brent.zlapp.app` | Brent Ward portfolio (`/sites/brent/index.html`) |
+
+The apex site `https://zlapp.app/` is unchanged.
