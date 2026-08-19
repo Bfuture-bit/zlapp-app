@@ -662,7 +662,7 @@
           "value": "brent.zlapp.app"
         }
       ],
-      "destination": "/sites/brent/index.html"
+      "destination": "https://zlapp.app/sites/brent/index.html"
     },
     {
       "source": "/brent",

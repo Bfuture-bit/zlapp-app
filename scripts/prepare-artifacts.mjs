@@ -92,12 +92,12 @@ for (const site of satellites.sites) {
     throw new Error(`Satellite host collides with an exhibit: ${site.host}`);
   }
   const dest = site.publicPath;
-  // Host rewrite for `/` only. Do not catch-all `/(.*)` — that would steal
-  // `/.well-known/acme-challenge/*` and block Let's Encrypt HTTP-01.
+  // Host rewrite of `/` must target an *external* URL. Same-origin rewrites
+  // to `/` lose to Astro's generated index.html on Vercel.
   rewrites.push({
     source: "/",
     has: [{ type: "host", value: site.host }],
-    destination: dest,
+    destination: `https://zlapp.app${dest}`,
   });
   if (site.apexPath) {
     rewrites.push({
