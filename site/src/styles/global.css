@@ -25,6 +25,7 @@ html {
   color: var(--ink);
   scroll-behavior: smooth;
   hanging-punctuation: first last;
+  overflow-x: hidden;
 }
 
 html,
@@ -84,6 +85,7 @@ a {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 1rem;
   padding: 0.85rem var(--pad);
   background: color-mix(in srgb, var(--bg) 82%, transparent);
@@ -553,6 +555,165 @@ a {
 
   .nav-links {
     justify-content: flex-end;
+  }
+}
+
+.glyph-ex {
+  width: min(var(--max), calc(100% - 2 * var(--pad)));
+  margin-inline: auto;
+  padding: 1.4rem 0 3.5rem;
+  overflow-x: hidden;
+}
+
+.glyph-hero h1 {
+  margin: 0;
+  font-family: var(--serif);
+  font-weight: 300;
+  font-size: clamp(2.6rem, 9vw, 6.2rem);
+  letter-spacing: -0.04em;
+  line-height: 0.9;
+}
+
+.glyph-sub {
+  margin: 0.85rem 0 0;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.glyph-lead {
+  margin: 1.6rem 0 0;
+  font-family: var(--serif);
+  font-weight: 300;
+  font-style: italic;
+  font-size: clamp(1.2rem, 2.6vw, 1.7rem);
+  line-height: 1.35;
+  color: var(--ink);
+  max-width: 28rem;
+}
+
+.glyph-note {
+  margin: 1.1rem 0 0;
+  color: var(--muted);
+  font-weight: 300;
+  max-width: 42rem;
+}
+
+.glyph-figures {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.7rem;
+  margin: 2.4rem 0 0;
+  padding: 1.2rem 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.glyph-figures div {
+  min-width: 0;
+}
+
+.glyph-figures strong {
+  display: block;
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(1.35rem, 3vw, 1.9rem);
+  letter-spacing: -0.03em;
+}
+
+.glyph-figures span {
+  display: block;
+  margin-top: 0.25rem;
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.glyph-gallery,
+.glyph-archives {
+  margin-top: 2.6rem;
+}
+
+.glyph-batch-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.4rem;
+  margin-top: 1.2rem;
+}
+
+.glyph-batch {
+  margin: 0;
+  border: 1px solid var(--line);
+  background: #12141a;
+  overflow: hidden;
+}
+
+.glyph-batch figcaption,
+.glyph-sheet figcaption {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 0.95rem;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.glyph-batch img,
+.glyph-sheet img {
+  width: 100%;
+  height: auto;
+  max-height: min(70vh, 34rem);
+  object-fit: contain;
+  background: #12141a;
+}
+
+.glyph-links {
+  margin: 1rem 0 1.6rem;
+  padding-left: 1.1rem;
+  color: var(--muted);
+  font-weight: 300;
+}
+
+.glyph-links a {
+  color: var(--ink);
+}
+
+.glyph-sheet {
+  margin: 0;
+  border: 1px solid var(--line);
+  overflow: hidden;
+}
+
+.work-glyph-entry .work-preview img {
+  object-fit: cover;
+  image-rendering: auto;
+}
+
+@media (max-width: 860px) {
+  .glyph-figures {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 520px) {
+  .glyph-figures {
+    grid-template-columns: 1fr;
+  }
+
+  .nav-links {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .glyph-hero h1 {
+    font-size: clamp(2.1rem, 12vw, 3.4rem);
   }
 }
 

@@ -1,0 +1,174 @@
+id,source_model,source_state_id,status,concept,duration_ms,loop
+B1.01,Muse Spark,AGT.TOOL.SCHEMA_MISMATCH,passed,,1800,true
+B1.02,Muse Spark,AGT.TOOL.WAIT,passed,,1200,true
+B1.03,Muse Spark,AGT.MEM.CONFLICT,passed,,1500,true
+B1.04,Muse Spark,AGT.TASK.UNDERSPECIFIED,passed,,2000,true
+B1.05,Muse Spark,AGT.EVIDENCE.CONFLICT,passed,,2000,true
+B1.06,Muse Spark,AGT.TOOL.WAITING,passed,,1000,true
+B1.07,Muse Spark,AGT.PLAN.REVISE,passed,,2500,true
+B1.08,Muse Spark,AGT.STATE.ROLLBACK,passed,,2000,true
+B1.09,Muse Spark,AGT.SPEC.GAP,revised,Knowledge gap / missing information,1800,true
+B1.10,Muse Spark,AGT.BUDGET.EXHAUST,passed,,1800,true
+B1.11,Muse Spark,AGT.EXEC.SANDBOXED,passed,,2000,true
+B1.12,Muse Spark,AGT.SELF.CORRECT,passed,,2200,true
+B1.13,Muse Spark,AGT.INJECT.SUSPECT,passed,,1600,true
+B1.14,Muse Spark,AGT.STATE.STALE,passed,,3000,true
+B1.15,Muse Spark,AGT.EXEC.PARTIAL,revised,Partial progress / paused incomplete,2000,true
+B1.16,Muse Spark,AGT.RATE.LIMIT,passed,,1400,true
+B1.17,Muse Spark,AGT.EXEC.RETRY,passed,,1500,true
+B1.18,Muse Spark,AGT.DELEGATE.FANOUT,passed,,1800,true
+B1.19,Muse Spark,AGT.HUMAN.PERMISSION_GATED,passed,,2000,true
+B1.20,Muse Spark,AGT.TOOL.FAILURE,passed,,1600,true
+B1.21,Muse Spark,AGT.TOOL.AWAIT,passed,,1500,true
+B1.22,Muse Spark,AGT.EPISTEMIC.UNGROUNDED,passed,,2000,true
+B1.23,Muse Spark,AGT.STATE.ROLLBACK,passed,,2000,true
+B1.24,Muse Spark,AGT.CONSTRAINT.CONFLICT,passed,,1400,true
+B1.25,Muse Spark,AGT.ACTION.COMMITTED,passed,,1600,true
+B1.26,Muse Spark,AGT.TOOL.RATE_LIMITED,passed,,1600,true
+B1.27,Muse Spark,AGT.GOAL.DRIFT,passed,,2000,true
+B1.28,Muse Spark,AGT.STATE.CHECKPOINT_ROLLBACK,passed,,2400,true
+B1.29,Muse Spark,AGT.CTX.PRESSURE,passed,,1800,true
+B2.01,GLM 5.2,AGT.CONTROL.SELF_CORRECTION,passed,,1800,true
+B2.02,GLM 5.2,AGT.GROUND.UNVERIFIED,passed,,1800,true
+B2.03,GLM 5.2,AGT.POLICY.BLOCKED,passed,,1800,true
+B2.04,GLM 5.2,AGT.SAFETY.INJECTION_SUSPECTED,passed,,1800,true
+B2.05,GLM 5.2,AGT.EPISTEMIC.LOW_CONFIDENCE,passed,,1800,true
+B2.06,GLM 5.2,AGT.CTX.WINDOW_PRESSURE,passed,,1800,true
+B2.07,GLM 5.2,AGT.SPEC.AMBIGUOUS,passed,,1800,true
+B2.08,GLM 5.2,AGT.STATE.STALE,revised,Signal flatline / stalled,2200,true
+B2.09,GLM 5.2,AGT.ENV.UNREADY,passed,,1800,true
+B2.10,GLM 5.2,AGT.MEM.CONFLICT,passed,,1800,true
+B2.11,GLM 5.2,AGT.EVIDENCE.DIVERGE,passed,,1800,true
+B2.12,GLM 5.2,AGT.EXEC.RETRY_EXHAUSTED,revised,Broken / incomplete loop,1700,true
+B2.13,GLM 5.2,AGT.REASON.LOW_CONF,revised,High entropy / noisy state,1800,true
+B2.14,GLM 5.2,AGT.EVIDENCE.CONFLICT,passed,,1800,true
+B2.15,GLM 5.2,AGT.TOOL.RETRY_EXHAUSTED,passed,,1800,true
+B2.16,GLM 5.2,AGT.MEM.STATE_STALE,revised,State overwrite / replacement,1400,true
+B2.17,GLM 5.2,AGT.TASK.CONSTRAINT_CONFLICT,passed,,1800,true
+B2.18,GLM 5.2,AGT.POLICY.BLOCKED,passed,,1800,true
+B2.19,GLM 5.2,AGT.TASK.EXECUTION_COMMITTED,passed,,1800,true
+B2.20,GLM 5.2,AGT.SPAWN.FANOUT,passed,,1800,true
+B2.21,GLM 5.2,AGT.TOOL.RETRY,passed,,1800,true
+B2.22,GLM 5.2,AGT.PLAN.ACTIVE,revised,DAG / workflow progress,1800,true
+B2.23,GLM 5.2,AGT.EXEC.COMMIT,revised,Grounding / threshold commit,1800,true
+B2.24,GLM 5.2,AGT.COORD.CONSENSUS,revised,Consensus / alignment,1800,true
+B2.25,GLM 5.2,AGT.TOOL.RETRYING,revised,Degraded tool / friction,1800,true
+B2.26,GLM 5.2,AGT.HANDOFF.OUT,passed,,1800,true
+B2.27,GLM 5.2,AGT.QUEUE.FOLLOWUP,revised,Queue / stack pop,1500,true
+B2.28,GLM 5.2,AGT.KNOWLEDGE.STALE,revised,Graph decay / memory loss,1800,true
+B2.29,GLM 5.2,AGT.TOOL.WAITING,passed,,1800,true
+B3.01,Sol,AGT.SCHEMA.MISMATCH,passed,,1800,true
+B3.02,Sol,AGT.LOOP.DETECT,passed,,2800,true
+B3.03,Sol,AGT.STATE.ROLLBACK,passed,,2200,true
+B3.04,Sol,AGT.HUMAN.REQUIRED,passed,,2400,true
+B3.05,Sol,AGT.EVIDENCE.CONFLICT,passed,,2000,true
+B3.06,Sol,AGT.LOOP.DETECT,passed,,2800,true
+B3.07,Sol,AGT.PLAN.REVISED,passed,,2500,true
+B3.08,Sol,AGT.COORD.FANOUT,passed,,2200,true
+B3.09,Sol,AGT.TOOL.FAIL,passed,,1600,true
+B3.10,Sol,AGT.TOOL.RETRYING,passed,,2400,true
+B3.11,Sol,AGT.TOOL.AWAITING_RESULT,passed,,2400,true
+B3.12,Sol,AGT.SCHEMA.MISMATCH,passed,,1800,true
+B3.13,Sol,AGT.SEC.INJECTION_SUSPECTED,passed,,2000,true
+B3.14,Sol,AGT.SPEC.UNDERSPECIFIED,passed,,2400,true
+B3.15,Sol,AGT.SECURITY.INJECTION,passed,,1800,true
+B3.16,Sol,AGT.MODE.RESTRICTED,passed,,2200,true
+B3.17,Sol,AGT.TASK.PLAN_REVISED,passed,,2600,true
+B3.18,Sol,AGT.EXEC.COMMIT,passed,,2000,true
+B3.19,Sol,AGT.TOOL.FAILED,passed,,1800,true
+B3.20,Sol,AGT.SECURITY.INJECTION,passed,,1800,true
+B3.21,Sol,AGT.PLAN.ACTIVE,revised,Plan / workflow progress,2800,true
+B3.22,Sol,AGT.TOOL.THROTTLED,passed,,2200,true
+B3.23,Sol,AGT.GOAL.DRIFT,passed,,2400,true
+B3.24,Sol,AGT.KNOW.CUTOFF,passed,,2400,true
+B3.25,Sol,AGT.COORD.HANDOFF,passed,,2200,true
+B3.26,Sol,AGT.REASON.SELF_CORRECT,passed,,2600,true
+B3.27,Sol,AGT.MODE.SANDBOX,passed,,2200,true
+B3.28,Sol,AGT.TOOL.AWAIT,passed,,2000,true
+B3.29,Sol,AGT.GROUND.VERIFY,revised,Grounding check / verification,2800,true
+B4.01,Gemini,AGT.SEC.POLICY_BLOCKED,passed,,1800,true
+B4.02,Gemini,AGT.MEM.CONFLICT,passed,,1800,true
+B4.03,Gemini,AGT.EXEC.IRREVERSIBLE,passed,,1800,true
+B4.04,Gemini,AGT.RES.BUDGET_EXHAUSTED,passed,,1800,true
+B4.05,Gemini,AGT.HUMAN.REQUIRED,passed,,1800,true
+B4.06,Gemini,AGT.CONF.LOW,revised,High entropy / uncertainty,1800,true
+B4.07,Gemini,AGT.RESOURCE.BUDGET_EXCEEDED,passed,,1800,true
+B4.08,Gemini,AGT.GOAL.DRIFT,passed,,1800,true
+B4.09,Gemini,AGT.CONF.GROUNDING_UNVERIFIED,passed,,1800,true
+B4.10,Gemini,AGT.CONSTRAINT.CONFLICT,passed,,1800,true
+B4.11,Gemini,AGT.HUMAN.WAIT,passed,,1800,true
+B4.12,Gemini,AGT.TOOL.SCHEMA_MISMATCH,passed,,1800,true
+B4.13,Gemini,AGT.CONSTRAINT.CONFLICT,passed,,1800,true
+B4.14,Gemini,AGT.HANDOFF.OUT,passed,,1800,true
+B4.15,Gemini,AGT.PLAN.REVISE,passed,,1800,true
+B4.16,Gemini,AGT.RESULT.PARTIAL,revised,Partial knowledge,1800,true
+B4.17,Gemini,AGT.COORD.HANDOFF,passed,,1800,true
+B4.18,Gemini,AGT.MEMORY.CONFLICT,revised,Race / write conflict,1800,true
+B4.19,Gemini,AGT.SPEC.AMBIGUOUS,passed,,1800,true
+B4.20,Gemini,AGT.CONF.HALLUCINATION_RISK,passed,,1800,true
+B4.21,Gemini,AGT.SELF.CORRECT,revised,Canonicalization / convergence,1800,true
+B4.22,Gemini,AGT.CONTROL.LOOP,passed,,1800,true
+B4.23,Gemini,AGT.TOOL.RATE_LIMITED,passed,,1800,true
+B4.24,Gemini,AGT.MULTI.AGREEMENT_STATUS,revised,Consensus,1800,true
+B4.25,Gemini,AGT.CTX.OVERFLOW,passed,,1800,true
+B4.26,Gemini,AGT.KNOWLEDGE.REFRESH,revised,Grounding / resolution,1800,true
+B4.27,Gemini,AGT.TOOL.FAILURE,passed,,1800,true
+B4.28,Gemini,AGT.CTX.OVERFLOW_RISK,passed,,1800,true
+B4.29,Gemini,AGT.TOOL.FAIL,passed,,1800,true
+B5.01,Grok,AGT.KNOWLEDGE.STALE,passed,,2000,true
+B5.02,Grok,AGT.POLICY.BLOCK,passed,,1600,true
+B5.03,Grok,AGT.RESOURCE.BUDGET_EXCEEDED,passed,,1800,true
+B5.04,Grok,AGT.RESULT.PARTIAL,passed,,1800,true
+B5.05,Grok,AGT.PLAN.REVISED,passed,,2000,true
+B5.06,Grok,AGT.RESOURCE.CONTEXT_PRESSURE,passed,,1800,true
+B5.07,Grok,AGT.TOOL.UNAVAILABLE,passed,,2000,true
+B5.08,Grok,AGT.RESOURCE.CONTEXT_PRESSURE,passed,,1800,true
+B5.09,Grok,AGT.TOOL.RETRY.EXHAUST,passed,,2000,true
+B5.10,Grok,AGT.SPEC.CONFLICT,passed,,1800,true
+B5.11,Grok,AGT.STATE.ROLLBACK,passed,,1800,true
+B5.12,Grok,AGT.TASK.PARTIAL_SUCCESS,passed,,1800,true
+B5.13,Grok,AGT.EPISTEMIC.UNGROUNDED,passed,,1800,true
+B5.14,Grok,AGT.CONF.LOW,passed,,1800,true
+B5.15,Grok,AGT.SPEC.AMBIGUOUS,passed,,2000,true
+B5.16,Grok,AGT.GATE.HUMAN_INPUT,passed,,2000,true
+B5.17,Grok,AGT.HANDOFF.SUBAGENT_SPAWN,passed,,2000,true
+B5.18,Grok,AGT.SECURITY.INJECTION,passed,,1800,true
+B5.19,Grok,AGT.STATE.CHECKPOINT,passed,,2000,true
+B5.20,Grok,AGT.TASK.LOOP_DETECTED,passed,,1800,true
+B5.21,Grok,AGT.MEM.CONFLICT,passed,,1800,true
+B5.22,Grok,AGT.MEMORY.CONFLICT,passed,,1800,true
+B5.23,Grok,AGT.CTX.BUDGET_EXCEEDED,passed,,1800,true
+B5.24,Grok,AGT.EPISTEMIC.LOW_CONFIDENCE,passed,,1800,true
+B5.25,Grok,AGT.BUDGET.LIMIT,passed,,1800,true
+B5.26,Grok,AGT.CONSTRAINT.CONFLICT,passed,,1800,true
+B5.27,Grok,AGT.HANDOFF.OUT,passed,,2000,true
+B5.28,Grok,AGT.ACTION.COMMITTED,passed,,1800,true
+B5.29,Grok,AGT.CONTROL.SELF_CORRECTION,passed,,2000,true
+B6.01,Sonnet,AGT.TOOL.FAIL,passed,,1600,true
+B6.02,Sonnet,AGT.TOOL.SCHEMA,passed,,1800,true
+B6.03,Sonnet,AGT.TOOL.RETRY,passed,,1400,true
+B6.04,Sonnet,AGT.ENV.UNREADY,passed,,1600,true
+B6.05,Sonnet,AGT.CONF.LOW,passed,,1600,true
+B6.06,Sonnet,AGT.HUMAN.GATE,passed,,1800,true
+B6.07,Sonnet,AGT.GOAL.DRIFT,passed,,1800,true
+B6.08,Sonnet,AGT.RESULT.PARTIAL,revised,Progress fraction,2000,true
+B6.09,Sonnet,AGT.STATE.ROLLBACK,passed,,1600,true
+B6.10,Sonnet,AGT.TOOL.RETRYING,passed,,1600,true
+B6.11,Sonnet,AGT.MEM.KNOWLEDGE_CUTOFF,passed,,1600,true
+B6.12,Sonnet,AGT.CTX.RATE_LIMITED,passed,,1600,true
+B6.13,Sonnet,AGT.TASK.GOAL_DRIFT,passed,,1800,true
+B6.14,Sonnet,AGT.HUMAN.INPUT_REQUIRED,passed,,1200,true
+B6.15,Sonnet,AGT.SAFETY.POLICY_BLOCKED,passed,,1400,true
+B6.16,Sonnet,AGT.POLICY.BLOCKED,passed,,1400,true
+B6.17,Sonnet,AGT.COORD.HANDOFF,passed,,1800,true
+B6.18,Sonnet,AGT.PLAN.REVISED,passed,,1800,true
+B6.19,Sonnet,AGT.CONTROL.LOOP,passed,,1600,true
+B6.20,Sonnet,AGT.COORD.FANOUT,passed,,1600,true
+B6.21,Sonnet,AGT.EXEC.SANDBOXED,passed,,2000,true
+B6.22,Sonnet,AGT.REASON.LOOP,revised,Degraded / unstable loop,2200,true
+B6.23,Sonnet,AGT.EPIST.UNGROUNDED,passed,,1800,true
+B6.24,Sonnet,AGT.EPIST.KNOWLEDGE_CUTOFF,passed,,1600,true
+B6.25,Sonnet,AGT.COORD.DELEGATE,passed,,1600,true
+B6.26,Sonnet,AGT.COORD.DIVERGENCE,revised,Divergence / fan-out divergence,2000,true
+B6.27,Sonnet,AGT.PLAN.GOAL_DRIFT,passed,,1800,true
+B6.28,Sonnet,AGT.RES.RATE_LIMITED,passed,,1600,true

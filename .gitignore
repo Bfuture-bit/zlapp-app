@@ -7,5 +7,7 @@ Thumbs.db
 site/node_modules/
 site/dist/
 site/.astro/
+tools/glyph-library/node_modules/
+tools/glyph-library/dist/
 .vercel
 .env*

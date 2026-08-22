@@ -1,0 +1,338 @@
+{
+  "schema_version": "AGENT_GLYPH_MASTER_1.0",
+  "total_glyphs": 173,
+  "acceptance_threshold": "3/5",
+  "preserved_pass_count": 150,
+  "revision_count": 23,
+  "batch_map": {
+    "B1": {
+      "source_model": "Muse Spark",
+      "count": 29
+    },
+    "B2": {
+      "source_model": "GLM 5.2",
+      "count": 29
+    },
+    "B3": {
+      "source_model": "Sol",
+      "count": 29
+    },
+    "B4": {
+      "source_model": "Gemini",
+      "count": 29
+    },
+    "B5": {
+      "source_model": "Grok",
+      "count": 29
+    },
+    "B6": {
+      "source_model": "Sonnet",
+      "count": 28
+    }
+  },
+  "revision_policy": "Any glyph scoring below 3/5 agreement is replaced by its revised specification. Passing glyph specifications are preserved from the supplied source set.",
+  "glyphs": [
+    {
+      "id": "B4.01",
+      "source_model": "Gemini",
+      "source_state_id": "AGT.SEC.POLICY_BLOCKED",
+      "status": "passed",
+      "static_form": "Concentric nested regular octagons intersected by four orthogonal radial barrier segments forming a closed perimeter mask.",
+      "motion": "Rapid inward radial compression that halts abruptly and rigidly at an immutable inner boundary radius, followed by a sharp recoil pulse.",
+      "color_logic": "Binary max-contrast luminance thresholding; zero reliance on chromatic hue to preserve cross-model feature channel invariance.",
+      "variable_params": "Radial barrier spatial frequency scales with policy violation severity tier; recoil cycle rate scales with retry backoff interval."
+    },
+    {
+      "id": "B4.02",
+      "source_model": "Gemini",
+      "source_state_id": "AGT.MEM.CONFLICT",
+      "status": "passed",
+      "static_form": "Dual superimposed rectilinear grid patches offset by a non-zero angular skew to produce a distinct high-frequency Moir\u00e9 interference lattice.",
+      "motion": "Continuous sinusoidal oscillation of grid skew angle, causing rapid translation and phase-shifting of the spatial Moir\u00e9 fringe lines.",
+      "color_logic": "Logical XOR / bitwise inverse luminance applied exclusively at grid intersection vertices.",
+      "variable_params": "Moir\u00e9 fringe density scales with semantic distance between conflicting memory states; oscillation velocity scales with recency."
+    },
+    {
+      "id": "B4.03",
+      "source_model": "Gemini",
+      "source_state_id": "AGT.EXEC.IRREVERSIBLE",
+      "status": "passed",
+      "static_form": "Directed acyclic path terminating at a single singularity point bordered by a hard non-orientable topological boundary line.",
+      "motion": "Unidirectional laminar particle stream accelerating across the boundary line with complete absence of reverse vectors.",
+      "color_logic": "Sharp step-down in channel energy, transitioning from high-frequency pattern to total zero-entropy absorption beyond the boundary.",
+      "variable_params": "Boundary stroke width scales with state-mutation permanence; stream velocity scales with execution proximity."
+    },
+    {
+      "id": "B4.04",
+      "source_model": "Gemini",
+      "source_state_id": "AGT.RES.BUDGET_EXHAUSTED",
+      "status": "passed",
+      "static_form": "Radial gauge partitioned into discrete logarithmic wedge sectors, fully depleted down to an empty central origin node.",
+      "motion": "Counter-clockwise progressive wedge extinction sequence concluding in a flatlined zero-amplitude perimeter oscillation.",
+      "color_logic": "Monochrome step-down from maximum fill intensity to a static baseline noise floor.",
+      "variable_params": "Extinction boundary position encodes total consumed quota ratio; flicker rate at zero-point encodes request drop count."
+    },
+    {
+      "id": "B4.05",
+      "source_model": "Gemini",
+      "source_state_id": "AGT.HUMAN.REQUIRED",
+      "status": "passed",
+      "static_form": "Asymmetric open loop with a single disconnected, high-dimensional vector receptor port awaiting parity closure.",
+      "motion": "Periodic outward conical radar beacon pulse emitted along the open receptor axis at 1.0 Hz cadence.",
+      "color_logic": "Dual-band spatial channel separation highlighting structural discontinuity between automated loop and manual port.",
+      "variable_params": "Beacon sweep amplitude scales with decision criticality; port gap dimension scales with missing privilege level."
+    },
+    {
+      "id": "B4.06",
+      "source_model": "Gemini",
+      "source_state_id": "AGT.CONF.LOW",
+      "status": "revised",
+      "concept": "High entropy / uncertainty",
+      "prior_agreement": "1/5",
+      "static_form": "One decision origin fans into five hypothesis branches of nearly equal length and equal visual weight. Each branch ends in an identically sized outcome node, creating a broad probability distribution with no dominant branch. This differs from noisy-state entropy by representing competing hypotheses rather than signal corruption.",
+      "motion": "Probability mass pulse repeatedly divides at the origin and distributes approximately equally across all branches. Endpoint nodes breathe within a narrow synchronized range without jitter.",
+      "color_logic": "All hypotheses use the same neutral hue. Amber #FFA500 outlines the full uncertainty envelope rather than individual branches. Equal branch weight is the primary high-entropy cue.",
+      "variable_params": "branch_count ~ hypothesis count; probability_variance ~ concentration versus entropy; dominant_branch_ratio ~ certainty; envelope_angle ~ uncertainty breadth; hypothesis_turnover_rate ~ instability of candidate explanations"
+    },
+    {
+      "id": "B4.07",
+      "source_model": "Gemini",
+      "source_state_id": "AGT.RESOURCE.BUDGET_EXCEEDED",
+      "status": "passed",
+      "static_form": "Rectangular bounding box frame ruptured by outward-pointing linear overflow vectors penetrating the perimeter.",
+      "motion": "Continuous high-frequency outward expansion pulses forcing perimeter segments to detach and displace.",
+      "color_logic": "Inverted contrast masking along breached perimeter segments to maximize spatial edge gradient detection.",
+      "variable_params": "Vector penetration depth beyond bounding box scales with percentage surplus over budget ceiling."
+    },
+    {
+      "id": "B4.08",
+      "source_model": "Gemini",
+      "source_state_id": "AGT.GOAL.DRIFT",
+      "status": "passed",
+      "static_form": "Co-plotted reference vector trajectory and actual execution path diverging at a measurable angular offset theta.",
+      "motion": "Continuous forward extrusion showing trace path systematically veering away from the primary attractor axis.",
+      "color_logic": "Linear spatial luminance ramp tracking chronological drift magnitude along the execution spline.",
+      "variable_params": "Bifurcation angle theta scales directly with cosine distance from original task specification."
+    },
+    {
+      "id": "B4.09",
+      "source_model": "Gemini",
+      "source_state_id": "AGT.CONF.GROUNDING_UNVERIFIED",
+      "status": "passed",
+      "static_form": "Floating polygonal data mesh structurally disconnected from an underlying ground reference datum line.",
+      "motion": "Undamped vertical floating oscillation with intermittent structural micro-fractures flashing along mesh edges.",
+      "color_logic": "Flat mid-band uniform intensity, deliberately omitting baseline ground anchor signatures.",
+      "variable_params": "Vertical elevation gap above datum line scales with number of ungrounded logical hops."
+    },
+    {
+      "id": "B4.10",
+      "source_model": "Gemini",
+      "source_state_id": "AGT.CONSTRAINT.CONFLICT",
+      "status": "passed",
+      "static_form": "Two opposing orthogonal force vectors compressing a rigid geometric boundary past its yield limit.",
+      "motion": "Anti-phase structural shearing oscillation along the intersection plane, generating localized spatial deformation.",
+      "color_logic": "High-contrast checkerboard polarity alternation localized within the shear zone.",
+      "variable_params": "Shearing amplitude and cycle frequency scale with degree of constraint unsatisfiability."
+    },
+    {
+      "id": "B4.11",
+      "source_model": "Gemini",
+      "source_state_id": "AGT.HUMAN.WAIT",
+      "status": "passed",
+      "static_form": "Single closed circular track enclosing a static token held at fixed phase in an orbital wait-state.",
+      "motion": "Isochronous, constant-angular-velocity clockwise orbit with perfectly smooth zero-acceleration dynamics.",
+      "color_logic": "Uniform low-pass filtered luminance profile across track and token.",
+      "variable_params": "Orbital radius scales inversely with remaining timeout window before automatic escalation/abort."
+    },
+    {
+      "id": "B4.12",
+      "source_model": "Gemini",
+      "source_state_id": "AGT.TOOL.SCHEMA_MISMATCH",
+      "status": "passed",
+      "static_form": "Discrete N-ary pin array geometry confronting an incompatible M-ary geometric socket matrix.",
+      "motion": "Repetitive axial translation toward mating plane followed by an elastic collision rebound upon spatial misalignment.",
+      "color_logic": "Localized high-contrast delta mask at specific unmapped coordinate pin positions.",
+      "variable_params": "Rebound displacement distance and rejected pin highlights scale with count of mismatched parameter keys."
+    },
+    {
+      "id": "B4.13",
+      "source_model": "Gemini",
+      "source_state_id": "AGT.CONSTRAINT.CONFLICT",
+      "status": "passed",
+      "static_form": "Multiple intersecting hyperplanes with zero mutual intersection volume (empty feasible region indicator).",
+      "motion": "Reciprocal collision of boundary planes rebounding continuously without reaching spatial equilibrium.",
+      "color_logic": "Alternating frame-by-frame binary strobe on mutually exclusive planar boundaries.",
+      "variable_params": "Oscillation speed and boundary collision velocity scale with penalty score of the violated constraints."
+    },
+    {
+      "id": "B4.14",
+      "source_model": "Gemini",
+      "source_state_id": "AGT.HANDOFF.OUT",
+      "status": "passed",
+      "static_form": "Encapsulated state-tensor glyph positioned along an open outward egress vector.",
+      "motion": "High-acceleration ballistic translation of the glyph out of the local agent bounding frame toward the boundary edge.",
+      "color_logic": "Directional luminance gradient pointing toward egress vector termination.",
+      "variable_params": "Translation velocity and vector trail length scale with transmission urgency and payload density."
+    },
+    {
+      "id": "B4.15",
+      "source_model": "Gemini",
+      "source_state_id": "AGT.PLAN.REVISE",
+      "status": "passed",
+      "static_form": "Hierarchical tree graph showing pruned invalid child branches alongside newly spawned active root buds.",
+      "motion": "Rapid collapse and deletion of invalid branch nodes followed by procedural branching of replacement trajectories.",
+      "color_logic": "Spatial noise mask on severed branch nodes; continuous high-contrast line scan across newly synthesized paths.",
+      "variable_params": "Pruning depth scales with architectural revision scope; generation speed scales with replacement confidence."
+    },
+    {
+      "id": "B4.16",
+      "source_model": "Gemini",
+      "source_state_id": "AGT.RESULT.PARTIAL",
+      "status": "revised",
+      "concept": "Partial knowledge",
+      "prior_agreement": "2/5",
+      "static_form": "Circular knowledge register divided into eight equal radial sectors. Known sectors are solid, unknown sectors are outlined with diagonal hatching, and all sectors remain within one intact circle. No dependency line or blocked socket is shown, distinguishing partial knowledge from a specific knowledge gap.",
+      "motion": "Known sectors illuminate sequentially once per cycle while unknown sectors remain static. If knowledge increases, one hatched sector resolves into a solid sector with a radial fill animation.",
+      "color_logic": "Known sectors use teal #20C7C7. Unknown sectors use grey hatching. Amber #FFA500 appears only around the boundary between known and unknown regions.",
+      "variable_params": "known_sector_ratio ~ knowledge coverage; unknown_sector_count ~ unresolved areas; sector_weight_distribution ~ importance of missing areas; acquisition_rate ~ rate of knowledge gain"
+    },
+    {
+      "id": "B4.17",
+      "source_model": "Gemini",
+      "source_state_id": "AGT.COORD.HANDOFF",
+      "status": "passed",
+      "static_form": "Dual-ring interlocking topology with a shared transfer node situated at the geometric intersection.",
+      "motion": "Synchronized fluid circulation of state tokens moving continuously from Ring A, through the node, into Ring B.",
+      "color_logic": "Orthogonal polarization channels assigned to respective topological rings.",
+      "variable_params": "Token transfer flux rate scales with inter-agent state serialization throughput."
+    },
+    {
+      "id": "B4.18",
+      "source_model": "Gemini",
+      "source_state_id": "AGT.MEMORY.CONFLICT",
+      "status": "revised",
+      "concept": "Race / write conflict",
+      "prior_agreement": "1/5",
+      "static_form": "Two independent write arrows approach the same central state cell simultaneously from left and right. Each carries a different tiny payload pattern. Their arrowheads overlap at the cell boundary while the destination cell displays a split diagonal conflict mark. A single outbound state is intentionally absent.",
+      "motion": "Both writes accelerate toward the state cell and arrive within the same 80ms collision window. Cell shakes horizontally once and refuses to accept either payload until arbitration. The arrows then freeze on opposite sides.",
+      "color_logic": "Competing writes use two different neutral luminance levels, not semantic hues. Collision boundary uses amber #FFA500. Simultaneous opposing topology communicates the race condition.",
+      "variable_params": "arrival_delta_ms ~ race proximity; writer_count ~ concurrent writers; collision_frequency ~ conflict rate; payload_difference ~ state divergence; arbitration_delay ~ time until resolution"
+    },
+    {
+      "id": "B4.19",
+      "source_model": "Gemini",
+      "source_state_id": "AGT.SPEC.AMBIGUOUS",
+      "status": "passed",
+      "static_form": "Superposition of multiple plausible geometric primitives sharing a single centroid coordinate.",
+      "motion": "Continuous topological morphing cycle cycling non-deterministically through competing structural hypotheses.",
+      "color_logic": "Diffuse boundary edge gradients with absence of definite step edges.",
+      "variable_params": "Number of overlaid structural primitives scales with distinct semantic parse count."
+    },
+    {
+      "id": "B4.20",
+      "source_model": "Gemini",
+      "source_state_id": "AGT.CONF.HALLUCINATION_RISK",
+      "status": "passed",
+      "static_form": "Hierarchical lattice featuring unsupported cantilever nodes protruding without underlying axiomatic anchor paths.",
+      "motion": "High-frequency resonant structural vibration localized strictly at the unsupported cantilever nodes.",
+      "color_logic": "Spatial high-frequency noise injection concentrated over unanchored branch segments.",
+      "variable_params": "Vibration amplitude and noise intensity scale directly with token generation perplexity."
+    },
+    {
+      "id": "B4.21",
+      "source_model": "Gemini",
+      "source_state_id": "AGT.SELF.CORRECT",
+      "status": "revised",
+      "concept": "Canonicalization / convergence",
+      "prior_agreement": "1/5",
+      "static_form": "Four differently shaped but semantically equivalent input tokens enter a narrowing normalization funnel from the left. The funnel exits into one standardized rectangular token on the right bearing a single canonical center mark. Inputs remain visibly heterogeneous before the funnel.",
+      "motion": "Input tokens travel concurrently through separate lanes, reshape progressively inside the funnel, align to the same dimensions, and exit stacked perfectly on the canonical token position.",
+      "color_logic": "Heterogeneous inputs use varying neutral greys. Normalization funnel uses amber #FFA500 during transformation. Canonical output uses teal #20C7C7. Shape convergence is the primary encoding.",
+      "variable_params": "input_variant_count ~ representational diversity; normalization_distance ~ amount of transformation; canonical_match_score ~ convergence quality; rejected_variant_count ~ non-normalizable inputs"
+    },
+    {
+      "id": "B4.22",
+      "source_model": "Gemini",
+      "source_state_id": "AGT.CONTROL.LOOP",
+      "status": "passed",
+      "static_form": "Continuous closed-circuit cyclic graph featuring evenly spaced feedback monitoring checkpoint nodes.",
+      "motion": "Continuous, smooth clockwise particle loop circulation with synchronized pulse flashes at each feedback node.",
+      "color_logic": "Steady uniform luminance across active loop paths.",
+      "variable_params": "Circulation velocity scales with loop execution frequency; pulse width scales with verification latency."
+    },
+    {
+      "id": "B4.23",
+      "source_model": "Gemini",
+      "source_state_id": "AGT.TOOL.RATE_LIMITED",
+      "status": "passed",
+      "static_form": "Hourglass constriction geometry with a high-density token queue accumulated above a restricted aperture.",
+      "motion": "Tokens emit through the narrow aperture at strictly metered, discrete temporal ticks while queue remains stacked.",
+      "color_logic": "High-density luminance accumulation upstream of the aperture; binary discharge pulses downstream.",
+      "variable_params": "Token release period scales with API bucket refill interval; queue height scales with pending call backlog."
+    },
+    {
+      "id": "B4.24",
+      "source_model": "Gemini",
+      "source_state_id": "AGT.MULTI.AGREEMENT_STATUS",
+      "status": "revised",
+      "concept": "Consensus",
+      "prior_agreement": "2/5",
+      "static_form": "Five peer nodes are arranged around one central proposition token. Four or five identical inward confirmation edges terminate on the proposition. Once quorum is achieved, a continuous locking ring encloses the central token. Unlike alignment, consensus is represented as a committed shared state rather than parallel orientation.",
+      "motion": "Peer confirmations arrive independently. Each closes one segment of the central locking ring. When quorum threshold is reached, remaining required ring segments snap together and the central proposition becomes stationary.",
+      "color_logic": "Uncommitted peer edges use grey, received confirmations use teal #20C7C7, unresolved dissent uses amber #FFA500. Ring closure encodes consensus independent of hue.",
+      "variable_params": "agreement_ratio ~ supporting peers; quorum_threshold ~ required consensus; dissent_count ~ unresolved peers; ring_closure_ratio ~ commitment state; consensus_stability ~ persistence across rechecks"
+    },
+    {
+      "id": "B4.25",
+      "source_model": "Gemini",
+      "source_state_id": "AGT.CTX.OVERFLOW",
+      "status": "passed",
+      "static_form": "Fixed-width linear token buffer with boundary rupture on the terminal edge and trailing tokens spilling into void.",
+      "motion": "High-velocity linear shift pushing token blocks past the rightmost boundary, terminating instantly in drop zone.",
+      "color_logic": "Hard zero-luminance clipping boundary on all coordinates extending beyond maximum context limit.",
+      "variable_params": "Token spill rate scales with overflow volume relative to context window capacity."
+    },
+    {
+      "id": "B4.26",
+      "source_model": "Gemini",
+      "source_state_id": "AGT.KNOWLEDGE.REFRESH",
+      "status": "revised",
+      "concept": "Grounding / resolution",
+      "prior_agreement": "1/5",
+      "static_form": "Three evidence rays originate from spatially separated source nodes and intersect at one initially hollow target node. Before resolution the rays form a small triangular uncertainty region; after grounding they converge on a single central point inside the target.",
+      "motion": "Evidence rays sweep within narrow uncertainty angles. As corroboration increases, their angular variance contracts until all three intersect precisely. The target node then fills and a small anchor bar appears beneath it.",
+      "color_logic": "Unresolved rays use grey with amber #FFA500 uncertainty wedges. Resolved intersection and anchor bar use teal #20C7C7. Geometric triangulation encodes evidence resolution.",
+      "variable_params": "ray_count ~ independent evidence sources; intersection_error ~ unresolved disagreement; uncertainty_angle ~ grounding ambiguity; source_weight_variance ~ evidence imbalance; resolution_confidence ~ convergence precision"
+    },
+    {
+      "id": "B4.27",
+      "source_model": "Gemini",
+      "source_state_id": "AGT.TOOL.FAILURE",
+      "status": "passed",
+      "static_form": "Segmented functional conduit displaying a complete transverse fracture gap with jagged terminal endpoints.",
+      "motion": "Intermittent, non-periodic electrical arc vectors discharging across the fracture gap without bridging it.",
+      "color_logic": "Binary strobe flickering localized at the fractured terminal boundaries.",
+      "variable_params": "Arc discharge frequency scales with retry attempt rate; gap width scales with fatal exception severity."
+    },
+    {
+      "id": "B4.28",
+      "source_model": "Gemini",
+      "source_state_id": "AGT.CTX.OVERFLOW_RISK",
+      "status": "passed",
+      "static_form": "Linear token capacity bar filled near maximum limit, displaying an active critical threshold boundary marker.",
+      "motion": "Rapid pulsing along the remaining unallocated buffer margin, with remaining empty slot space contracting.",
+      "color_logic": "Spatial luminance step-up concentrated within the remaining margin safety buffer.",
+      "variable_params": "Pulse rate scales with context consumption rate; margin width scales with remaining token headroom."
+    },
+    {
+      "id": "B4.29",
+      "source_model": "Gemini",
+      "source_state_id": "AGT.TOOL.FAIL",
+      "status": "passed",
+      "static_form": "Discrete tool execution glyph bisected by a sharp diagonal strike-through negation vector.",
+      "motion": "Sudden downward vertical translation step followed by static locked immobility.",
+      "color_logic": "Complete inverted contrast applied over the base tool glyph.",
+      "variable_params": "Negation strike-through line width scales with terminality (transient vs unrecoverable error)."
+    }
+  ]
+}

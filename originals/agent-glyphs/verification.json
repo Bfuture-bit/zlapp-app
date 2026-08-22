@@ -1,0 +1,118 @@
+{
+  "schema_version": "AGENT_GLYPH_MASTER_1.0",
+  "generated_at": "2026-08-22T18:14:13.321Z",
+  "totals": {
+    "glyphs": 173,
+    "preserved": 150,
+    "revised": 23,
+    "batches": 6,
+    "acceptance_threshold": "3/5"
+  },
+  "expected": {
+    "glyphs": 173,
+    "preserved": 150,
+    "revised": 23,
+    "batches": 6
+  },
+  "match": true,
+  "sha256": {
+    "batches/b1-muse-spark.gif": "a0a19cd1115db03134931f5775aaeb0b346d0aa141767b08811c024eb740e883",
+    "batches/b2-glm-52.gif": "7ba78dff223597c785fb32dc0e65022b6f1e557524315a6f901f1f36040978d5",
+    "batches/b3-sol.gif": "7790e1b5463b77dfb28ff8c826d5d19f27f15bd34cb94544b3738debbfa18957",
+    "batches/b4-gemini.gif": "fea2c38915b3094338a6f621cbbe9848de8d0e572787dbeeee800c697da108c0",
+    "batches/b5-grok.gif": "f80318049ff160a91e26263d81483de6543ab6fc7af6d49d2e3e386cfb18ac19",
+    "batches/b6-sonnet.gif": "e74eb1ddf5adc52e6ff2866b88b4b593d7e66153408693fe8f0caa3870407d17",
+    "master.gif": "b07fe485435eb9571394f047feab681d407bb7fa8c1ad7afacba941555f531a0",
+    "contact-sheet.png": "b52cdd86865b6ec2cdfe5aa22d61eea875ec0089781d22e088b3fd5ad3f2cd13",
+    "manifest.json": "0477bb0c9ab1b5a1117f065788b30b158b2d0376aa157f85fcd98715a8803d48",
+    "manifest.csv": "e87f1a0f6d5c03ad610f21ec07760443037316a1546b6993f6fb67e6adc28d18"
+  },
+  "assets": [
+    {
+      "kind": "batch_gif",
+      "batch": "B1",
+      "file": "batches/b1-muse-spark.gif",
+      "bytes": 447163,
+      "width": 556,
+      "height": 464
+    },
+    {
+      "kind": "batch_gif",
+      "batch": "B2",
+      "file": "batches/b2-glm-52.gif",
+      "bytes": 429834,
+      "width": 556,
+      "height": 464
+    },
+    {
+      "kind": "batch_gif",
+      "batch": "B3",
+      "file": "batches/b3-sol.gif",
+      "bytes": 541076,
+      "width": 556,
+      "height": 464
+    },
+    {
+      "kind": "batch_gif",
+      "batch": "B4",
+      "file": "batches/b4-gemini.gif",
+      "bytes": 719848,
+      "width": 556,
+      "height": 464
+    },
+    {
+      "kind": "batch_gif",
+      "batch": "B5",
+      "file": "batches/b5-grok.gif",
+      "bytes": 351270,
+      "width": 556,
+      "height": 464
+    },
+    {
+      "kind": "batch_gif",
+      "batch": "B6",
+      "file": "batches/b6-sonnet.gif",
+      "bytes": 396482,
+      "width": 556,
+      "height": 464
+    },
+    {
+      "kind": "master_gif",
+      "file": "master.gif",
+      "bytes": 614035,
+      "width": 588,
+      "height": 471,
+      "glyph_count": 173
+    },
+    {
+      "kind": "contact_sheet",
+      "file": "contact-sheet.png",
+      "bytes": 137694
+    }
+  ],
+  "revised_ids": [
+    "B1.09",
+    "B1.15",
+    "B2.08",
+    "B2.12",
+    "B2.13",
+    "B2.16",
+    "B2.22",
+    "B2.23",
+    "B2.24",
+    "B2.25",
+    "B2.27",
+    "B2.28",
+    "B3.21",
+    "B3.29",
+    "B4.06",
+    "B4.16",
+    "B4.18",
+    "B4.21",
+    "B4.24",
+    "B4.26",
+    "B6.08",
+    "B6.22",
+    "B6.26"
+  ]
+}

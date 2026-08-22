@@ -1,0 +1,330 @@
+{
+  "schema_version": "AGENT_GLYPH_MASTER_1.0",
+  "total_glyphs": 173,
+  "acceptance_threshold": "3/5",
+  "preserved_pass_count": 150,
+  "revision_count": 23,
+  "batch_map": {
+    "B1": {
+      "source_model": "Muse Spark",
+      "count": 29
+    },
+    "B2": {
+      "source_model": "GLM 5.2",
+      "count": 29
+    },
+    "B3": {
+      "source_model": "Sol",
+      "count": 29
+    },
+    "B4": {
+      "source_model": "Gemini",
+      "count": 29
+    },
+    "B5": {
+      "source_model": "Grok",
+      "count": 29
+    },
+    "B6": {
+      "source_model": "Sonnet",
+      "count": 28
+    }
+  },
+  "revision_policy": "Any glyph scoring below 3/5 agreement is replaced by its revised specification. Passing glyph specifications are preserved from the supplied source set.",
+  "glyphs": [
+    {
+      "id": "B1.01",
+      "source_model": "Muse Spark",
+      "source_state_id": "AGT.TOOL.SCHEMA_MISMATCH",
+      "status": "passed",
+      "static_form": "Square peg overlapping round hole: 16px square slot outline left, hexagonal peg right overlapping with 2px gap + central X. Grid-aligned, high-contrast stroke 2px.",
+      "motion": "Peg attempts insertion on loop: translate 4px left with elastic out, collides, jitter 3x at 60ms, bounce back 4px. 1.8s loop, easeOutElastic on bounce. Trigger on validation fail.",
+      "color_logic": "Amber #FFA500 for mismatch, desaturated grey for slot. Hue does not encode severity; opacity of X encodes mismatch degree.",
+      "variable_params": "jitter count ~ retry attempts, gap width ~ schema divergence score, X opacity ~ validation error count"
+    },
+    {
+      "id": "B1.02",
+      "source_model": "Muse Spark",
+      "source_state_id": "AGT.TOOL.WAIT",
+      "status": "passed",
+      "static_form": "Tool glyph (wrench 45deg) inside dotted 24px circle with centered 2-bar pause icon (||) overlay. Dotted circle = waiting container.",
+      "motion": "Static hold with pause bars breathing opacity 0.35->1.0 sine in-out 1.2s loop. No rotation. Dots static.",
+      "color_logic": "Desaturated slate-blue #6B7B8F = idle wait. No hue scale.",
+      "variable_params": "breath period ~ elapsed wait time (slows as wait lengthens), opacity floor ~ expected remaining time"
+    },
+    {
+      "id": "B1.03",
+      "source_model": "Muse Spark",
+      "source_state_id": "AGT.MEM.CONFLICT",
+      "status": "passed",
+      "static_form": "Two stacked memory layers (3 horizontal bars each) overlapping at 30deg offset, central collision diamond with !. Overlap region hatched.",
+      "motion": "Layers push toward center 2px then recoil 0.15s alternating, collision diamond flashes 200ms on contact. 1.5s loop.",
+      "color_logic": "Dual-tone: teal #2EB5A5 vs magenta #D6457C for conflicting traces, yellow flash on conflict zone.",
+      "variable_params": "recoil amplitude ~ conflict strength, flash frequency ~ number of conflicting memories, hatch density ~ overlap size"
+    },
+    {
+      "id": "B1.04",
+      "source_model": "Muse Spark",
+      "source_state_id": "AGT.TASK.UNDERSPECIFIED",
+      "status": "passed",
+      "static_form": "Dashed rounded rectangle (task card) with missing bottom edge, central ? formed by dotted pixels, 3 corner anchors present 1 missing.",
+      "motion": "Dotted ? flickers random pixels, dashed border marches slowly clockwise (marching ants 2s). Missing edge pulses outline.",
+      "color_logic": "Light grey #B0BEC5 dashed = underspecified, amber ? = need clarification.",
+      "variable_params": "dash speed ~ ambiguity score, ? flicker rate ~ number of underspecified parameters, gap length ~ spec completeness %"
+    },
+    {
+      "id": "B1.05",
+      "source_model": "Muse Spark",
+      "source_state_id": "AGT.EVIDENCE.CONFLICT",
+      "status": "passed",
+      "static_form": "Balance scale with two document icons on pans tilted 15deg, documents have opposing arrows (\u2191 vs \u2193), central crack line.",
+      "motion": "Scale tips left-right 0.8s seesaw easeInOut, documents vibrate, crack glows on extreme tilt. Loop 2s.",
+      "color_logic": "Neutral grey scale, documents: cyan vs orange for opposing evidence. Red crack intensity = conflict severity.",
+      "variable_params": "tilt angle ~ weight delta, vibration amplitude ~ evidence contradiction strength, crack glow ~ confidence in conflict detection"
+    },
+    {
+      "id": "B1.06",
+      "source_model": "Muse Spark",
+      "source_state_id": "AGT.TOOL.WAITING",
+      "status": "passed",
+      "static_form": "Wrench inside 270deg C-shaped progress ring with 90deg gap at top, 4 tick marks on circumference.",
+      "motion": "Ring rotates clockwise continuous linear 1s/rev, gap acts as spinner. Ticks pass fixed indicator. Stutters if polling blocked.",
+      "color_logic": "Active cyan #00B8D4 = actively waiting/polling.",
+      "variable_params": "rotation speed ~ polling frequency, ring thickness ~ wait priority, stutter duration ~ backoff interval"
+    },
+    {
+      "id": "B1.07",
+      "source_model": "Muse Spark",
+      "source_state_id": "AGT.PLAN.REVISE",
+      "status": "passed",
+      "static_form": "Polyline path with 3 nodes (circle-square-circle) + eraser icon erasing middle segment with dashed revised segment branching off at 30deg.",
+      "motion": "Eraser scrubs middle segment 300ms, old segment fades to dotted, new dashed segment draws in left-to-right 600ms easeOutQuad. Loop 2.5s with pause.",
+      "color_logic": "Grey #9E9E9E old path, electric blue #2979FF new path, pink eraser.",
+      "variable_params": "scrub speed ~ revision magnitude, new path length ~ plan delta, node pulse ~ revision depth"
+    },
+    {
+      "id": "B1.08",
+      "source_model": "Muse Spark",
+      "source_state_id": "AGT.STATE.ROLLBACK",
+      "status": "passed",
+      "static_form": "Horizontal timeline with 4 ticks, current marker at tick 4, curved U-arrow from tick 4 back to tick 2 checkpoint (flag).",
+      "motion": "Marker jumps back along arrow with motion blur, timeline flashes at target checkpoint 150ms, arrow draws backward 400ms easeInCubic. Loop 2s hold.",
+      "color_logic": "Amber #FFAB00 for rollback arrow, grey timeline, green flag checkpoint.",
+      "variable_params": "arrow arc height ~ rollback distance (ticks), flash intensity ~ state loss severity, animation duration ~ rollback cost"
+    },
+    {
+      "id": "B1.09",
+      "source_model": "Muse Spark",
+      "source_state_id": "AGT.SPEC.GAP",
+      "status": "revised",
+      "concept": "Knowledge gap / missing information",
+      "prior_agreement": "2/5",
+      "static_form": "24px knowledge lattice containing six fixed information cells arranged 3x2. Five cells are solid and connected; one required cell is an unmistakable empty outlined socket. A short inbound dependency line terminates at the empty socket without connecting. The missing location, not general incompleteness, is the dominant geometry.",
+      "motion": "Dependency pulse travels through connected cells, reaches the empty socket, and halts. The empty socket emits one expanding outline pulse, then the dependency pulse resets. 1.8s loop. No random motion.",
+      "color_logic": "Known cells use neutral cool grey. The missing socket uses amber #FFA500 plus an unfilled interior and dashed inbound termination. Color is redundant; absence and disconnected topology encode the state.",
+      "variable_params": "empty_socket_count ~ number of unresolved required facts; socket_area ~ importance of missing information; inbound_line_count ~ dependent operations blocked by the gap; pulse_frequency ~ urgency of information request"
+    },
+    {
+      "id": "B1.10",
+      "source_model": "Muse Spark",
+      "source_state_id": "AGT.BUDGET.EXHAUST",
+      "status": "passed",
+      "static_form": "Vertical fuel gauge / battery with 5 segments, all empty outlined, bottom segment red, top $/token icon with 0, diagonal slash across.",
+      "motion": "Needle/level drops from full to empty in 800ms easeInExpo then shakes at empty 100ms. Slash draws diagonally. Hold empty 1s.",
+      "color_logic": "Green->yellow->red gradient by level; final state solid red #D32F2F = exhausted, grey empty segments.",
+      "variable_params": "drop speed ~ burn rate, shake amplitude ~ over-budget amount, segment count ~ budget type (tokens/calls/time)"
+    },
+    {
+      "id": "B1.11",
+      "source_model": "Muse Spark",
+      "source_state_id": "AGT.EXEC.SANDBOXED",
+      "status": "passed",
+      "static_form": "Outer dashed cube (isometric) containing inner solid cube with execution play-triangle inside. Outer cube has lock icons on corners.",
+      "motion": "Inner cube gently floats/bobs 6px vertical sine 2s, outer cube border pulses containment field 1.5s, no escape. Containment shimmer on edges.",
+      "color_logic": "Outer sandbox amber dashed #FF8F00 = containment, inner execution cyan #00ACC1 = active but confined.",
+      "variable_params": "bob amplitude ~ execution activity, border pulse rate ~ sandbox strictness level, lock count ~ permission restrictiveness"
+    },
+    {
+      "id": "B1.12",
+      "source_model": "Muse Spark",
+      "source_state_id": "AGT.SELF.CORRECT",
+      "status": "passed",
+      "static_form": "Forward arrow that loops into U-turn with eraser tail, small checkmark at new direction, ghost of old arrow faint behind.",
+      "motion": "Arrow moves forward 200ms, pauses, draws U-turn 400ms easeInOutBack, eraser wipes ghost trail 300ms. Loop 2.2s.",
+      "color_logic": "Grey ghost = prior error, teal #009688 corrected path, green check = correction validated.",
+      "variable_params": "U-turn curvature ~ correction magnitude, wipe speed ~ confidence in correction, check scale ~ verification strength"
+    },
+    {
+      "id": "B1.13",
+      "source_model": "Muse Spark",
+      "source_state_id": "AGT.INJECT.SUSPECT",
+      "status": "passed",
+      "static_form": "Syringe/injection arrow piercing document/shield shape, overlay warning triangle with ! at injection point, biohazard-like pixels around entry.",
+      "motion": "Syringe pulses inward 2px 3x rapid 150ms then warning triangle flashes red 200ms on/off. Loop 1.6s. Trigger on input parse.",
+      "color_logic": "Syringe neon green #76FF03 = external content, warning red #FF1744 = suspect, shield grey.",
+      "variable_params": "pulse count ~ injection confidence score, triangle flash rate ~ severity, pixel spread ~ taint propagation risk"
+    },
+    {
+      "id": "B1.14",
+      "source_model": "Muse Spark",
+      "source_state_id": "AGT.STATE.STALE",
+      "status": "passed",
+      "static_form": "Clock face with 3 hands frozen at 10:10, overlay dust particles and cobweb corners, calendar page curl with faded text.",
+      "motion": "Clock ticks attempt to move then snaps back 50ms jitter every 1.5s, dust particles drift slowly down 3s linear, no progress.",
+      "color_logic": "Sepia/desaturated #8D6E63 = stale/aged, dust grey #BCAAA4, frozen hands dark.",
+      "variable_params": "jitter frequency ~ staleness duration, dust density ~ time since last refresh, fade amount ~ TTL exceeded %"
+    },
+    {
+      "id": "B1.15",
+      "source_model": "Muse Spark",
+      "source_state_id": "AGT.EXEC.PARTIAL",
+      "status": "revised",
+      "concept": "Partial progress / paused incomplete",
+      "prior_agreement": "2/5",
+      "static_form": "Horizontal execution rail from start node to terminal node. Completed section is solid, remaining section is dotted, and the transition point contains a perpendicular pause-cap composed of two short bars. The terminal node remains visibly hollow.",
+      "motion": "Progress pulse advances along the completed rail, stops exactly at the pause-cap, compresses slightly against it, and remains stationary for 600ms before resetting. It never enters the unfinished dotted segment.",
+      "color_logic": "Completed path uses teal #20C7C7, unfinished path uses desaturated grey, pause-cap uses amber #FFA500. Geometry independently communicates completed, paused, and remaining portions.",
+      "variable_params": "rail_fill_ratio ~ completed fraction; pause_cap_position ~ interruption point; dotted_length ~ work remaining; pause_duration ~ elapsed stalled time"
+    },
+    {
+      "id": "B1.16",
+      "source_model": "Muse Spark",
+      "source_state_id": "AGT.RATE.LIMIT",
+      "status": "passed",
+      "static_form": "Speedometer semicircle with needle at 85% mark, red limit line at 80%, throttle bars stacked vertically to right (3 bars).",
+      "motion": "Needle vibrates against limit line 50ms buzz, throttle bars sequentially light up then dim 600ms cascade. Loop 1.4s.",
+      "color_logic": "Green zone < limit, red #E53935 beyond limit line, amber buzz zone.",
+      "variable_params": "needle vibration amplitude ~ request rate / limit ratio, bar count illuminated ~ remaining quota, buzz frequency ~ retry-after time"
+    },
+    {
+      "id": "B1.17",
+      "source_model": "Muse Spark",
+      "source_state_id": "AGT.EXEC.RETRY",
+      "status": "passed",
+      "static_form": "Circular arrow loop (270deg) with centered dot and small counter badge 'xN' at bottom-right, arrowhead gap at top.",
+      "motion": "Arrow spins 360deg clockwise 700ms easeInOutCubic, pauses, counter increments tick animation (scale pop 150ms). Loop 1.5s. Triggers per retry.",
+      "color_logic": "Retry blue #1E88E5 loop, counter badge orange #FB8C00 = attempt count.",
+      "variable_params": "spin speed ~ retry interval (faster = aggressive), counter value = attempt number, pop scale ~ backoff exponent"
+    },
+    {
+      "id": "B1.18",
+      "source_model": "Muse Spark",
+      "source_state_id": "AGT.DELEGATE.FANOUT",
+      "status": "passed",
+      "static_form": "Single central node (hexagon) with 5 outward rays to leaf nodes (dots) forming fan/tree, lines thin to thick outward.",
+      "motion": "Central node pulses 200ms then leaves light up sequentially outward 80ms stagger (wave propagation). Lines draw outward 400ms. Loop 1.8s.",
+      "color_logic": "Parent indigo #3949AB, leaves teal #00BFA5, lines gradient parent->leaf.",
+      "variable_params": "leaf count ~ fanout degree, stagger delay ~ delegation latency, pulse scale ~ payload size"
+    },
+    {
+      "id": "B1.19",
+      "source_model": "Muse Spark",
+      "source_state_id": "AGT.HUMAN.PERMISSION_GATED",
+      "status": "passed",
+      "static_form": "Human silhouette icon behind vertical gate/bars, gate has lock with keyhole, hand icon reaching but blocked by gate line.",
+      "motion": "Gate bars slide closed 300ms easeOut, lock clicks shut (scale 1.2 then back 100ms), hand icon bumps gate 2x with recoil. Loop 2s hold closed.",
+      "color_logic": "Human warm grey #795548, gate steel blue #546E7A, lock red #C62828 = blocked, green when granted (not shown).",
+      "variable_params": "gate bar opacity ~ permission strictness, bump recoil ~ urgency, lock size ~ approval authority level"
+    },
+    {
+      "id": "B1.20",
+      "source_model": "Muse Spark",
+      "source_state_id": "AGT.TOOL.FAILURE",
+      "status": "passed",
+      "static_form": "Wrench icon snapped in two with jagged crack gap 3px, overlaid bold X in circle, small sparks at break point.",
+      "motion": "Wrench attempts to turn 15deg then snaps back with crack flash 100ms, X pops in scale 0->1 easeOutBack, sparks emit once. Loop 1.6s.",
+      "color_logic": "Tool steel grey #78909C, crack/sparks orange #FF6D00, failure X red #D50000.",
+      "variable_params": "crack gap width ~ failure severity, spark count ~ error cascade size, X scale ~ terminal vs recoverable"
+    },
+    {
+      "id": "B1.21",
+      "source_model": "Muse Spark",
+      "source_state_id": "AGT.TOOL.AWAIT",
+      "status": "passed",
+      "static_form": "Wrench icon above hourglass with sand, hourglass frame encloses wrench shadow, dotted baseline.",
+      "motion": "Sand trickles top->bottom continuous 1.5s linear, wrench gently bobs 4px sine 1.5s, hourglass flip not triggered until resolved.",
+      "color_logic": "Waiting amber #FFB300 sand, tool grey desaturated 50% = suspended.",
+      "variable_params": "sand flow rate ~ expected wait duration (slow = long), bob amplitude ~ polling vs idle await, sand level ~ time elapsed"
+    },
+    {
+      "id": "B1.22",
+      "source_model": "Muse Spark",
+      "source_state_id": "AGT.EPISTEMIC.UNGROUNDED",
+      "status": "passed",
+      "static_form": "Thought bubble / brain outline floating above dashed ground line with gap, tether line cut/dangling, small ? inside bubble.",
+      "motion": "Bubble floats up/down 8px sine 2s with slight drift, tether sways, ground dashed line flickers. No grounding snap.",
+      "color_logic": "Bubble light blue #81D4FA = ungrounded claim, ground grey dashed = missing grounding, ? amber.",
+      "variable_params": "float height ~ ungrounded degree, tether sway ~ hallucination risk, flicker rate ~ evidence absence confidence"
+    },
+    {
+      "id": "B1.23",
+      "source_model": "Muse Spark",
+      "source_state_id": "AGT.STATE.ROLLBACK",
+      "status": "passed",
+      "static_form": "Circular rewind symbol: 2 left-pointing triangles with curved arrow looping back to earlier checkpoint dot on circular timeline.",
+      "motion": "Rewind arrow draws counter-clockwise 500ms, triangles blink sequentially, checkpoint dot pings outward ripple. Loop 2s. Duplicate variant for redundancy signaling.",
+      "color_logic": "Rewind amber #FF8F00, timeline grey #BDBDBD, checkpoint green #43A047.",
+      "variable_params": "arrow thickness ~ data loss volume, ripple count ~ rollback depth, blink speed ~ urgency"
+    },
+    {
+      "id": "B1.24",
+      "source_model": "Muse Spark",
+      "source_state_id": "AGT.CONSTRAINT.CONFLICT",
+      "status": "passed",
+      "static_form": "Two opposing bracket walls [ ] closing in on central block, block squeezed with stress lines, X at contact points.",
+      "motion": "Brackets push inward 4px 300ms easeIn, block compresses 10% then pushes back, stress lines flash. Loop 1.4s.",
+      "color_logic": "Brackets red #E53935 vs blue #1E88E5 = conflicting constraints, block grey, stress yellow.",
+      "variable_params": "compression % ~ conflict irreconcilability, push force ~ constraint priority, flash intensity ~ violation severity"
+    },
+    {
+      "id": "B1.25",
+      "source_model": "Muse Spark",
+      "source_state_id": "AGT.ACTION.COMMITTED",
+      "status": "passed",
+      "static_form": "Forward arrow stamped into block with ink stamp border, lock icon over tail, checkmark seal at tip.",
+      "motion": "Stamp slams down 150ms easeInExpo with impact shake 80ms, ink spreads outward, lock clicks shut. One-shot then hold (no loop).",
+      "color_logic": "Committed ink indigo #283593, lock bronze #6D4C41 = irreversible, seal green #2E7D32.",
+      "variable_params": "impact shake ~ commitment cost, ink spread ~ scope of commitment, lock opacity ~ reversibility (0=irreversible)"
+    },
+    {
+      "id": "B1.26",
+      "source_model": "Muse Spark",
+      "source_state_id": "AGT.TOOL.RATE_LIMITED",
+      "status": "passed",
+      "static_form": "Wrench overlaid with speedometer limiter: wrench behind vertical throttle bar with 3 segments, top segment red capped, clock icon small.",
+      "motion": "Throttle bar fills then hits cap and bounces 100ms, wrench greys out and pulses dim 500ms, clock ticks. Loop 1.6s.",
+      "color_logic": "Wrench greyed #90A4AE when limited, bar green->red at cap #EF5350, clock amber.",
+      "variable_params": "bar fill % ~ quota used, bounce amplitude ~ rate excess, dim pulse period ~ retry-after window"
+    },
+    {
+      "id": "B1.27",
+      "source_model": "Muse Spark",
+      "source_state_id": "AGT.GOAL.DRIFT",
+      "status": "passed",
+      "static_form": "Bullseye target with center dot (goal) and dotted arrow path that curves away from center, small boat/arrowhead drifting off-axis.",
+      "motion": "Arrowhead slowly drifts off-center 6px over 2s easeInQuad, path trail fades behind, target pulses weakly. Loop with reset.",
+      "color_logic": "Target concentric teal #009688, drift path amber dashed #FFA000 = divergence, arrowhead red when far.",
+      "variable_params": "drift distance ~ goal divergence score, curve angle ~ drift direction, target pulse ~ drift detection confidence"
+    },
+    {
+      "id": "B1.28",
+      "source_model": "Muse Spark",
+      "source_state_id": "AGT.STATE.CHECKPOINT_ROLLBACK",
+      "status": "passed",
+      "static_form": "Timeline with flag checkpoint at mid-point, current position marker at end, U-shaped arrow with checkpoint diamond at elbow returning to flag.",
+      "motion": "Marker rewinds along U-arrow 600ms easeInOut, flag waves 200ms on arrival, diamond checkpoint glows. Loop 2.4s.",
+      "color_logic": "Timeline slate #607D8B, flag/checkpoint green #00C853 = safe restore point, rewind arrow blue #2962FF.",
+      "variable_params": "rewind distance ~ checkpoint age, flag wave amplitude ~ checkpoint freshness, glow duration ~ restore cost"
+    },
+    {
+      "id": "B1.29",
+      "source_model": "Muse Spark",
+      "source_state_id": "AGT.CTX.PRESSURE",
+      "status": "passed",
+      "static_form": "Vertical container/bar with stacked text lines inside, pressure lid on top with gauge, lines compressed at top, overflow indicator at brim.",
+      "motion": "Lines compress upward 4px and jitter 60ms, gauge needle rises 500ms, container walls bulge 2% sine 1s. Loop 1.8s.",
+      "color_logic": "Container grey #CFD8DC, gauge green->yellow->red by pressure, overflow red flash at 100%.",
+      "variable_params": "compression density ~ token/context fill %, bulge amount ~ pressure level, needle angle ~ proximity to limit, jitter ~ truncation risk"
+    }
+  ]
+}

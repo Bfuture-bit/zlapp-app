@@ -1,0 +1,322 @@
+{
+  "schema_version": "AGENT_GLYPH_MASTER_1.0",
+  "total_glyphs": 173,
+  "acceptance_threshold": "3/5",
+  "preserved_pass_count": 150,
+  "revision_count": 23,
+  "batch_map": {
+    "B1": {
+      "source_model": "Muse Spark",
+      "count": 29
+    },
+    "B2": {
+      "source_model": "GLM 5.2",
+      "count": 29
+    },
+    "B3": {
+      "source_model": "Sol",
+      "count": 29
+    },
+    "B4": {
+      "source_model": "Gemini",
+      "count": 29
+    },
+    "B5": {
+      "source_model": "Grok",
+      "count": 29
+    },
+    "B6": {
+      "source_model": "Sonnet",
+      "count": 28
+    }
+  },
+  "revision_policy": "Any glyph scoring below 3/5 agreement is replaced by its revised specification. Passing glyph specifications are preserved from the supplied source set.",
+  "glyphs": [
+    {
+      "id": "B6.01",
+      "source_model": "Sonnet",
+      "source_state_id": "AGT.TOOL.FAIL",
+      "status": "passed",
+      "static_form": "hexagon outline with one perimeter edge broken by a gap, small internal X mark at the break point",
+      "motion": "renders intact for one frame, edge snaps open on frame two with a brief 2-3 frame jitter shake, then freezes broken \u2014 terminal, non-looping",
+      "color_logic": "none forced; if used, shift from neutral outline to a flat desaturated tone marks permanence of the failed state rather than category",
+      "variable_params": "fracture gap width ~ severity/fatality of failure; shake amplitude ~ how anomalous/unexpected the failure was"
+    },
+    {
+      "id": "B6.02",
+      "source_model": "Sonnet",
+      "source_state_id": "AGT.TOOL.SCHEMA",
+      "status": "passed",
+      "static_form": "hexagon containing an internal grid lattice; one cell is offset outside its slot boundary",
+      "motion": "offset cell oscillates trying to snap into place with elastic overshoot, settling just outside each cycle \u2014 continuous loop until resolved",
+      "color_logic": "none forced; mismatch marked by fill-state (unfilled outline cell vs filled valid cells), not hue",
+      "variable_params": "oscillation amplitude ~ degree of type mismatch; number of misaligned cells ~ number of invalid fields"
+    },
+    {
+      "id": "B6.03",
+      "source_model": "Sonnet",
+      "source_state_id": "AGT.TOOL.RETRY",
+      "status": "passed",
+      "static_form": "hexagon with a partial (~270\u00b0) circular arc wrapping one corner, arrowhead pointing to a fixed start-tick on the hexagon edge",
+      "motion": "one-shot event: arc sweeps 270\u00b0 ease-out then hard-resets instantly to zero (no reverse tween) \u2014 discrete per-attempt, not a continuous loop",
+      "color_logic": "none forced",
+      "variable_params": "sweep duration ~ backoff delay before next attempt; fires once per discrete retry event"
+    },
+    {
+      "id": "B6.04",
+      "source_model": "Sonnet",
+      "source_state_id": "AGT.ENV.UNREADY",
+      "status": "passed",
+      "static_form": "square frame with dashed (not solid) stroke, hollow/empty interior",
+      "motion": "dashes marching-ant scroll around the perimeter at constant speed; no pulsing, texture-motion only",
+      "color_logic": "none forced",
+      "variable_params": "scroll speed ~ estimated time-to-ready; dash density ~ fraction of environment still unprovisioned"
+    },
+    {
+      "id": "B6.05",
+      "source_model": "Sonnet",
+      "source_state_id": "AGT.CONF.LOW",
+      "status": "passed",
+      "static_form": "circle with an internal horizontal fill line, filled to roughly bottom third (gauge/vial style)",
+      "motion": "fill line trembles \u00b1small amount around its level with gentle sine easing, continuous loop",
+      "color_logic": "fill opacity (not hue) scales directly with confidence value \u2014 lower confidence renders more translucent, giving a color-independent readout",
+      "variable_params": "fill height ~ confidence score 0-1; tremor amplitude ~ variance/instability of the estimate"
+    },
+    {
+      "id": "B6.06",
+      "source_model": "Sonnet",
+      "source_state_id": "AGT.HUMAN.GATE",
+      "status": "passed",
+      "static_form": "solid diamond centered on a horizontal baseline, acting as a closed valve blocking the path",
+      "motion": "static hold while blocked, no ambient animation; single one-shot 45\u00b0 rotation into an open square plays once when unblocked, then glyph exits",
+      "color_logic": "none forced; state uses fill inversion (solid\u2192hollow) on open rather than hue",
+      "variable_params": "mostly binary; optional slow pulse rate ~ time-elapsed since gate was raised, to signal pending urgency"
+    },
+    {
+      "id": "B6.07",
+      "source_model": "Sonnet",
+      "source_state_id": "AGT.GOAL.DRIFT",
+      "status": "passed",
+      "static_form": "a dotted baseline arrow (intended direction) with a second solid arrow diverging from it at increasing angle",
+      "motion": "solid arrow continuously sweeps away from baseline with ease-in acceleration (drift compounds over time); resets only on a correction event",
+      "color_logic": "none forced",
+      "variable_params": "divergence angle ~ magnitude of drift; sweep speed ~ rate of drift"
+    },
+    {
+      "id": "B6.08",
+      "source_model": "Sonnet",
+      "source_state_id": "AGT.RESULT.PARTIAL",
+      "status": "revised",
+      "concept": "Progress fraction",
+      "prior_agreement": "1/5",
+      "static_form": "Closed 270-degree annular progress meter divided into ten equal deterministic segments with explicit zero and completion endpoints. Filled contiguous segments always begin at zero; unfilled segments remain outlined. A tiny radial pointer marks the exact fractional boundary.",
+      "motion": "Only the boundary pointer moves when progress changes. Completed segments fill discretely as thresholds are crossed. No looping animation is used when progress is static.",
+      "color_logic": "Completed segments use teal #20C7C7, remaining segments use grey outlines, current fractional segment uses amber #FFA500. Segment count and pointer position provide quantitative encoding without relying on color.",
+      "variable_params": "progress_0_to_1 ~ exact completion fraction; segment_count ~ display resolution; velocity ~ rate of progress; regression_amount ~ backward movement if progress decreases"
+    },
+    {
+      "id": "B6.09",
+      "source_model": "Sonnet",
+      "source_state_id": "AGT.STATE.ROLLBACK",
+      "status": "passed",
+      "static_form": "full circular arc (same topology as TOOL.RETRY) but traversed counter-clockwise, with a small tick mark showing the checkpoint being returned to",
+      "motion": "one-shot: marker sweeps counter-clockwise from current position to the checkpoint tick with ease-out (decelerate into landing), then freezes \u2014 CCW direction deliberately opposes RETRY/RETRYING's CW motion",
+      "color_logic": "none forced",
+      "variable_params": "arc length swept ~ how far back the rollback goes; sweep duration ~ magnitude of state reverted"
+    },
+    {
+      "id": "B6.10",
+      "source_model": "Sonnet",
+      "source_state_id": "AGT.TOOL.RETRYING",
+      "status": "passed",
+      "static_form": "hexagon with a full closed circular ring (360\u00b0) around one corner, same base as TOOL.RETRY but complete",
+      "motion": "continuous constant-speed rotation, linear easing, indefinite loop while the state is active \u2014 represents ongoing condition vs RETRY's discrete event",
+      "color_logic": "none forced",
+      "variable_params": "rotation speed ~ retry frequency; accumulating tick marks around the ring ~ attempt count so far"
+    },
+    {
+      "id": "B6.11",
+      "source_model": "Sonnet",
+      "source_state_id": "AGT.MEM.KNOWLEDGE_CUTOFF",
+      "status": "passed",
+      "static_form": "circle bisected by a hard vertical line; left half hatched/textured (known), right half blank (unknown-post-cutoff)",
+      "motion": "static hold \u2014 a fixed boundary, not a process; no loop",
+      "color_logic": "none forced; hatched-vs-blank contrast alone carries the signal",
+      "variable_params": "position of dividing line ~ size of the temporal gap since cutoff relative to current time"
+    },
+    {
+      "id": "B6.12",
+      "source_model": "Sonnet",
+      "source_state_id": "AGT.CTX.RATE_LIMITED",
+      "status": "passed",
+      "static_form": "horizontal capacity gauge/bar with a fill level pressing against a hard ceiling cap drawn above it",
+      "motion": "fill repeatedly bounces against the ceiling (bounded ease-out/ease-in bounce), continuous loop while limited",
+      "color_logic": "none forced",
+      "variable_params": "bounce frequency ~ request pressure against the limit; fill level ~ remaining headroom"
+    },
+    {
+      "id": "B6.13",
+      "source_model": "Sonnet",
+      "source_state_id": "AGT.TASK.GOAL_DRIFT",
+      "status": "passed",
+      "static_form": "same divergence-vector geometry as AGT.GOAL.DRIFT, nested inside a small bracket frame marking task-level (sub) scope",
+      "motion": "identical divergence-sweep behavior as AGT.GOAL.DRIFT",
+      "color_logic": "none forced",
+      "variable_params": "same as GOAL.DRIFT (angle ~ magnitude, speed ~ rate); bracket size is the fixed scope differentiator"
+    },
+    {
+      "id": "B6.14",
+      "source_model": "Sonnet",
+      "source_state_id": "AGT.HUMAN.INPUT_REQUIRED",
+      "status": "passed",
+      "static_form": "diamond gate (HUMAN.GATE base) shown open, with a small caret/cursor mark inside indicating an active input slot",
+      "motion": "caret blinks hard on/off (no easing, discrete like a text cursor) on a steady loop; gate frame itself stays static, unlike HUMAN.GATE's closed hold",
+      "color_logic": "none forced",
+      "variable_params": "blink rate ~ urgency/time elapsed waiting for input"
+    },
+    {
+      "id": "B6.15",
+      "source_model": "Sonnet",
+      "source_state_id": "AGT.SAFETY.POLICY_BLOCKED",
+      "status": "passed",
+      "static_form": "square frame with a single solid horizontal bar struck through the center, extending past both frame edges",
+      "motion": "static hold, no loop; optional single instant (no-ease) snap-in of the bar when the block first triggers",
+      "color_logic": "none forced",
+      "variable_params": "bar thickness ~ severity/certainty of the policy match; otherwise binary"
+    },
+    {
+      "id": "B6.16",
+      "source_model": "Sonnet",
+      "source_state_id": "AGT.POLICY.BLOCKED",
+      "status": "passed",
+      "static_form": "same barred-square base as SAFETY.POLICY_BLOCKED but with two parallel struck bars instead of one, marking the general (non-safety) policy namespace",
+      "motion": "same static hold / rigid snap-in as SAFETY.POLICY_BLOCKED",
+      "color_logic": "none forced",
+      "variable_params": "bar thickness ~ severity; bar count fixed at two as the namespace differentiator"
+    },
+    {
+      "id": "B6.17",
+      "source_model": "Sonnet",
+      "source_state_id": "AGT.COORD.HANDOFF",
+      "status": "passed",
+      "static_form": "two nodes connected by a single edge with a small solid marker dot positioned on the edge",
+      "motion": "one-shot: marker travels once from node A to node B (ease-in-out), merges into B and disappears \u2014 discrete event, not looping",
+      "color_logic": "none forced",
+      "variable_params": "travel duration ~ handoff latency; marker size ~ payload/state size transferred"
+    },
+    {
+      "id": "B6.18",
+      "source_model": "Sonnet",
+      "source_state_id": "AGT.PLAN.REVISED",
+      "status": "passed",
+      "static_form": "polyline route with a prior segment shown dashed/greyed and a new segment drawn solid diverging from the shared vertex",
+      "motion": "one-shot: old dashed segment fades out (ease-out opacity) while new solid segment draws in (ease-in growth) from the shared vertex, then holds static",
+      "color_logic": "none forced; opacity contrast between old and new segment carries the signal",
+      "variable_params": "number of revised segments ~ how much of the plan changed; transition duration ~ magnitude of revision"
+    },
+    {
+      "id": "B6.19",
+      "source_model": "Sonnet",
+      "source_state_id": "AGT.CONTROL.LOOP",
+      "status": "passed",
+      "static_form": "thin closed circular ring with a single node traveling on it \u2014 minimal orbit motif",
+      "motion": "node travels the ring at constant linear speed, no easing, indefinite loop \u2014 deliberately mechanical/deterministic",
+      "color_logic": "none forced",
+      "variable_params": "orbital speed ~ actual control-loop cycle frequency"
+    },
+    {
+      "id": "B6.20",
+      "source_model": "Sonnet",
+      "source_state_id": "AGT.COORD.FANOUT",
+      "status": "passed",
+      "static_form": "one central node with edges radiating outward to N peripheral nodes \u2014 star/hub topology",
+      "motion": "one-shot: all edges draw outward simultaneously with ease-out (fast burst, decelerating per edge), then holds static once complete",
+      "color_logic": "none forced",
+      "variable_params": "peripheral node count N ~ actual fanout degree; draw duration ~ dispatch latency"
+    },
+    {
+      "id": "B6.21",
+      "source_model": "Sonnet",
+      "source_state_id": "AGT.EXEC.SANDBOXED",
+      "status": "passed",
+      "static_form": "solid inner shape (executing process) enclosed within a larger dashed outer boundary \u2014 double-boundary isolation motif",
+      "motion": "static hold, no ambient loop; optional slow low-amplitude opacity breathe on the outer boundary only, signaling active enforcement",
+      "color_logic": "none forced",
+      "variable_params": "gap distance between inner shape and outer boundary ~ strictness of isolation; boundary breathe rate ~ how actively the sandbox is monitored"
+    },
+    {
+      "id": "B6.22",
+      "source_model": "Sonnet",
+      "source_state_id": "AGT.REASON.LOOP",
+      "status": "revised",
+      "concept": "Degraded / unstable loop",
+      "prior_agreement": "2/5",
+      "static_form": "Circular execution loop remains topologically closed but its radius varies irregularly across four quadrants, producing a visibly warped orbit. Two short sections are dotted rather than solid, indicating intermittent reliability without a complete break.",
+      "motion": "Execution token completes the loop but changes velocity unpredictably, briefly loses opacity over dotted sections, overshoots one turn, and corrects back onto the orbit. Every cycle still completes, distinguishing degradation from broken-loop failure.",
+      "color_logic": "Stable sections use teal-grey, degraded sections use amber #FFA500 and dotted geometry. Loop closure remains visible at all times.",
+      "variable_params": "orbit_variance ~ instability; degraded_arc_ratio ~ fraction of unreliable loop; latency_variance ~ timing jitter; packet_loss_ratio ~ intermittent execution loss; successful_cycle_ratio ~ remaining loop reliability"
+    },
+    {
+      "id": "B6.23",
+      "source_model": "Sonnet",
+      "source_state_id": "AGT.EPIST.UNGROUNDED",
+      "status": "passed",
+      "static_form": "circle with a dashed/broken outline only, no solid baseline anchor beneath it (grounded claims would show that connector; its absence is the signal)",
+      "motion": "dashed segments flicker with irregular opacity dropout at random intervals, no smooth easing",
+      "color_logic": "none forced",
+      "variable_params": "flicker frequency ~ degree of ungroundedness; number of dash gaps ~ fraction of claim lacking support"
+    },
+    {
+      "id": "B6.24",
+      "source_model": "Sonnet",
+      "source_state_id": "AGT.EPIST.KNOWLEDGE_CUTOFF",
+      "status": "passed",
+      "static_form": "identical bisected-circle geometry to AGT.MEM.KNOWLEDGE_CUTOFF (hatched-known / blank-unknown split by a hard vertical line) \u2014 same underlying concept, different namespace",
+      "motion": "static hold, same as AGT.MEM.KNOWLEDGE_CUTOFF",
+      "color_logic": "none forced",
+      "variable_params": "same as AGT.MEM.KNOWLEDGE_CUTOFF \u2014 divider position ~ size of temporal gap"
+    },
+    {
+      "id": "B6.25",
+      "source_model": "Sonnet",
+      "source_state_id": "AGT.COORD.DELEGATE",
+      "status": "passed",
+      "static_form": "two nodes connected by an edge (HANDOFF base) but arrowhead only at the target; origin node keeps a persistent halo ring around it",
+      "motion": "one-shot: arrow draws origin-to-target with ease-in-out; origin's halo ring appears and stays static afterward, marking retained oversight \u2014 unlike HANDOFF, origin does not disappear",
+      "color_logic": "none forced",
+      "variable_params": "halo ring thickness ~ degree of retained oversight/control; draw duration ~ delegation setup latency"
+    },
+    {
+      "id": "B6.26",
+      "source_model": "Sonnet",
+      "source_state_id": "AGT.COORD.DIVERGENCE",
+      "status": "revised",
+      "concept": "Divergence / fan-out divergence",
+      "prior_agreement": "2/5",
+      "static_form": "One common origin splits into four directed branches. A narrow dashed tolerance cone extends forward from the origin. Two branches remain inside the cone while the others visibly diverge beyond its boundaries, ending in spatially separated result nodes. There is no merge node.",
+      "motion": "All branch tokens begin synchronized at the origin. As they propagate, branch trajectories separate progressively. Out-of-tolerance branches continue increasing angular and endpoint distance rather than returning or converging.",
+      "color_logic": "Tolerance cone uses grey dashed edges. In-tolerance branches use teal #20C7C7; divergent branches use amber #FFA500 plus increased angular separation. Spatial divergence is the primary encoding.",
+      "variable_params": "branch_count ~ fanout width; angular_variance ~ reasoning divergence; endpoint_distance_variance ~ output disagreement; out_of_tolerance_ratio ~ divergent workers; divergence_velocity ~ rate of separation"
+    },
+    {
+      "id": "B6.27",
+      "source_model": "Sonnet",
+      "source_state_id": "AGT.PLAN.GOAL_DRIFT",
+      "status": "passed",
+      "static_form": "same divergence-vector base as GOAL.DRIFT/TASK.GOAL_DRIFT, nested inside a larger bracket frame than TASK's \u2014 forms a three-tier scope grammar (no bracket = goal, small bracket = task, large bracket = plan)",
+      "motion": "identical divergence-sweep as AGT.GOAL.DRIFT",
+      "color_logic": "none forced",
+      "variable_params": "same as GOAL.DRIFT; bracket size fixed as the scope differentiator"
+    },
+    {
+      "id": "B6.28",
+      "source_model": "Sonnet",
+      "source_state_id": "AGT.RES.RATE_LIMITED",
+      "status": "passed",
+      "static_form": "identical capacity-gauge-with-ceiling-cap geometry to AGT.CTX.RATE_LIMITED \u2014 same rate-limit concept under the general resource namespace rather than context/token budget",
+      "motion": "same bounded bounce-against-ceiling loop as AGT.CTX.RATE_LIMITED",
+      "color_logic": "none forced",
+      "variable_params": "same as AGT.CTX.RATE_LIMITED \u2014 bounce frequency ~ pressure, fill level ~ remaining headroom"
+    }
+  ]
+}

@@ -1,0 +1,88 @@
+---
+import Base from "../layouts/Base.astro";
+import Nav from "../components/Nav.astro";
+import { agentGlyphMeta } from "../data/agent-glyphs";
+
+const { pageTitle, description, canonical, ogImage, hero, figures, batches } = agentGlyphMeta;
+---
+<Base title={pageTitle} description={description} canonicalUrl={canonical} ogImage={ogImage}>
+  <Nav current="glyphs" />
+  <main id="content" class="glyph-ex">
+    <header class="glyph-hero">
+      <p class="kicker">Exhibition</p>
+      <h1>Agent Glyph</h1>
+      <p class="glyph-sub">AI-Native Visual State Language</p>
+      <p class="glyph-lead">{hero}</p>
+      <p class="glyph-note">
+        A visual lexicon for LLM and agentic machine states. Human intuitiveness is secondary.
+        Each glyph is a looping machine-readable state mark: tool, plan, memory, evidence, coordination, refusal.
+      </p>
+    </header>
+
+    <section class="glyph-figures" aria-label="Core figures">
+      {figures.map((f) => (
+        <div>
+          <strong>{f.n}</strong>
+          <span>{f.label}</span>
+        </div>
+      ))}
+    </section>
+
+    <section class="glyph-gallery" aria-label="Source-model batches">
+      <header>
+        <p class="kicker">Batches</p>
+        <h2>Six model families</h2>
+      </header>
+      <p class="glyph-note">
+        Primary exhibition uses six animated batch GIFs. Individual glyphs are not all running on load.
+      </p>
+      <div class="glyph-batch-list">
+        {batches.map((b, i) => (
+          <figure class="glyph-batch">
+            <figcaption>
+              <span class="who">{b.id} — {b.model}</span>
+              <span>{b.count}</span>
+            </figcaption>
+            <img
+              src={b.src}
+              alt={`${b.id} ${b.model} — ${b.count} animated agent-state glyphs`}
+              width="560"
+              height="480"
+              loading={i < 2 ? "eager" : "lazy"}
+              decoding="async"
+            />
+          </figure>
+        ))}
+      </div>
+    </section>
+
+    <section class="glyph-archives" aria-label="Archives">
+      <header>
+        <p class="kicker">Source</p>
+        <h2>Full record</h2>
+      </header>
+      <ul class="glyph-links">
+        <li><a href="/agent-glyphs/master.gif">Full master animation</a> — 173 glyphs in one loop</li>
+        <li><a href="/agent-glyphs/contact-sheet.png">Contact sheet</a> — still of the complete set</li>
+        <li><a href="/agent-glyphs/manifest.json">JSON manifest</a></li>
+        <li><a href="/agent-glyphs/manifest.csv">CSV manifest</a></li>
+        <li><a href="/agent-glyphs/verification.json">Verification data</a></li>
+      </ul>
+      <figure class="glyph-sheet">
+        <figcaption>Contact sheet</figcaption>
+        <img
+          src="/agent-glyphs/contact-sheet.png"
+          alt="Contact sheet of all 173 Agent Glyph marks"
+          width="780"
+          height="624"
+          loading="lazy"
+          decoding="async"
+        />
+      </figure>
+    </section>
+  </main>
+  <footer class="site-foot">
+    <span>Agent Glyph</span>
+    <a href="/">Exhibition</a>
+  </footer>
+</Base>
