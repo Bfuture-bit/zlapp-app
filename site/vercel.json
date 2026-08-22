@@ -669,6 +669,20 @@
         }
       ],
       "destination": "/artifacts/gemini-synthesis.html"
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "brent.zlapp.app"
+        }
+      ],
+      "destination": "https://zlapp.app/sites/brent/index.html"
+    },
+    {
+      "source": "/brent",
+      "destination": "/sites/brent/index.html"
     }
   ]
 }

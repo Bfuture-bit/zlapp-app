@@ -6,6 +6,7 @@ Public exhibition of interactive HTML works created by frontier models.
 - Untouched artifacts: `originals/`
 - Registry: `data/exhibition.json`
 - Agent Glyph: `site/public/agent-glyphs/`, spec in `originals/agent-glyphs/`
+- Satellite sites (not exhibits): `data/satellites.json`, served from `site/public/sites/`
 - Audit: `docs/AUDIT.md`
 - DNS: `docs/DNS.md`
 - Preservation: `docs/PRESERVATION.md`

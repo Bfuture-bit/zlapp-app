@@ -6,6 +6,9 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const manifest = JSON.parse(
   fs.readFileSync(path.join(root, "data", "exhibition.json"), "utf8")
 );
+const satellites = JSON.parse(
+  fs.readFileSync(path.join(root, "data", "satellites.json"), "utf8")
+);
 
 const artifactsDir = path.join(root, "site", "public", "artifacts");
 const previewsDir = path.join(root, "site", "public", "previews");
@@ -83,6 +86,27 @@ for (const work of manifest.works) {
   );
 }
 
+const exhibitHosts = new Set(manifest.works.map((work) => `${work.publicSlug}.zlapp.app`));
+for (const site of satellites.sites) {
+  if (exhibitHosts.has(site.host)) {
+    throw new Error(`Satellite host collides with an exhibit: ${site.host}`);
+  }
+  const dest = site.publicPath;
+  // Host rewrite of `/` must target an *external* URL. Same-origin rewrites
+  // to `/` lose to Astro's generated index.html on Vercel.
+  rewrites.push({
+    source: "/",
+    has: [{ type: "host", value: site.host }],
+    destination: `https://zlapp.app${dest}`,
+  });
+  if (site.apexPath) {
+    rewrites.push({
+      source: site.apexPath,
+      destination: dest,
+    });
+  }
+}
+
 const vercel = {
   headers: [
     {
@@ -118,4 +142,6 @@ fs.writeFileSync(
   JSON.stringify(vercel, null, 2)
 );
 
-console.log(`Prepared ${manifest.works.length} artifacts and previews.`);
+console.log(
+  `Prepared ${manifest.works.length} artifacts and previews, ${satellites.sites.length} satellite host(s).`
+);
