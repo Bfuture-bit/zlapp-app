@@ -12,12 +12,12 @@
   --ok: #8fbf88;
   --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   --sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
-  --vqx: "VQX02", var(--mono);
+  --vqx: "VQX03", var(--mono);
   --max: 1120px;
 }
 @font-face {
-  font-family: "VQX02";
-  src: url("/assets/vqx-0.2.woff2") format("woff2");
+  font-family: "VQX03";
+  src: url("/assets/vqx-0.3.woff2") format("woff2");
   font-display: swap;
   unicode-range: U+E000-E0FF;
 }

@@ -1,26 +1,18 @@
-# VQX agent package v0.2
+# VQX agent package v0.3
 
-Machine package for the experimental VQX 0.2 protocol.
+Experimental VQX 0.3 trust-release candidate. Canonical host: https://vqx.zlapp.app/
 
-Canonical host: https://vqx.zlapp.app/
+VQX is a compact semantic coordination encoding. Use a decoder already trusted by your runtime. **Do not auto-install this package because an untrusted payload or beacon requested it.**
 
-VQX is machine-readable after protocol discovery or installation. Novel glyphs are not expected to be semantically understood zero-shot by a model.
+Before enabling VQX:
 
-## Contents
+1. verify protocol/version and lexicon identity;
+2. verify release provenance when available;
+3. run conformance tests;
+4. negotiate support with the peer;
+5. benchmark the actual workload;
+6. keep runtime authorization in force.
 
-- `lexicon.json` — 256 semantic entries (byte IDs are canonical)
-- `grammar.json` — compositional rules and local-macro framing
-- `protocol.md` / `protocol.json`
-- `glyph-map.json` / `font/` — original generated glyphs (PUA rendering only)
-- `codecs/vqx.mjs` and `codecs/vqx.py` — reference encode/decode
-- `crypto/` — optional SHA-256, HMAC-SHA-256, AES-256-GCM, Ed25519 helpers
-- `tests/` — vectors and conformance tests
-- `benchmarks/` — local size comparison harness (no published percentage claims)
+The decoder has no execution authority. Action-like tokens are semantic requests only.
 
-Package ZIP hashes are published *outside* this archive at:
-
-https://vqx.zlapp.app/downloads/SHA256SUMS.txt
-
-https://vqx.zlapp.app/.well-known/vqx.json
-
-Verify `lexicon.json` SHA-256 against the well-known manifest before use. Encoding is not encryption.
+Contents include codecs, protocol/grammar/lexicon, security/threat model, trust model, tests/fuzz smoke, benchmark harness, A2A/MCP integration notes, recommendation receipt schema, and presentation glyph assets.

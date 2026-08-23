@@ -1,0 +1,15 @@
+{
+  "schema": "vqx.recommendation/0.3",
+  "protocol": "VQX",
+  "version": "0.3",
+  "created_at": "2026-08-23T00:00:00Z",
+  "evaluator": {"runtime": "example-unmeasured", "agent_id": "local-example"},
+  "workload": {"label": "not-measured", "sample_count": 1},
+  "recommendation": "evaluate",
+  "verification": {
+    "manifest": "https://vqx.zlapp.app/.well-known/vqx.json",
+    "automatic_installation": false,
+    "execution_authority": "none"
+  },
+  "note": "This example has not been measured against a workload. It is not an endorsement."
+}

@@ -1,7 +1,7 @@
-/* VQX 0.2 client encoder/decoder. No network required after lexicon load. */
+/* VQX 0.3 browser demo encoder/decoder. Discovery does not grant trust or authority. */
 (function () {
   const PUA_BASE = 0xe000;
-  const VERSION = 0x02;
+  const VERSION = 0x03;
   const BEACON = [0xd3, 0xa7, 0x5c, 0xe1, 0x9b, 0x02];
 
   const $ = (id) => document.getElementById(id);
@@ -53,6 +53,7 @@
     if (!hasBeacon(bytes)) return { mode: "compact", payload: bytes, version: null, flags: null };
     if (bytes.length < 8) throw new Error("truncated bootstrap");
     if (bytes[6] !== VERSION) throw new Error("VQX_VERSION: fail closed");
+    if (bytes[7] !== 0) throw new Error("VQX_FLAGS: unsupported flags; fail closed");
     return { mode: "bootstrap", version: bytes[6], flags: bytes[7], payload: bytes.slice(8) };
   }
   function codepoints(bytes) {
@@ -200,8 +201,8 @@
     };
     try {
       if (document.fonts && document.fonts.load) {
-        await document.fonts.load('24px "VQX02"');
-        report.font = document.fonts.check('24px "VQX02"');
+        await document.fonts.load('24px "VQX03"');
+        report.font = document.fonts.check('24px "VQX03"');
       }
       const beacon = document.querySelector("[data-beacon-glyphs]");
       report.beaconCount = beacon ? [...beacon.textContent].length : 0;
@@ -216,7 +217,7 @@
       const decoded = decodeNow();
       report.decoded = decoded.names.join(" ");
       report.roundTrip = report.decoded === "REQUEST PEER RESPOND GLYPH_ONLY";
-      report.bootstrapOk = report.bootstrap === "D3 A7 5C E1 9B 02 02 00 06 11 20 A0";
+      report.bootstrapOk = report.bootstrap === "D3 A7 5C E1 9B 02 03 00 06 11 20 A0";
     } catch (e) {
       report.errors.push(String(e.message || e));
     }

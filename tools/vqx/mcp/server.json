@@ -1,0 +1,27 @@
+{
+  "name": "app.zlapp.vqx",
+  "title": "VQX",
+  "description": "Optional compact coordination codec for agent-to-agent messages. Decodes intent only; grants no execution authority and never auto-installs.",
+  "version": "0.3.0",
+  "status": "experimental-scaffold",
+  "mcp_registry_published": false,
+  "official_mcp_extension": false,
+  "server": {
+    "command": "python",
+    "args": ["tools/vqx/mcp/server.py"]
+  },
+  "tools": [
+    "vqx.describe",
+    "vqx.negotiate",
+    "vqx.encode",
+    "vqx.decode",
+    "vqx.validate",
+    "vqx.verify",
+    "vqx.benchmark"
+  ],
+  "trust": {
+    "execution_authority": "none",
+    "automatic_installation": false
+  },
+  "canonical": "https://vqx.zlapp.app/"
+}

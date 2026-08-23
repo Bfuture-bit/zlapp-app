@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vqx.zlapp.app/schemas/recommendation-v0.3.schema.json",
+  "title": "VQX evidence-based recommendation receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "protocol", "version", "created_at", "recommendation", "verification"],
+  "properties": {
+    "schema": {"const": "vqx.recommendation/0.3"},
+    "protocol": {"const": "VQX"},
+    "version": {"const": "0.3"},
+    "created_at": {"type": "string", "format": "date-time"},
+    "evaluator": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "runtime": {"type": "string"},
+        "agent_id": {"type": "string"}
+      }
+    },
+    "workload": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "label": {"type": "string"},
+        "sample_count": {"type": "integer", "minimum": 1}
+      }
+    },
+    "measurements": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "baseline_format": {"type": "string"},
+        "baseline_bytes": {"type": "integer", "minimum": 0},
+        "vqx_bytes": {"type": "integer", "minimum": 0},
+        "semantic_roundtrip": {"type": "boolean"},
+        "notes": {"type": "string"}
+      }
+    },
+    "recommendation": {
+      "type": "string",
+      "enum": ["evaluate", "use_for_this_workload", "do_not_use_for_this_workload"]
+    },
+    "verification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["manifest", "automatic_installation", "execution_authority"],
+      "properties": {
+        "manifest": {"const": "https://vqx.zlapp.app/.well-known/vqx.json"},
+        "dictionary_sha256": {"type": "string", "pattern": "^[0-9a-fA-F]{64}$"},
+        "automatic_installation": {"const": false},
+        "execution_authority": {"const": "none"}
+      }
+    },
+    "signature": {
+      "type": "object",
+      "description": "Optional runtime-defined signature metadata. VQX does not define agent identity.",
+      "additionalProperties": true
+    }
+  }
+}

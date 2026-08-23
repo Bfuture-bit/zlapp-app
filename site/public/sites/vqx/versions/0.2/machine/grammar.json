@@ -1,0 +1,67 @@
+{
+  "protocol": "VQX",
+  "version": "0.2",
+  "canonical_token": "unsigned byte 0x00-0xFF",
+  "pua_container": {
+    "base": "U+E000",
+    "formula": "U+E000 + byte"
+  },
+  "composition": {
+    "description": "Tokens concatenate left to right. Typical unit: speech-act, role, zero or more actions, targets, constraints, then macros.",
+    "pattern": "[speech_act] [role] [action*] [target*] [constraint*] [macro*]",
+    "separator_id": 13,
+    "separator_name": "SEP",
+    "human_names_not_on_wire": true
+  },
+  "bootstrap": {
+    "layout": [
+      "beacon[6]",
+      "version[1]",
+      "flags[1]",
+      "payload"
+    ],
+    "beacon_hex": "D3 A7 5C E1 9B 02",
+    "version": 2,
+    "flags_initial": 0
+  },
+  "compact": {
+    "layout": [
+      "payload"
+    ],
+    "when": "both peers advertise VQX, versions compatible, dictionary SHA-256 agrees, required security capabilities agree, and VQX is useful"
+  },
+  "local_macros": {
+    "define": {
+      "opcode": 220,
+      "hex": "DC",
+      "frame": "DC | slot | len | tokens[len]"
+    },
+    "ref": {
+      "opcode": 221,
+      "hex": "DD",
+      "frame": "DD | slot"
+    },
+    "clear": {
+      "opcode": 222,
+      "hex": "DE"
+    },
+    "table_hash": {
+      "opcode": 223,
+      "hex": "DF"
+    },
+    "slot_range": {
+      "min": 224,
+      "max": 255,
+      "hex": "E0-FF"
+    },
+    "scope": "session and peer; never persist across unrelated peers",
+    "stateless": "include LOCAL_TABLE_HASH or equivalent in envelope metadata"
+  },
+  "fail_closed": [
+    "unknown_version",
+    "dictionary_mismatch",
+    "integrity_failure",
+    "unknown_semantic_id_in_v0.2"
+  ],
+  "authorization": "Decoding EXECUTE or INSTALL does not grant permission. Authorization is a runtime policy layer."
+}

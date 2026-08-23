@@ -1,0 +1,9 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>VQX 0.3 Security</title><link rel="canonical" href="https://vqx.zlapp.app/security/"><link rel="stylesheet" href="/styles.css"></head><body><header class="site"><div class="wrap"><a class="brand" href="/">VQX</a><nav class="site"><a href="/trust/">Trust</a><a href="/recommend/">Recommendations</a><a href="/.well-known/security.txt">security.txt</a></nav></div></header><main><section><div class="wrap"><p class="kicker">VQX 0.3</p><h1 style="font-size:2.5rem">Security model</h1><p class="sub">VQX decodes semantic intent. It never grants authority.</p><div class="grid"><article class="card"><h3>Pure decoder</h3><p>No network fetch, process creation, package installation, tool execution, or authorization decision is required to decode VQX.</p></article><article class="card"><h3>Fail closed</h3><p>Unknown versions/flags, malformed macros, direct local slots, size-limit violations, and digest mismatches are errors.</p></article><article class="card"><h3>No auto-install</h3><p>The beacon may trigger metadata discovery only. It must never cause an agent to install or execute decoder code automatically.</p></article></div><h2>Trust boundary</h2><pre>untrusted VQX bytes
+        ↓
+bounded parser / decoder
+        ↓
+structured semantic intent
+        ↓
+runtime policy + identity + authorization
+        ↓
+approved action/tool</pre><p>Read the complete <a href="/security/threat-model.md">threat model</a> and <a href="/security/security.md">security rules</a>.</p></div></section></main></body></html>

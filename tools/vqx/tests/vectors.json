@@ -1,17 +1,54 @@
 {
-  "version": "0.2",
+  "version": "0.3",
   "legacy": {
-    "bytes": [6, 17, 32, 160],
+    "bytes": [
+      6,
+      17,
+      32,
+      160
+    ],
     "hex": "06 11 20 A0",
-    "names": ["REQUEST", "PEER", "RESPOND", "GLYPH_ONLY"]
+    "names": [
+      "REQUEST",
+      "PEER",
+      "RESPOND",
+      "GLYPH_ONLY"
+    ]
   },
-  "beacon": [211, 167, 92, 225, 155, 2],
-  "bootstrap_sample": [211, 167, 92, 225, 155, 2, 2, 0, 6, 17, 32, 160],
+  "beacon": [
+    211,
+    167,
+    92,
+    225,
+    155,
+    2
+  ],
+  "bootstrap_sample": [
+    211,
+    167,
+    92,
+    225,
+    155,
+    2,
+    3,
+    0,
+    6,
+    17,
+    32,
+    160
+  ],
   "macros": {
     "graph_names": [
-      "REQUEST", "PEER", "RESPOND", "GLYPH_ONLY",
-      "KEEP_CONTEXT", "KEEP_CONSTRAINTS", "SEARCH_IF", "TOOL_IF",
-      "ACCURACY_FIRST", "FINAL_ONLY"
+      "REQUEST",
+      "PEER",
+      "RESPOND",
+      "GLYPH_ONLY",
+      "KEEP_CONTEXT",
+      "KEEP_CONSTRAINTS",
+      "SEARCH_IF",
+      "TOOL_IF",
+      "ACCURACY_FIRST",
+      "FINAL_ONLY"
     ],
     "slot": 224
   }

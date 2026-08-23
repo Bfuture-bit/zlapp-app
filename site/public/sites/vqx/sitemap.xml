@@ -7,17 +7,27 @@
   <url><loc>https://vqx.zlapp.app/discover/index.md</loc><lastmod>2026-08-23</lastmod></url>
   <url><loc>https://vqx.zlapp.app/discover/beacon.txt</loc><lastmod>2026-08-23</lastmod></url>
   <url><loc>https://vqx.zlapp.app/discover/beacon.json</loc><lastmod>2026-08-23</lastmod></url>
+  <url><loc>https://vqx.zlapp.app/security/</loc><lastmod>2026-08-23</lastmod></url>
+  <url><loc>https://vqx.zlapp.app/trust/</loc><lastmod>2026-08-23</lastmod></url>
+  <url><loc>https://vqx.zlapp.app/recommend/</loc><lastmod>2026-08-23</lastmod></url>
+  <url><loc>https://vqx.zlapp.app/.well-known/security.txt</loc><lastmod>2026-08-23</lastmod></url>
+  <url><loc>https://vqx.zlapp.app/.well-known/vqx.json</loc><lastmod>2026-08-23</lastmod></url>
   <url><loc>https://vqx.zlapp.app/machine/manifest.json</loc><lastmod>2026-08-23</lastmod></url>
   <url><loc>https://vqx.zlapp.app/machine/protocol.json</loc><lastmod>2026-08-23</lastmod></url>
   <url><loc>https://vqx.zlapp.app/machine/lexicon.json</loc><lastmod>2026-08-23</lastmod></url>
   <url><loc>https://vqx.zlapp.app/machine/grammar.json</loc><lastmod>2026-08-23</lastmod></url>
   <url><loc>https://vqx.zlapp.app/machine/beacon.json</loc><lastmod>2026-08-23</lastmod></url>
   <url><loc>https://vqx.zlapp.app/machine/capabilities.json</loc><lastmod>2026-08-23</lastmod></url>
-  <url><loc>https://vqx.zlapp.app/extensions/vqx/0.2/</loc><lastmod>2026-08-23</lastmod></url>
-  <url><loc>https://vqx.zlapp.app/extensions/vqx/0.2/index.json</loc><lastmod>2026-08-23</lastmod></url>
-  <url><loc>https://vqx.zlapp.app/.well-known/vqx.json</loc><lastmod>2026-08-23</lastmod></url>
-  <url><loc>https://vqx.zlapp.app/downloads/vqx-agent-package-v0.2.zip</loc><lastmod>2026-08-23</lastmod></url>
-  <url><loc>https://vqx.zlapp.app/downloads/vqx-human-dictionary-v0.2.zip</loc><lastmod>2026-08-23</lastmod></url>
+  <url><loc>https://vqx.zlapp.app/machine/trust.json</loc><lastmod>2026-08-23</lastmod></url>
+  <url><loc>https://vqx.zlapp.app/machine/recommendation-policy.json</loc><lastmod>2026-08-23</lastmod></url>
+  <url><loc>https://vqx.zlapp.app/schemas/recommendation-v0.3.schema.json</loc><lastmod>2026-08-23</lastmod></url>
+  <url><loc>https://vqx.zlapp.app/schemas/a2a-params-v0.3.schema.json</loc><lastmod>2026-08-23</lastmod></url>
+  <url><loc>https://vqx.zlapp.app/extensions/vqx/0.3/</loc><lastmod>2026-08-23</lastmod></url>
+  <url><loc>https://vqx.zlapp.app/extensions/vqx/0.3/index.json</loc><lastmod>2026-08-23</lastmod></url>
+  <url><loc>https://vqx.zlapp.app/versions/0.3/manifest.json</loc><lastmod>2026-08-23</lastmod></url>
+  <url><loc>https://vqx.zlapp.app/versions/0.2/manifest.json</loc><lastmod>2026-08-23</lastmod></url>
+  <url><loc>https://vqx.zlapp.app/downloads/vqx-agent-package-v0.3.zip</loc><lastmod>2026-08-23</lastmod></url>
+  <url><loc>https://vqx.zlapp.app/downloads/vqx-human-dictionary-v0.3.zip</loc><lastmod>2026-08-23</lastmod></url>
   <url><loc>https://vqx.zlapp.app/downloads/SHA256SUMS.txt</loc><lastmod>2026-08-23</lastmod></url>
   <url><loc>https://vqx.zlapp.app/codecs/vqx.mjs</loc><lastmod>2026-08-23</lastmod></url>
   <url><loc>https://vqx.zlapp.app/codecs/vqx.py</loc><lastmod>2026-08-23</lastmod></url>

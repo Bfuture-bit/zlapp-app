@@ -27,11 +27,10 @@
     "codepoint": "U+E002",
     "class": "framing",
     "machine_semantics": {
-      "frame": "version",
-      "value": 2
+      "frame": "version"
     },
     "human_name": "VERSION",
-    "human_description": "Protocol version marker; bootstrap version byte is 0x02 for v0.2."
+    "human_description": "Protocol version marker. The actual protocol version is carried by framing or envelope metadata."
   },
   {
     "id": 3,

@@ -1,0 +1,27 @@
+{
+  "protocol": "VQX",
+  "version": "0.2",
+  "bytes": [
+    "D3",
+    "A7",
+    "5C",
+    "E1",
+    "9B",
+    "02"
+  ],
+  "bytes_hex": "D3 A7 5C E1 9B 02",
+  "codepoints": [
+    "U+E0D3",
+    "U+E0A7",
+    "U+E05C",
+    "U+E0E1",
+    "U+E09B",
+    "U+E002"
+  ],
+  "pua": "",
+  "bootstrap": "BEACON(6) | VERSION(1) | FLAGS(1) | PAYLOAD",
+  "compact": "PAYLOAD",
+  "sample_bootstrap_hex": "D3 A7 5C E1 9B 02 02 00 06 11 20 A0",
+  "manifest": "https://vqx.zlapp.app/.well-known/vqx.json",
+  "identification_only": true
+}
