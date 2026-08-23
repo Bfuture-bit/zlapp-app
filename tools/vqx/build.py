@@ -706,9 +706,36 @@ def main() -> int:
     }
     write(SITE / "machine" / "build-meta.json", dumps(meta))
     write_discovery_pages(lex_hash, agent_hash, human_hash)
+    mirror_host_root_discovery()
     print(json.dumps(meta, indent=2))
     print("VQX site written to", SITE)
     return 0
+
+
+def mirror_host_root_discovery() -> None:
+    """Publish discovery documents at the Vercel public root.
+
+    `vqx.zlapp.app/` is rewritten, but `/.well-known/*` and some JSON
+    paths can miss host rewrites or hit a stale edge cache of the 0.2
+    tree. Files at `site/public/.well-known` and `site/public/extensions`
+    are served from the static filesystem on every host, including the
+    custom domain.
+    """
+    canonical = (REPO / "site" / "public" / "sites" / "vqx").resolve()
+    if SITE.resolve() != canonical:
+        return
+    public = REPO / "site" / "public"
+    pairs = [
+        (SITE / ".well-known" / "vqx.json", public / ".well-known" / "vqx.json"),
+        (SITE / ".well-known" / "security.txt", public / ".well-known" / "security.txt"),
+        (
+            SITE / "extensions" / "vqx" / "0.3" / "index.json",
+            public / "extensions" / "vqx" / "0.3" / "index.json",
+        ),
+    ]
+    for src, dest in pairs:
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(src, dest)
 
 
 def _page(title: str, body: str) -> str:

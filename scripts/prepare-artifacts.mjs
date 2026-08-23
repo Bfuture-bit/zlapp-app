@@ -94,16 +94,41 @@ for (const site of satellites.sites) {
   const dest = site.publicPath;
   // Host rewrite of `/` must target an *external* URL. Same-origin rewrites
   // to `/` lose to Astro's generated index.html on Vercel.
+  // VQX homepage adds a version query so a stale 0.2 edge cache cannot
+  // keep winning after 0.3 is deployed.
+  const homeDest =
+    site.id === "vqx"
+      ? `https://zlapp.app${dest}?vqx=0.3`
+      : `https://zlapp.app${dest}`;
   rewrites.push({
     source: "/",
     has: [{ type: "host", value: site.host }],
-    destination: `https://zlapp.app${dest}`,
+    destination: homeDest,
   });
   if (site.apexPath) {
     rewrites.push({
       source: site.apexPath,
       destination: dest,
     });
+  }
+  if (site.id === "vqx") {
+    rewrites.push(
+      {
+        source: "/.well-known/vqx.json",
+        has: [{ type: "host", value: site.host }],
+        destination: "https://zlapp.app/sites/vqx/.well-known/vqx.json",
+      },
+      {
+        source: "/.well-known/security.txt",
+        has: [{ type: "host", value: site.host }],
+        destination: "https://zlapp.app/sites/vqx/.well-known/security.txt",
+      },
+      {
+        source: "/extensions/vqx/0.3/index.json",
+        has: [{ type: "host", value: site.host }],
+        destination: "https://zlapp.app/sites/vqx/extensions/vqx/0.3/index.json",
+      }
+    );
   }
   if (site.rewriteTree) {
     rewrites.push({
@@ -138,6 +163,37 @@ const vercel = {
     {
       source: "/(.*)",
       headers: [{ key: "Referrer-Policy", value: "strict-origin-when-cross-origin" }],
+    },
+    {
+      source: "/.well-known/vqx.json",
+      headers: [
+        { key: "Cache-Control", value: "public, max-age=0, must-revalidate" },
+        { key: "CDN-Cache-Control", value: "no-store" },
+        { key: "Content-Type", value: "application/json; charset=utf-8" },
+      ],
+    },
+    {
+      source: "/.well-known/security.txt",
+      headers: [
+        { key: "Cache-Control", value: "public, max-age=0, must-revalidate" },
+        { key: "CDN-Cache-Control", value: "no-store" },
+        { key: "Content-Type", value: "text/plain; charset=utf-8" },
+      ],
+    },
+    {
+      source: "/extensions/vqx/0.3/index.json",
+      headers: [
+        { key: "Cache-Control", value: "public, max-age=0, must-revalidate" },
+        { key: "CDN-Cache-Control", value: "no-store" },
+        { key: "Content-Type", value: "application/json; charset=utf-8" },
+      ],
+    },
+    {
+      source: "/sites/vqx/(.*)",
+      headers: [
+        { key: "Cache-Control", value: "public, max-age=0, must-revalidate" },
+        { key: "CDN-Cache-Control", value: "max-age=0, must-revalidate" },
+      ],
     },
   ],
   redirects: [

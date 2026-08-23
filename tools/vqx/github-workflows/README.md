@@ -1,18 +1,13 @@
 # VQX GitHub Actions
 
-These workflow files are the VQX 0.3 CI and release definitions.
+Canonical workflow files live in `.github/workflows/`:
 
-They are stored here because the token used to publish this branch did not have
-the GitHub `workflow` scope required to create files under `.github/workflows/`.
+- `vqx-ci.yml` — conformance, reproducibility, and generated-site check
+- `vqx-dependency-review.yml` — dependency review on VQX PRs
+- `vqx-release.yml` — package attestation and GitHub Release on `vqx-v*` tags
 
-To activate them:
+Copies in this directory are kept in sync for documentation and for
+environments that cannot write `.github/workflows/`.
 
-1. Use a token or GitHub App with the `workflow` scope.
-2. Copy `vqx-ci.yml`, `vqx-dependency-review.yml`, and `vqx-release.yml` into
-   `.github/workflows/` at the repository root.
-3. Push to GitHub.
-4. Re-push or dispatch the `vqx-v0.3.0` tag so the release workflow can attest
-   the packages.
-
-Until that copy happens, GitHub Actions will not run these checks, and Sigstore
-attestations will not be produced.
+The release workflow also accepts `workflow_dispatch` from this branch so
+attestations can be produced without moving the `vqx-v0.3.0` tag.

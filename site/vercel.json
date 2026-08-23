@@ -39,6 +39,70 @@
           "value": "strict-origin-when-cross-origin"
         }
       ]
+    },
+    {
+      "source": "/.well-known/vqx.json",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        },
+        {
+          "key": "CDN-Cache-Control",
+          "value": "no-store"
+        },
+        {
+          "key": "Content-Type",
+          "value": "application/json; charset=utf-8"
+        }
+      ]
+    },
+    {
+      "source": "/.well-known/security.txt",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        },
+        {
+          "key": "CDN-Cache-Control",
+          "value": "no-store"
+        },
+        {
+          "key": "Content-Type",
+          "value": "text/plain; charset=utf-8"
+        }
+      ]
+    },
+    {
+      "source": "/extensions/vqx/0.3/index.json",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        },
+        {
+          "key": "CDN-Cache-Control",
+          "value": "no-store"
+        },
+        {
+          "key": "Content-Type",
+          "value": "application/json; charset=utf-8"
+        }
+      ]
+    },
+    {
+      "source": "/sites/vqx/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        },
+        {
+          "key": "CDN-Cache-Control",
+          "value": "max-age=0, must-revalidate"
+        }
+      ]
     }
   ],
   "redirects": [
@@ -706,11 +770,41 @@
           "value": "vqx.zlapp.app"
         }
       ],
-      "destination": "https://zlapp.app/sites/vqx/index.html"
+      "destination": "https://zlapp.app/sites/vqx/index.html?vqx=0.3"
     },
     {
       "source": "/vqx",
       "destination": "/sites/vqx/index.html"
+    },
+    {
+      "source": "/.well-known/vqx.json",
+      "has": [
+        {
+          "type": "host",
+          "value": "vqx.zlapp.app"
+        }
+      ],
+      "destination": "https://zlapp.app/sites/vqx/.well-known/vqx.json"
+    },
+    {
+      "source": "/.well-known/security.txt",
+      "has": [
+        {
+          "type": "host",
+          "value": "vqx.zlapp.app"
+        }
+      ],
+      "destination": "https://zlapp.app/sites/vqx/.well-known/security.txt"
+    },
+    {
+      "source": "/extensions/vqx/0.3/index.json",
+      "has": [
+        {
+          "type": "host",
+          "value": "vqx.zlapp.app"
+        }
+      ],
+      "destination": "https://zlapp.app/sites/vqx/extensions/vqx/0.3/index.json"
     },
     {
       "source": "/:path*",

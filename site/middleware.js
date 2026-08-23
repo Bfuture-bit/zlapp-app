@@ -22,7 +22,9 @@ export default function middleware(request) {
   if (url.hostname === "vqx.zlapp.app") {
     if (url.pathname.startsWith("/sites/vqx")) return;
     let p = url.pathname || "/";
-    if (p === "/") p = "/index.html";
+    if (p === "/extensions/vqx/0.3" || p === "/extensions/vqx/0.3/") {
+      p = "/extensions/vqx/0.3/index.json";
+    } else if (p === "/") p = "/index.html";
     else if (p.endsWith("/")) p += "index.html";
     else if (!p.split("/").pop().includes(".")) p += "/index.html";
     const dest = new URL("/sites/vqx" + p, url.origin);
