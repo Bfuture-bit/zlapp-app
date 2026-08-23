@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""CLI for deterministic VQX 0.2 glyph + WOFF2 generation."""
+"""CLI for deterministic VQX 0.3 glyph + WOFF2 generation."""
 
 from __future__ import annotations
 
@@ -16,14 +16,14 @@ import glyphs  # noqa: E402
 
 
 def main(argv=None) -> int:
-    p = argparse.ArgumentParser(description="Generate VQX 0.2 glyphs, atlas, font, glyph-map.")
+    p = argparse.ArgumentParser(description="Generate VQX 0.3 glyphs, atlas, font, glyph-map.")
     p.add_argument("--out", type=Path, required=True, help="Output directory (usually .../assets)")
     p.add_argument("--map", type=Path, help="glyph-map.json path")
     args = p.parse_args(argv)
 
     glyphs.assert_unique()
     args.out.mkdir(parents=True, exist_ok=True)
-    font = args.out / "vqx-0.2.woff2"
+    font = args.out / "vqx-0.3.woff2"
     atlas = args.out / "vqx-glyph-atlas.svg"
     glyphs.write_font(font)
     glyphs.write_atlas(atlas)

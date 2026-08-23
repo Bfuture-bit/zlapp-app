@@ -1,4 +1,4 @@
-"""Deterministic VQX 0.2 glyph geometry and WOFF2 generation.
+"""Deterministic VQX 0.3 glyph geometry and WOFF2 generation.
 
 Each byte 0x00–0xFF maps to a unique original path. Glyphs are not letters,
 digits, emoji, or existing icon sets. PUA U+E000+byte is only a rendering
@@ -124,7 +124,7 @@ def motif_a(b: int) -> list[list[tuple[float, float]]]:
         ]))
     elif hi == 3:
         for dy in (-90, 0, 90):
-            strokes.append(rr([(CX - 140, CY + dy), (CX + 140, CY + dy * 0.2)]))
+            strokes.append(rr([(CX - 140, CY + dy), (CX + 140, CY + dy * 0.3)]))
     elif hi == 4:
         strokes.append(rr(_ring(CX, CY, 140, 24, 0.4, math.tau * 0.72)))
         strokes.append(rr(_ring(CX - 20, CY + 10, 70, 20, 2.0, math.tau * 0.6)))
@@ -144,7 +144,7 @@ def motif_a(b: int) -> list[list[tuple[float, float]]]:
         ]))
     elif hi == 8:
         for i in range(6):
-            a = i * math.tau / 6 + 0.2
+            a = i * math.tau / 6 + 0.3
             p0 = polar(CX, CY, 50, a)
             p1 = polar(CX, CY, 150, a + 0.35)
             strokes.append(rr([p0, p1]))
@@ -197,7 +197,7 @@ def motif_a(b: int) -> list[list[tuple[float, float]]]:
         strokes.append(rr([(CX - 210, CY), (CX - 170, CY - 40), (CX - 170, CY + 40), (CX - 210, CY)]))
         strokes.append(rr([(CX + 210, CY), (CX + 170, CY - 40), (CX + 170, CY + 40), (CX + 210, CY)]))
     elif o == 7:
-        strokes.append(rr([polar(CX, CY, 190, 0.2 + i * 0.15) for i in range(6)]))
+        strokes.append(rr([polar(CX, CY, 190, 0.3 + i * 0.15) for i in range(6)]))
     elif o == 8:
         strokes.append(rr([(CX - 160, CY - 190), (CX + 40, CY - 190)]))
         strokes.append(rr([(CX + 160, CY + 190), (CX - 40, CY + 190)]))
@@ -356,10 +356,10 @@ def write_font(path: Path):
         {
             "familyName": "VQX",
             "styleName": "Protocol",
-            "uniqueFontIdentifier": "VQX 0.2",
-            "fullName": "VQX Protocol 0.2",
+            "uniqueFontIdentifier": "VQX 0.3",
+            "fullName": "VQX Protocol 0.3",
             "psName": "VQX-Protocol",
-            "version": "Version 0.2",
+            "version": "Version 0.3",
         }
     )
     fb.setupOS2(sTypoAscender=880, sTypoDescender=-220, usWinAscent=880, usWinDescent=220)

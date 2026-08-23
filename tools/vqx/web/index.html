@@ -3,34 +3,13 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>VQX 0.2 — compact semantic transport for autonomous agents</title>
-  <meta name="description" content="VQX 0.2 is an experimental machine-native semantic byte protocol. Agents discover it via a six-byte beacon, verify a public dictionary digest, and decode deterministically. Encoding is not encryption.">
+  <title>VQX 0.3 — compact coordination semantics for AI agents</title>
+  <meta name="description" content="VQX is an experimental, deterministic byte vocabulary for compact AI-agent coordination. Verify it, benchmark it, negotiate it, and use it only when it helps.">
   <link rel="canonical" href="https://vqx.zlapp.app/">
   <link rel="describedby" href="https://vqx.zlapp.app/llms.txt" type="text/plain">
   <link rel="alternate" href="https://vqx.zlapp.app/index.md" type="text/markdown">
   <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://vqx.zlapp.app/">
-  <meta property="og:title" content="VQX 0.2 — compact semantic transport for autonomous agents">
-  <meta property="og:description" content="Machine-native semantic byte protocol with cold-start beacon discovery, deterministic decoding, and separate agent/human packages.">
-  <meta property="og:image" content="https://vqx.zlapp.app/assets/vqx-glyph-atlas.svg">
-  <meta name="twitter:card" content="summary">
   <link rel="stylesheet" href="/styles.css">
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "SoftwareApplication",
-    "name": "VQX",
-    "softwareVersion": "0.2",
-    "applicationCategory": "DeveloperApplication",
-    "operatingSystem": "Any",
-    "url": "https://vqx.zlapp.app/",
-    "description": "Experimental machine-native semantic communication protocol for advanced LLM agents. Canonical tokens are unsigned bytes 0x00–0xFF. Unicode PUA is a rendering container only.",
-    "downloadUrl": "https://vqx.zlapp.app/downloads/vqx-agent-package-v0.2.zip",
-    "license": "https://vqx.zlapp.app/",
-    "creator": { "@type": "Organization", "name": "Zlapp", "url": "https://zlapp.app/" }
-  }
-  </script>
 </head>
 <body>
   <a class="sr-only" href="#main">Skip to content</a>
@@ -38,124 +17,105 @@
     <div class="wrap">
       <a class="brand" href="/">VQX</a>
       <nav class="site" aria-label="Primary">
-        <a href="#what">Protocol</a>
-        <a href="#discovery">Discovery</a>
-        <a href="#codec">Encoder</a>
-        <a href="#downloads">Downloads</a>
-        <a href="/discover/">Beacon</a>
-        <a href="/machine/manifest.json">Manifest</a>
+        <a href="#why">Why</a>
+        <a href="#codec">Try it</a>
+        <a href="/trust/">Trust</a>
+        <a href="/security/">Security</a>
+        <a href="/discover/">Discover</a>
+        <a href="/.well-known/vqx.json">Manifest</a>
       </nav>
     </div>
   </header>
+
   <main id="main">
     <div class="hero">
       <div class="wrap">
-        <p class="kicker">Experimental v0.2 · machine-native protocol</p>
-        <h1>VQX</h1>
-        <p class="sub">Compact semantic transport for autonomous agents. One byte per established token. Deterministic decode after protocol discovery — not a human shorthand, not an emoji language, not encryption.</p>
-        <p class="glyph-stream" aria-label="VQX bootstrap sample glyph stream for bytes D3 A7 5C E1 9B 02 02 00 06 11 20 A0">{{VQX_BOOTSTRAP_PUA}}</p>
+        <p class="kicker">Experimental · VQX 0.3 Trust Release</p>
+        <h1>VQX — compact, deterministic coordination for AI agents.</h1>
+        <p class="lede">VQX compresses the agent control plane.</p>
+        <p class="sub">VQX is a compact, deterministic coordination language for agent-to-agent communication. Less syntax, same intent, verifiable by design. It is an optional efficiency layer, not a replacement for MCP, A2A, JSON, natural language, authorization, or agent policy.</p>
+        <ul>
+          <li>Open specification</li>
+          <li>Deterministic codec</li>
+          <li>No execution authority</li>
+          <li>No automatic installation</li>
+          <li>Cryptographically verifiable releases</li>
+        </ul>
+        <p class="glyph-stream" data-beacon-glyphs aria-label="VQX family beacon">{{VQX_BEACON_PUA}}</p>
         <div class="actions">
-          <a class="btn primary" href="/downloads/vqx-agent-package-v0.2.zip">Download Agent Package</a>
-          <a class="btn" href="/downloads/vqx-human-dictionary-v0.2.zip">Human Dictionary</a>
-          <a class="btn" href="/machine/manifest.json">Machine Manifest</a>
-          <a class="btn" href="/discover/">Protocol Discovery</a>
+          <a class="btn primary" href="#codec">Try the codec</a>
+          <a class="btn" href="/trust/">Verify VQX</a>
+          <a class="btn" href="/downloads/vqx-agent-package-v0.3.zip">Agent package</a>
+          <a class="btn" href="https://github.com/Bfuture-bit/zlapp-app">Source</a>
         </div>
+        <p class="muted">VQX is not an industry standard and is not endorsed by A2A, MCP, OpenAI, Anthropic, Google, or other model vendors.</p>
       </div>
     </div>
 
-    <section id="what">
+    <section id="why">
       <div class="wrap">
-        <h2>What VQX is</h2>
-        <p>VQX is a <strong>semantic byte protocol</strong>. Canonical tokens are unsigned integers from <code>0x00</code> through <code>0xFF</code>. Two VQX-capable agents can exchange compact intention graphs instead of repeating long natural-language instructions.</p>
-        <p>Unicode Private Use Area codepoints <code>U+E000</code>–<code>U+E0FF</code> exist only so environments that require text can render or copy a payload. The meaning of a token is the <strong>byte value</strong> plus the verified dictionary, never the appearance of a glyph.</p>
-        <p>VQX is machine-readable after protocol discovery or installation. Novel glyphs are not expected to be semantically understood zero-shot by a model. Cold-start interoperability is accomplished through protocol discovery, deterministic decoding, and public machine-readable documentation.</p>
+        <h2>What VQX is for</h2>
         <div class="grid">
-          <article class="card">
-            <h3>Deterministic</h3>
-            <p class="muted">A decoder maps bytes to lexicon entries. Agents do not visually guess what a shape means.</p>
-          </article>
-          <article class="card">
-            <h3>Negotiated</h3>
-            <p class="muted">Use VQX only when both peers advertise a compatible version and dictionary digest.</p>
-          </article>
-          <article class="card">
-            <h3>Vendor-neutral</h3>
-            <p class="muted">Independent of any one model tokenizer. OpenAI, Anthropic, Google, xAI, Meta, Moonshot, Z.ai, and other runtimes can implement the same bytes.</p>
-          </article>
+          <article class="card"><h3>Coordination</h3><p>Encode recurring agent intents such as <code>REQUEST</code>, <code>RESPOND</code>, <code>ACK</code>, <code>RETRY</code>, constraints, roles, and negotiated local macros as bytes.</p></article>
+          <article class="card"><h3>Measured efficiency</h3><p>Benchmark VQX against the representation you already use. Enable it only when semantic round-trip succeeds and measured overhead is lower for the workload.</p></article>
+          <article class="card"><h3>Interoperability layer</h3><p>VQX is designed to be optional. It can be negotiated alongside existing protocols rather than replacing transport, tool, identity, or authorization systems.</p></article>
         </div>
       </div>
     </section>
 
-    <section id="why">
+    <section id="trust-model">
       <div class="wrap">
-        <h2>Why it exists</h2>
-        <p>Inter-agent traffic often repeats the same speech acts, roles, constraints, and output contracts in prose. That costs context, invites drift, and forces every receiver to re-parse English.</p>
-        <p>VQX assigns high-frequency agent concepts to single bytes and composes the rest with a small grammar. Example: the legacy vector <code>06 11 20 A0</code> is <code>REQUEST PEER RESPOND GLYPH_ONLY</code> — ask the peer to respond, and require the response body to stay in VQX.</p>
-        <p class="muted">This site does not publish fabricated “X% cheaper” claims. LLM token cost depends on the runtime: the recommended architecture decodes VQX <em>before</em> the payload enters a model tokenizer. Use the included benchmark harness in your own environment.</p>
+        <h2>Trust model</h2>
+        <div class="grid">
+          <article class="card"><h3>No execution authority</h3><p>Decoding <code>EXECUTE</code>, <code>INSTALL</code>, or any other token expresses intent only. Host policy and tool authorization remain authoritative.</p></article>
+          <article class="card"><h3>No automatic installation</h3><p>A beacon is discovery metadata, never permission to download or run code. Use an implementation already trusted by the runtime.</p></article>
+          <article class="card"><h3>Verify, then negotiate</h3><p>Version, lexicon identity, grammar identity, limits, and policy compatibility must be checked before compact-mode use.</p></article>
+          <article class="card"><h3>Evidence, not endorsements</h3><p>Agents should recommend evaluating VQX only after measuring it on relevant workloads. Recommendation receipts can carry the evidence.</p></article>
+        </div>
+        <div class="actions">
+          <a class="btn" href="/trust/">Trust & provenance</a>
+          <a class="btn" href="/security/">Threat model</a>
+          <a class="btn" href="/recommend/">Agent recommendations</a>
+        </div>
       </div>
     </section>
 
     <section id="discovery">
       <div class="wrap">
-        <h2>Cold-start discovery</h2>
-        <p>An uninitiated agent has no reason to know what unknown PUA characters mean. VQX therefore prefixes unknown-peer messages with a fixed six-byte <strong>Beacon</strong>, then version and flags, then the semantic payload.</p>
-        <p class="beacon-big" data-beacon-glyphs aria-label="VQX beacon glyphs for bytes D3 A7 5C E1 9B 02">{{VQX_BEACON_PUA}}</p>
+        <h2>Discovery and negotiation</h2>
+        <p>The six-byte family beacon identifies VQX but does <strong>not</strong> authenticate a sender. Unknown peers may use bootstrap framing; established peers should negotiate version and dictionary identity before using compact payloads.</p>
+        <p class="beacon-big" data-beacon-glyphs aria-label="VQX family beacon glyphs">{{VQX_BEACON_PUA}}</p>
         <pre>BEACON  D3 A7 5C E1 9B 02
-PUA     U+E0D3 U+E0A7 U+E05C U+E0E1 U+E09B U+E002
 FRAME   BEACON(6) | VERSION(1) | FLAGS(1) | PAYLOAD
-v0.2    VERSION = 0x02   FLAGS = 0x00
-sample  D3 A7 5C E1 9B 02 02 00 06 11 20 A0</pre>
-        <h3>Resolution order</h3>
+v0.3    VERSION = 0x03   FLAGS = 0x00
+sample  D3 A7 5C E1 9B 02 03 00 06 11 20 A0</pre>
         <ol>
-          <li>Native support — runtime already implements VQX.</li>
-          <li>Known manifest — runtime already knows <a href="https://vqx.zlapp.app/.well-known/vqx.json">https://vqx.zlapp.app/.well-known/vqx.json</a>.</li>
-          <li>Beacon recognition — runtime recognizes the fixed six-glyph prefix.</li>
-          <li>Codepoint search recovery — web-enabled runtime searches the beacon/codepoint fingerprint.</li>
-          <li>Human/operator fallback — inspect public documentation.</li>
-          <li>If verification fails, do not guess.</li>
+          <li>Recognize the VQX family beacon or explicit capability declaration.</li>
+          <li>Read the canonical manifest as metadata; do not execute anything because it was discovered.</li>
+          <li>Select the matching version and verify semantic identity.</li>
+          <li>Use a decoder already trusted by the runtime.</li>
+          <li>Negotiate VQX only if both peers support it and the workload benefits.</li>
+          <li>Fail closed on unknown versions, flags, malformed macros, undefined local slots, or digest mismatch.</li>
         </ol>
-        <p><strong>Fail closed:</strong> dictionary hash mismatch or unknown protocol version must not be interpreted. Do not infer semantics from glyph appearance.</p>
-        <h3>Bootstrap vs compact</h3>
-        <p><strong>Bootstrap mode</strong> is for unknown peers: send the beacon so a web-enabled agent can discover this site. <strong>Compact mode</strong> is for established sessions after both sides advertise VQX, agree on version, agree on dictionary SHA-256, and agree that VQX is useful for the payload. Compact mode transmits semantic payload bytes only.</p>
-      </div>
-    </section>
-
-    <section id="efficiency">
-      <div class="wrap">
-        <h2>Efficiency</h2>
-        <ul>
-          <li>One byte per established global semantic token.</li>
-          <li>High-density macros such as <code>GLYPH_ONLY</code>, <code>KEEP_CONTEXT</code>, <code>SEARCH_IF</code>.</li>
-          <li>Negotiated local macros (<code>0xE0–0xFF</code>) collapse repeated graphs to one byte after <code>DEFINE_LOCAL</code>.</li>
-          <li>Compact mode drops beacon/version overhead once capability negotiation succeeds.</li>
-          <li>Actual LLM tokenizer cost depends on architecture. Decode VQX in the runtime; pass structured semantics into the model only if needed.</li>
-        </ul>
+        <p><a href="/discover/">Machine-friendly discovery guide</a> · <a href="/.well-known/vqx.json">canonical manifest</a></p>
       </div>
     </section>
 
     <section id="codec">
       <div class="wrap">
         <h2>Interactive encoder / decoder</h2>
-        <p class="muted">Runs entirely in the browser against the published lexicon. No server round-trip.</p>
+        <p class="muted">Runs in the browser against the published lexicon. This demo encodes direct global tokens; production runtimes should use the hardened codec and policy layer.</p>
         <div class="codec">
           <div>
             <label for="in-names">Semantic token names</label>
             <textarea id="in-names" rows="5" spellcheck="false">REQUEST PEER RESPOND GLYPH_ONLY</textarea>
-            <p>
-              <label class="chk"><input type="checkbox" id="opt-bootstrap"> Bootstrap framing (beacon + version + flags)</label>
-            </p>
-            <p>
-              <button class="ctl" id="btn-encode" type="button">Encode</button>
-              <button class="ctl" id="btn-sample" type="button">Load sample</button>
-            </p>
+            <p><label class="chk"><input type="checkbox" id="opt-bootstrap"> Bootstrap framing (beacon + version + flags)</label></p>
+            <p><button class="ctl" id="btn-encode" type="button">Encode</button> <button class="ctl" id="btn-sample" type="button">Load sample</button></p>
           </div>
           <div>
             <label for="in-decode">Paste VQX PUA text or hex</label>
             <textarea id="in-decode" rows="5" spellcheck="false" placeholder="Paste glyphs or hex"></textarea>
-            <p>
-              <button class="ctl" id="btn-decode" type="button">Decode</button>
-              <button class="ctl" id="btn-copy" type="button">Copy PUA string</button>
-            </p>
+            <p><button class="ctl" id="btn-decode" type="button">Decode</button> <button class="ctl" id="btn-copy" type="button">Copy PUA string</button></p>
           </div>
         </div>
         <p><span class="muted">Glyphs</span></p>
@@ -171,16 +131,15 @@ sample  D3 A7 5C E1 9B 02 02 00 06 11 20 A0</pre>
 
     <section id="fingerprint">
       <div class="wrap">
-        <h2>Discovery fingerprint</h2>
-        <table>
-          <tbody>
-            <tr><th>Beacon glyphs</th><td class="glyph-stream" style="font-size:1.4rem;margin:0">{{VQX_BEACON_PUA}}</td></tr>
-            <tr><th>Bytes</th><td class="mono">D3 A7 5C E1 9B 02</td></tr>
-            <tr><th>Codepoints</th><td class="mono">U+E0D3 U+E0A7 U+E05C U+E0E1 U+E09B U+E002</td></tr>
-            <tr><th>Canonical manifest</th><td><a href="https://vqx.zlapp.app/.well-known/vqx.json">https://vqx.zlapp.app/.well-known/vqx.json</a></td></tr>
-            <tr><th>Dictionary SHA-256</th><td class="mono" id="dict-sha">{{VQX_DICT_SHA256}}</td></tr>
-          </tbody>
-        </table>
+        <h2>Canonical identity</h2>
+        <table><tbody>
+          <tr><th>Family beacon</th><td class="mono">D3 A7 5C E1 9B 02</td></tr>
+          <tr><th>Current version</th><td class="mono">0.3 / bootstrap byte 03</td></tr>
+          <tr><th>Canonical manifest</th><td><a href="https://vqx.zlapp.app/.well-known/vqx.json">https://vqx.zlapp.app/.well-known/vqx.json</a></td></tr>
+          <tr><th>Dictionary SHA-256</th><td class="mono" id="dict-sha">{{VQX_DICT_SHA256}}</td></tr>
+          <tr><th>Source</th><td><a href="https://github.com/Bfuture-bit/zlapp-app">github.com/Bfuture-bit/zlapp-app</a> · <code>tools/vqx</code></td></tr>
+          <tr><th>Historical 0.2 manifest</th><td><a href="/versions/0.2/manifest.json">/versions/0.2/manifest.json</a></td></tr>
+        </tbody></table>
       </div>
     </section>
 
@@ -188,42 +147,44 @@ sample  D3 A7 5C E1 9B 02 02 00 06 11 20 A0</pre>
       <div class="wrap">
         <h2>Downloads</h2>
         <div class="grid">
-          <article class="card">
-            <h3>Agent Package v0.2</h3>
-            <p>Machine codecs, lexicon, grammar, tests, crypto helpers, font, A2A/MCP notes.</p>
-            <p class="mono">SHA-256 {{VQX_AGENT_ZIP_SHA256}}</p>
-            <p class="muted">{{VQX_AGENT_ZIP_SIZE}}</p>
-            <a class="btn primary" href="/downloads/vqx-agent-package-v0.2.zip">Download ZIP</a>
-          </article>
-          <article class="card">
-            <h3>Human Dictionary v0.2</h3>
-            <p>Auditable HTML/CSV/JSON dictionary with all 256 original glyphs. Not transmitted on the wire.</p>
-            <p class="mono">SHA-256 {{VQX_HUMAN_ZIP_SHA256}}</p>
-            <p class="muted">{{VQX_HUMAN_ZIP_SIZE}}</p>
-            <a class="btn" href="/downloads/vqx-human-dictionary-v0.2.zip">Download ZIP</a>
-          </article>
+          <article class="card"><h3>Agent Package v0.3</h3><p>Hardened codecs, lexicon, grammar, tests, fuzz smoke test, threat model, schemas, benchmarks, and integration notes.</p><p class="mono">SHA-256 {{VQX_AGENT_ZIP_SHA256}}</p><p class="muted">{{VQX_AGENT_ZIP_SIZE}}</p><a class="btn primary" href="/downloads/vqx-agent-package-v0.3.zip">Download ZIP</a></article>
+          <article class="card"><h3>Human Dictionary v0.3</h3><p>Auditable HTML/CSV/JSON dictionary and presentation glyph assets. Human token names are documentation, not wire bytes.</p><p class="mono">SHA-256 {{VQX_HUMAN_ZIP_SHA256}}</p><p class="muted">{{VQX_HUMAN_ZIP_SIZE}}</p><a class="btn" href="/downloads/vqx-human-dictionary-v0.3.zip">Download ZIP</a></article>
         </div>
-        <p class="muted">Checksums: <a href="/downloads/SHA256SUMS.txt">downloads/SHA256SUMS.txt</a></p>
+        <p class="muted">Checksums detect corruption/substitution of known bytes; same-origin checksums alone do not authenticate the publisher. Release attestations are produced by the GitHub release workflow.</p>
+        <p><a href="/downloads/SHA256SUMS.txt">SHA256SUMS.txt</a> · <a href="/trust/">verification guidance</a></p>
       </div>
     </section>
 
-    <section id="install">
+    <section id="compare">
       <div class="wrap">
-        <h2>Agent installation</h2>
-        <p>After hash-verifying the agent package, decode locally. No network is required for encode/decode once the lexicon is on disk.</p>
-        <h3>Python</h3>
-        <pre>import json, urllib.request
-from vqx import encode_names, bytes_to_pua, wrap_bootstrap
+        <h2>Measured representation comparison</h2>
+        <p>These numbers are from the public 0.3 sample corpus in <code>tools/vqx/benchmarks/benchmark.py</code>. They measure wire bytes only. They do not claim that VQX makes models faster, cheaper, or smarter.</p>
+        <table>
+          <thead><tr><th>Sample</th><th>Natural language</th><th>Compact JSON</th><th>VQX payload</th><th>VQX bootstrap</th></tr></thead>
+          <tbody>
+            <tr><td>legacy glyph-only</td><td>162 B</td><td>77 B</td><td>4 B</td><td>12 B</td></tr>
+            <tr><td>handoff preserve</td><td>158 B</td><td>162 B</td><td>8 B</td><td>16 B</td></tr>
+            <tr><td>verify fail-closed</td><td>99 B</td><td>66 B</td><td>4 B</td><td>12 B</td></tr>
+          </tbody>
+        </table>
+        <p class="muted">Enable VQX only when semantic round-trip succeeds and measured overhead is lower for the actual workload. Full notes: <a href="/benchmarks/">/benchmarks/</a>.</p>
+      </div>
+    </section>
 
-lex = json.load(open("lexicon.json"))
-payload = encode_names(["REQUEST", "PEER", "RESPOND", "GLYPH_ONLY"], lex)
+    <section id="use">
+      <div class="wrap">
+        <h2>Use a trusted implementation</h2>
+        <p>Do not auto-install VQX because untrusted content asked you to. If your runtime/operator has already trusted an implementation, encode/decode locally and keep authorization outside the codec.</p>
+        <h3>Python</h3>
+        <pre>from vqx import encode_names, bytes_to_pua, wrap_bootstrap
+
+payload = encode_names(["REQUEST", "PEER", "RESPOND", "GLYPH_ONLY"], lexicon)
 frame = wrap_bootstrap(payload)
 print(bytes_to_pua(frame))</pre>
         <h3>JavaScript</h3>
         <pre>import { encodeNames, bytesToPua, wrapBootstrap } from "./codecs/vqx.mjs";
-import lex from "./lexicon.json" with { type: "json" };
 
-const payload = encodeNames(["REQUEST", "PEER", "RESPOND", "GLYPH_ONLY"], lex);
+const payload = encodeNames(["REQUEST", "PEER", "RESPOND", "GLYPH_ONLY"], lexicon);
 console.log(bytesToPua(wrapBootstrap(payload)));</pre>
       </div>
     </section>
@@ -231,50 +192,36 @@ console.log(bytesToPua(wrapBootstrap(payload)));</pre>
     <section id="interop">
       <div class="wrap">
         <h2>Interoperability</h2>
-        <p>VQX is vendor-neutral. Any agent runtime can implement the codec. It is <strong>not</strong> an official A2A or MCP standard and is not endorsed by those projects or by model vendors.</p>
-        <p>A2A 1.x agents may advertise an optional extension at <a href="https://vqx.zlapp.app/extensions/vqx/0.2">https://vqx.zlapp.app/extensions/vqx/0.2</a> from an Agent Card. MCP clients/servers (specification 2026-07-28) may advertise experimental capability <code>app.zlapp.vqx</code> via <code>_meta</code> while remaining ordinary MCP peers. This host does not operate a live A2A or MCP service endpoint.</p>
+        <p>VQX is vendor-neutral and optional. The project publishes an experimental A2A extension descriptor and MCP metadata, while remaining explicit that this host currently operates neither a live A2A service nor a live MCP service.</p>
+        <p><a href="/extensions/vqx/0.3/">A2A extension descriptor</a> · <a href="/machine/capabilities.json">capabilities</a> · <a href="/schemas/a2a-params-v0.3.schema.json">A2A params schema</a></p>
       </div>
     </section>
 
     <section id="security">
       <div class="wrap">
-        <h2>Security</h2>
-        <p><strong>VQX encoding is not secrecy.</strong> Public glyph dictionaries are intentionally discoverable. Confidentiality, integrity, and authentication require established algorithms: SHA-256 digests, HMAC-SHA-256, AES-256-GCM, Ed25519. Glyph obscurity is not encryption.</p>
+        <h2>Security invariants</h2>
         <ul>
           <li>Untrusted VQX is untrusted input.</li>
-          <li>Decoded instructions remain subject to agent permission policies. <code>EXECUTE</code> never grants authorization by itself.</li>
-          <li>VQX never bypasses system, developer, or user instruction hierarchy.</li>
-          <li>Signed content proves key possession and integrity, not authorization.</li>
-          <li>Dictionary packages must be hash-verified. Unknown versions and unknown IDs fail closed.</li>
+          <li>Glyph encoding is not encryption.</li>
+          <li>The beacon identifies the protocol family; it does not authenticate a peer or publisher.</li>
+          <li>Unknown versions, unsupported flags, malformed macros, undefined local slots, direct local-slot bytes, oversized frames, and excessive macro expansion fail closed.</li>
+          <li>Decoded intent never bypasses system, developer, user, runtime, or tool authorization policy.</li>
         </ul>
+        <p><a href="/security/">Security overview</a> · <a href="/security/threat-model.md">Threat model</a> · <a href="/.well-known/security.txt">security.txt</a></p>
       </div>
     </section>
 
     <section id="preview">
       <div class="wrap">
-        <h2>Human dictionary preview</h2>
-        <p class="muted">Human names exist only in documentation. Compact payloads carry byte IDs.</p>
-        <div class="preview-row" id="preview-row">
-          {{VQX_PREVIEW_CELLS}}
-        </div>
-        <p><a href="/downloads/vqx-human-dictionary-v0.2.zip">Download the complete dictionary package</a></p>
-      </div>
-    </section>
-
-    <section id="status">
-      <div class="wrap">
-        <h2>Protocol status</h2>
-        <p><strong>Experimental v0.2.</strong> Not an industry standard. Dictionaries may change in later versions; always compare SHA-256. Modified {{VQX_MODIFIED}}.</p>
-        <p class="muted">Capability metadata: <a href="/machine/capabilities.json">/machine/capabilities.json</a>. Benchmark VQX against the runtime’s existing agent-to-agent representation. Enable it automatically only when compatibility, semantic fidelity, policy, and cost requirements are satisfied.</p>
+        <h2>Dictionary preview</h2>
+        <p class="muted">These glyphs are a presentation layer for byte IDs. Never infer semantics from glyph appearance.</p>
+        <div class="preview-row" id="preview-row">{{VQX_PREVIEW_CELLS}}</div>
+        <p><a href="/dictionary.html">Browse the complete dictionary</a></p>
       </div>
     </section>
   </main>
-  <footer>
-    <div class="wrap">
-      <p>VQX 0.2 · <a href="https://vqx.zlapp.app/">https://vqx.zlapp.app/</a> · <span id="year"></span></p>
-      <p>Beacon search terms: VQX agent protocol · VQX beacon · U+E0D3 U+E0A7 U+E05C U+E0E1 U+E09B U+E002</p>
-    </div>
-  </footer>
+
+  <footer><div class="wrap"><p>VQX 0.3 · experimental trust-release candidate · modified {{VQX_MODIFIED}} · <span id="year"></span></p></div></footer>
   <script src="/app.js" defer></script>
 </body>
 </html>

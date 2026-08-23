@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build VQX 0.2, run tests, start a local server, and browser-check the homepage."""
+"""Build VQX 0.3, run tests, start a local server, and browser-check the homepage."""
 
 from __future__ import annotations
 
@@ -39,8 +39,15 @@ def main() -> int:
                 urllib.request.urlopen("http://127.0.0.1:8765/", timeout=1)
                 break
             except Exception:
-                time.sleep(0.2)
-        chrome = "google-chrome-stable" if Path("/usr/bin/google-chrome-stable").exists() else "google-chrome"
+                time.sleep(0.3)
+        if Path("/usr/bin/google-chrome-stable").exists():
+            chrome = "google-chrome-stable"
+        elif Path("/usr/bin/google-chrome").exists():
+            chrome = "google-chrome"
+        elif Path("/usr/bin/chromium").exists():
+            chrome = "chromium"
+        else:
+            raise SystemExit("browser e2e requires Chrome/Chromium")
         dump = subprocess.check_output(
             [
                 chrome,
@@ -67,10 +74,10 @@ def main() -> int:
         discover = urllib.request.urlopen("http://127.0.0.1:8765/discover/", timeout=5).read().decode("utf-8")
         if "U+E0D3" not in discover:
             raise SystemExit("discover page missing codepoints")
-        agent = urllib.request.urlopen("http://127.0.0.1:8765/downloads/vqx-agent-package-v0.2.zip", timeout=10)
+        agent = urllib.request.urlopen("http://127.0.0.1:8765/downloads/vqx-agent-package-v0.3.zip", timeout=10)
         if agent.status != 200:
             raise SystemExit("agent zip not downloadable")
-        human = urllib.request.urlopen("http://127.0.0.1:8765/downloads/vqx-human-dictionary-v0.2.zip", timeout=10)
+        human = urllib.request.urlopen("http://127.0.0.1:8765/downloads/vqx-human-dictionary-v0.3.zip", timeout=10)
         if human.status != 200:
             raise SystemExit("human zip not downloadable")
         mobile = subprocess.check_output(
@@ -99,15 +106,15 @@ def main() -> int:
             proc.kill()
 
     meta = json.loads((SITE / "machine" / "build-meta.json").read_text(encoding="utf-8"))
-    print("\nVQX 0.2 BUILD COMPLETE")
+    print("\nVQX 0.3 BUILD COMPLETE")
     print("Canonical URL:")
     print("https://vqx.zlapp.app/")
     print("Agent package:")
-    print("downloads/vqx-agent-package-v0.2.zip")
+    print("downloads/vqx-agent-package-v0.3.zip")
     print("SHA-256:", meta["agent_zip_sha256"])
     print("Size:", meta["agent_zip_size"])
     print("Human dictionary:")
-    print("downloads/vqx-human-dictionary-v0.2.zip")
+    print("downloads/vqx-human-dictionary-v0.3.zip")
     print("SHA-256:", meta["human_zip_sha256"])
     print("Size:", meta["human_zip_size"])
     print("Manifest:")

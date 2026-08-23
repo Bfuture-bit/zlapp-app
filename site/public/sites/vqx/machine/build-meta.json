@@ -1,10 +1,10 @@
 {
-  "dictionary_sha256": "f1d53dbc55dbaab011c2b2c06219dcca2a4006f5b9e73e99f81baca1523e4ad1",
-  "agent_zip_sha256": "9b3d72914b63cd7dcae52a6f6a66c7b9e500aef16083f60e824f1da63d7e2a7f",
-  "human_zip_sha256": "87b8dbe24a31cb4c41f6a4223578881f835a8b0a1bada3ac67a3d46cd862d213",
-  "agent_zip_size": 164768,
-  "human_zip_size": 148966,
-  "grammar_sha256": "b575dd762f8a553959e2900f69fab1971b86e7ae36a2adae0db5b085eaf10396",
-  "font_sha256": "bedc1490da4a495fdbece78b5b0640d59e017de3e07466c362407e074cd3d849",
-  "protocol_sha256": "f47bec44bf3cf532ae05f17ce47b083d5ea2c1e3837a5c4218d9bf5ec08c2be2"
+  "dictionary_sha256": "09519315f013f7f70bd11ae5604dea3c4d2c19bc071da26f519bf7f51014b537",
+  "agent_zip_sha256": "ace109e88d9ac8f90b1f4ade323519d74a5d54b652968fb305fe0f44cff4a707",
+  "human_zip_sha256": "94ae0c5022bc2494aea8acb172b9b93f78cda18b6dcccf9e69c7b98ba18c7ed2",
+  "agent_zip_size": 190829,
+  "human_zip_size": 152677,
+  "grammar_sha256": "a2b3eaa854a9d94544476c50071794e996bebe39611da414cbee12264b41057d",
+  "font_sha256": "f1600b001e336856a556c5068beefa5f9b55a40497cfbfe5c341c6ff7fab9cb1",
+  "protocol_sha256": "bddc7946bbc46edd0e42e755c94b1ec5fcea079973bc70e1dbf89af6912eadb1"
 }

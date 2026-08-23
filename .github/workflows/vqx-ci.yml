@@ -1,0 +1,73 @@
+name: VQX conformance
+
+on:
+  push:
+    paths:
+      - 'tools/vqx/**'
+      - 'site/public/sites/vqx/**'
+      - '.github/workflows/vqx-*.yml'
+  pull_request:
+    paths:
+      - 'tools/vqx/**'
+      - 'site/public/sites/vqx/**'
+      - '.github/workflows/vqx-*.yml'
+
+permissions:
+  contents: read
+
+env:
+  TZ: UTC
+  LC_ALL: C
+  LANG: C
+  SOURCE_DATE_EPOCH: "1787443200"
+
+jobs:
+  conformance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: ''
+      - name: First clean build
+        run: |
+          rm -rf /tmp/vqx-a
+          VQX_SITE=/tmp/vqx-a python tools/vqx/build.py
+      - name: Independent second build
+        run: |
+          rm -rf /tmp/vqx-b
+          VQX_SITE=/tmp/vqx-b python tools/vqx/build.py
+      - name: Reproducibility — ZIP SHA-256 must match
+        run: |
+          python - <<'PY'
+          import hashlib, pathlib, sys
+          names = ["vqx-agent-package-v0.3.zip", "vqx-human-dictionary-v0.3.zip"]
+          failed = False
+          for name in names:
+              a = pathlib.Path("/tmp/vqx-a/downloads")/name
+              b = pathlib.Path("/tmp/vqx-b/downloads")/name
+              ha = hashlib.sha256(a.read_bytes()).hexdigest()
+              hb = hashlib.sha256(b.read_bytes()).hexdigest()
+              print(name, ha, hb)
+              if ha != hb:
+                  failed = True
+          sys.exit(1 if failed else 0)
+          PY
+      - name: Build canonical site tree
+        run: python tools/vqx/build.py
+      - name: Run VQX conformance suite
+        run: python tools/vqx/tests/conformance.py
+      - name: Fuzz smoke
+        run: python tools/vqx/tests/fuzz_smoke.py
+      - name: Cross-language
+        run: python tools/vqx/tests/test_cross_language.py
+      - name: MCP scaffold
+        run: python tools/vqx/mcp/test_mcp.py
+      - name: Benchmark
+        run: python tools/vqx/benchmarks/benchmark.py
+      - name: Generated site must be committed
+        run: git diff --exit-code -- site/public/sites/vqx site/public/.well-known site/public/extensions/vqx

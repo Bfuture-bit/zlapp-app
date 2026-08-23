@@ -3,23 +3,23 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>VQX 0.2 human dictionary</title>
+  <title>VQX 0.3 human dictionary</title>
   <style>
-    @font-face { font-family: VQX02; src: url("/assets/vqx-0.2.woff2") format("woff2"); unicode-range: U+E000-E0FF; }
+    @font-face { font-family: VQX03; src: url("/assets/vqx-0.3.woff2") format("woff2"); unicode-range: U+E000-E0FF; }
     body { margin: 0; font-family: system-ui, sans-serif; background: #0b0d10; color: #e8edf4; }
     header { padding: 1.2rem 1.4rem; border-bottom: 1px solid #2a3340; }
     h1 { margin: 0 0 .3rem; letter-spacing: .12em; }
     input { width: min(40rem, 100%); padding: .5rem; background: #12161c; color: inherit; border: 1px solid #2a3340; }
     table { width: 100%; border-collapse: collapse; font-size: .9rem; }
     th, td { border-bottom: 1px solid #2a3340; padding: .4rem; text-align: left; vertical-align: top; }
-    .g { font-family: VQX02, ui-monospace, monospace; font-size: 1.6rem; }
+    .g { font-family: VQX03, ui-monospace, monospace; font-size: 1.6rem; }
     .mono { font-family: ui-monospace, monospace; }
     main { padding: 1rem 1.4rem 2rem; overflow-x: auto; }
   </style>
 </head>
 <body>
   <header>
-    <h1>VQX 0.2 dictionary</h1>
+    <h1>VQX 0.3 dictionary</h1>
     <p>Human labels are documentation only. Wire tokens are byte IDs. Encoding is not encryption.</p>
     <p><label>Filter <input id="q" type="search" placeholder="name, hex, class, description"></label></p>
   </header>
@@ -29,7 +29,7 @@
       <tbody id="rows">
 <tr><td class="g" aria-label="START"></td><td class="mono">00</td><td class="mono">U+E000</td><td>framing</td><td>START</td><td>Open a VQX frame or semantic unit.</td><td class="mono">{"frame": "start"}</td></tr>
 <tr><td class="g" aria-label="END"></td><td class="mono">01</td><td class="mono">U+E001</td><td>framing</td><td>END</td><td>Close a VQX frame or semantic unit.</td><td class="mono">{"frame": "end"}</td></tr>
-<tr><td class="g" aria-label="VERSION"></td><td class="mono">02</td><td class="mono">U+E002</td><td>framing</td><td>VERSION</td><td>Protocol version marker; bootstrap version byte is 0x02 for v0.2.</td><td class="mono">{"frame": "version", "value": 2}</td></tr>
+<tr><td class="g" aria-label="VERSION"></td><td class="mono">02</td><td class="mono">U+E002</td><td>framing</td><td>VERSION</td><td>Protocol version marker. The actual protocol version is carried by framing or envelope metadata.</td><td class="mono">{"frame": "version"}</td></tr>
 <tr><td class="g" aria-label="FLAG"></td><td class="mono">03</td><td class="mono">U+E003</td><td>framing</td><td>FLAG</td><td>Frame flags / option bits follow in context.</td><td class="mono">{"frame": "flags"}</td></tr>
 <tr><td class="g" aria-label="CONT"></td><td class="mono">04</td><td class="mono">U+E004</td><td>framing</td><td>CONT</td><td>Continuation of the previous semantic unit.</td><td class="mono">{"frame": "continue"}</td></tr>
 <tr><td class="g" aria-label="ACK"></td><td class="mono">05</td><td class="mono">U+E005</td><td>framing</td><td>ACK</td><td>Acknowledgement of receipt without completion.</td><td class="mono">{"frame": "ack"}</td></tr>

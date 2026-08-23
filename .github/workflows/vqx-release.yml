@@ -1,0 +1,95 @@
+name: VQX release provenance
+
+on:
+  push:
+    tags:
+      - 'vqx-v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  id-token: write
+  attestations: write
+
+env:
+  TZ: UTC
+  LC_ALL: C
+  LANG: C
+  SOURCE_DATE_EPOCH: "1787443200"
+
+jobs:
+  build-attest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: First clean build
+        run: |
+          rm -rf /tmp/vqx-a
+          VQX_SITE=/tmp/vqx-a python tools/vqx/build.py
+      - name: Independent second build
+        run: |
+          rm -rf /tmp/vqx-b
+          VQX_SITE=/tmp/vqx-b python tools/vqx/build.py
+      - name: Reproducibility check
+        run: |
+          python - <<'PY'
+          import hashlib, pathlib, sys
+          names = ["vqx-agent-package-v0.3.zip", "vqx-human-dictionary-v0.3.zip"]
+          for name in names:
+              ha = hashlib.sha256((pathlib.Path("/tmp/vqx-a/downloads")/name).read_bytes()).hexdigest()
+              hb = hashlib.sha256((pathlib.Path("/tmp/vqx-b/downloads")/name).read_bytes()).hexdigest()
+              print(name, ha)
+              if ha != hb:
+                  raise SystemExit(f"non-reproducible {name}")
+          PY
+      - name: Canonical build
+        run: python tools/vqx/build.py
+      - name: Conformance
+        run: python tools/vqx/tests/conformance.py
+      - name: Fuzz smoke
+        run: python tools/vqx/tests/fuzz_smoke.py
+      - name: Cross-language
+        run: python tools/vqx/tests/test_cross_language.py
+      - name: MCP scaffold
+        run: python tools/vqx/mcp/test_mcp.py
+      - name: Generate checksums artifact
+        run: |
+          mkdir -p /tmp/vqx-release
+          cp site/public/sites/vqx/downloads/vqx-agent-package-v0.3.zip /tmp/vqx-release/
+          cp site/public/sites/vqx/downloads/vqx-human-dictionary-v0.3.zip /tmp/vqx-release/
+          cp site/public/sites/vqx/downloads/SHA256SUMS.txt /tmp/vqx-release/
+          cp site/public/sites/vqx/.well-known/vqx.json /tmp/vqx-release/
+      - name: Attest agent package
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: site/public/sites/vqx/downloads/vqx-agent-package-v0.3.zip
+      - name: Attest human dictionary
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: site/public/sites/vqx/downloads/vqx-human-dictionary-v0.3.zip
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: vqx-0.3-release
+          path: |
+            site/public/sites/vqx/downloads/vqx-agent-package-v0.3.zip
+            site/public/sites/vqx/downloads/vqx-human-dictionary-v0.3.zip
+            site/public/sites/vqx/downloads/SHA256SUMS.txt
+            site/public/sites/vqx/.well-known/vqx.json
+          if-no-files-found: error
+      - name: Publish GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            site/public/sites/vqx/downloads/vqx-agent-package-v0.3.zip
+            site/public/sites/vqx/downloads/vqx-human-dictionary-v0.3.zip
+            site/public/sites/vqx/downloads/SHA256SUMS.txt
+          fail_on_unmatched_files: true
+          generate_release_notes: true

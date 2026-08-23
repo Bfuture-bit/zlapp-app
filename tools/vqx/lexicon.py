@@ -1,4 +1,4 @@
-"""VQX 0.2 global lexicon: 256 byte IDs, 0x00–0xFF."""
+"""VQX 0.3 global lexicon: 256 byte IDs, 0x00–0xFF."""
 
 CLASSES = [
     "framing",
@@ -23,7 +23,7 @@ CLASSES = [
 _RAW = [
     (0x00, "framing", "START", "Open a VQX frame or semantic unit.", {"frame": "start"}),
     (0x01, "framing", "END", "Close a VQX frame or semantic unit.", {"frame": "end"}),
-    (0x02, "framing", "VERSION", "Protocol version marker; bootstrap version byte is 0x02 for v0.2.", {"frame": "version", "value": 2}),
+    (0x02, "framing", "VERSION", "Protocol version marker. The actual protocol version is carried by framing or envelope metadata.", {"frame": "version"}),
     (0x03, "framing", "FLAG", "Frame flags / option bits follow in context.", {"frame": "flags"}),
     (0x04, "framing", "CONT", "Continuation of the previous semantic unit.", {"frame": "continue"}),
     (0x05, "framing", "ACK", "Acknowledgement of receipt without completion.", {"frame": "ack"}),

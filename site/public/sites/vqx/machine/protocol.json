@@ -1,9 +1,10 @@
 {
   "name": "VQX",
   "protocol_id": "vqx",
-  "version": "0.2",
+  "version": "0.3",
   "status": "experimental",
   "canonical_url": "https://vqx.zlapp.app/",
+  "versioned_manifest": "https://vqx.zlapp.app/versions/0.3/manifest.json",
   "spec_markdown": "https://vqx.zlapp.app/index.md",
   "lexicon": "https://vqx.zlapp.app/machine/lexicon.json",
   "grammar": "https://vqx.zlapp.app/machine/grammar.json",
@@ -15,7 +16,8 @@
   "pua": {
     "plane": "BMP",
     "start": "U+E000",
-    "end": "U+E0FF"
+    "end": "U+E0FF",
+    "role": "presentation_or_text_container_only"
   },
   "beacon": {
     "bytes_hex": "D3 A7 5C E1 9B 02",
@@ -27,7 +29,8 @@
       "U+E09B",
       "U+E002"
     ],
-    "role": "identification_prefix_not_authentication"
+    "role": "protocol_family_identification_not_authentication",
+    "version_independent": true
   },
   "legacy_vector": {
     "bytes_hex": "06 11 20 A0",
@@ -43,10 +46,20 @@
     "compact"
   ],
   "digests": {
-    "lexicon_sha256": "f1d53dbc55dbaab011c2b2c06219dcca2a4006f5b9e73e99f81baca1523e4ad1",
-    "grammar_sha256": "b575dd762f8a553959e2900f69fab1971b86e7ae36a2adae0db5b085eaf10396",
-    "font_sha256": "bedc1490da4a495fdbece78b5b0640d59e017de3e07466c362407e074cd3d849"
+    "lexicon_sha256": "09519315f013f7f70bd11ae5604dea3c4d2c19bc071da26f519bf7f51014b537",
+    "grammar_sha256": "a2b3eaa854a9d94544476c50071794e996bebe39611da414cbee12264b41057d",
+    "font_sha256": "f1600b001e336856a556c5068beefa5f9b55a40497cfbfe5c341c6ff7fab9cb1"
   },
-  "security": "VQX encoding is not secrecy. Use SHA-256, HMAC-SHA-256, AES-256-GCM and Ed25519 for cryptographic goals.",
+  "security": {
+    "untrusted_input": true,
+    "execution_authority": "none",
+    "automatic_installation": false,
+    "beacon_authenticates_sender": false,
+    "security_model": "https://vqx.zlapp.app/security/"
+  },
+  "source": {
+    "repository": "https://github.com/Bfuture-bit/zlapp-app",
+    "path": "tools/vqx"
+  },
   "modified": "2026-08-23T00:00:00Z"
 }

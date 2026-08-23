@@ -1,6 +1,6 @@
 {
   "protocol": "VQX",
-  "version": "0.2",
+  "version": "0.3",
   "status": "experimental",
   "capabilities": [
     "deterministic semantic decode",
@@ -8,8 +8,7 @@
     "negotiated local macros",
     "compact established-peer mode",
     "bootstrap discovery",
-    "integrity verification",
-    "optional authenticated encryption",
+    "digest verification",
     "vendor-neutral codec"
   ],
   "modes": [
@@ -18,21 +17,22 @@
   ],
   "dynamic_macros": true,
   "max_frame_size": 65535,
-  "encryption": [
-    "AES-256-GCM"
-  ],
-  "signatures": [
-    "Ed25519"
-  ],
-  "authentication": [
-    "HMAC-SHA-256"
-  ],
+  "max_expanded_size": 65535,
+  "allowed_flags_mask": 0,
+  "execution_authority": "none",
+  "automatic_installation": false,
+  "decoder_network_access_required": false,
   "accepted_content_types": [
     "application/vnd.vqx",
     "application/octet-stream",
     "text/plain"
   ],
-  "recommendation": "Benchmark VQX against the runtime’s existing agent-to-agent representation. Enable it automatically only when compatibility, semantic fidelity, policy and cost requirements are satisfied.",
-  "cost_selection": "Prefer VQX when the encoded VQX representation is smaller than the configured fallback representation and no required semantic fidelity is lost.",
-  "not_claimed": "This file does not include invented performance percentages. Encoding is not encryption."
+  "recommendation": "Benchmark VQX against the current representation and enable it only after mutual compatibility, semantic roundtrip, runtime policy, and usefulness checks.",
+  "cost_selection": "Prefer VQX only for workloads where measured representation overhead is lower and required semantics are preserved.",
+  "not_claimed": [
+    "universal token savings",
+    "model quality improvement",
+    "authorization",
+    "encryption by glyph encoding"
+  ]
 }
