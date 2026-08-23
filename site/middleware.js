@@ -1,15 +1,34 @@
 export const config = {
-  matcher: "/",
+  matcher: [
+    "/",
+    "/((?!_next/static|_next/image|favicon.ico).*)",
+  ],
 };
 
 export default function middleware(request) {
   const url = new URL(request.url);
+  if (url.pathname.startsWith("/.well-known/acme-challenge")) {
+    return;
+  }
   if (url.hostname === "brent.zlapp.app") {
-    const dest = new URL("/sites/brent/index.html", url.origin);
+    if (url.pathname === "/" || url.pathname === "") {
+      const dest = new URL("/sites/brent/index.html", url.origin);
+      return new Response(null, {
+        headers: { "x-middleware-rewrite": dest.toString() },
+      });
+    }
+    return;
+  }
+  if (url.hostname === "vqx.zlapp.app") {
+    if (url.pathname.startsWith("/sites/vqx")) return;
+    let p = url.pathname || "/";
+    if (p === "/") p = "/index.html";
+    else if (p.endsWith("/")) p += "index.html";
+    else if (!p.split("/").pop().includes(".")) p += "/index.html";
+    const dest = new URL("/sites/vqx" + p, url.origin);
+    dest.search = url.search;
     return new Response(null, {
-      headers: {
-        "x-middleware-rewrite": dest.toString(),
-      },
+      headers: { "x-middleware-rewrite": dest.toString() },
     });
   }
 }

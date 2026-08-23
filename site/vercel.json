@@ -697,6 +697,30 @@
     {
       "source": "/brent",
       "destination": "/sites/brent/index.html"
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "vqx.zlapp.app"
+        }
+      ],
+      "destination": "https://zlapp.app/sites/vqx/index.html"
+    },
+    {
+      "source": "/vqx",
+      "destination": "/sites/vqx/index.html"
+    },
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "vqx.zlapp.app"
+        }
+      ],
+      "destination": "https://zlapp.app/sites/vqx/:path*"
     }
   ]
 }

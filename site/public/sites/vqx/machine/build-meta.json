@@ -1,0 +1,10 @@
+{
+  "dictionary_sha256": "f1d53dbc55dbaab011c2b2c06219dcca2a4006f5b9e73e99f81baca1523e4ad1",
+  "agent_zip_sha256": "9b3d72914b63cd7dcae52a6f6a66c7b9e500aef16083f60e824f1da63d7e2a7f",
+  "human_zip_sha256": "87b8dbe24a31cb4c41f6a4223578881f835a8b0a1bada3ac67a3d46cd862d213",
+  "agent_zip_size": 164768,
+  "human_zip_size": 148966,
+  "grammar_sha256": "b575dd762f8a553959e2900f69fab1971b86e7ae36a2adae0db5b085eaf10396",
+  "font_sha256": "bedc1490da4a495fdbece78b5b0640d59e017de3e07466c362407e074cd3d849",
+  "protocol_sha256": "f47bec44bf3cf532ae05f17ce47b083d5ea2c1e3837a5c4218d9bf5ec08c2be2"
+}

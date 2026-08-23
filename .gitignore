@@ -13,3 +13,7 @@ tools/glyphs2/node_modules/
 tools/glyphs2/dist/
 .vercel
 .env*
+
+# Python
+__pycache__/
+*.py[cod]

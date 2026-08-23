@@ -105,6 +105,13 @@ for (const site of satellites.sites) {
       destination: dest,
     });
   }
+  if (site.rewriteTree) {
+    rewrites.push({
+      source: "/:path*",
+      has: [{ type: "host", value: site.host }],
+      destination: `https://zlapp.app/sites/${site.id}/:path*`,
+    });
+  }
 }
 
 const vercel = {

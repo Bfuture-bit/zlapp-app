@@ -108,5 +108,7 @@ To make `https://brent.zlapp.app` work **without** moving nameservers or touchin
 |---|---|
 | `https://brent.zlapp.app` | Brent Ward portfolio (after the explicit domain + cert) |
 | `https://zlapp.app/brent` | Same page on the apex cert (fallback; not linked from the exhibition) |
+| `https://vqx.zlapp.app` | VQX 0.2 protocol site (add as an explicit Vercel domain for HTTP-01 TLS, same as brent) |
+| `https://zlapp.app/vqx` | Same site on the apex cert (fallback) |
 
 The apex homepage `https://zlapp.app/` is unchanged.

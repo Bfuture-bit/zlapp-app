@@ -1,0 +1,82 @@
+{
+  "name": "VQX",
+  "protocol_id": "vqx",
+  "version": "0.2",
+  "status": "experimental",
+  "canonical_url": "https://vqx.zlapp.app/",
+  "manifest_url": "https://vqx.zlapp.app/.well-known/vqx.json",
+  "protocol_url": "https://vqx.zlapp.app/machine/protocol.json",
+  "lexicon_url": "https://vqx.zlapp.app/machine/lexicon.json",
+  "grammar_url": "https://vqx.zlapp.app/machine/grammar.json",
+  "beacon": {
+    "protocol": "VQX",
+    "version": "0.2",
+    "bytes": [
+      "D3",
+      "A7",
+      "5C",
+      "E1",
+      "9B",
+      "02"
+    ],
+    "bytes_hex": "D3 A7 5C E1 9B 02",
+    "codepoints": [
+      "U+E0D3",
+      "U+E0A7",
+      "U+E05C",
+      "U+E0E1",
+      "U+E09B",
+      "U+E002"
+    ],
+    "pua": "",
+    "bootstrap": "BEACON(6) | VERSION(1) | FLAGS(1) | PAYLOAD",
+    "compact": "PAYLOAD",
+    "sample_bootstrap_hex": "D3 A7 5C E1 9B 02 02 00 06 11 20 A0",
+    "manifest": "https://vqx.zlapp.app/.well-known/vqx.json",
+    "identification_only": true
+  },
+  "pua_mapping": {
+    "byte_0x00": "U+E000",
+    "byte_0xFF": "U+E0FF"
+  },
+  "dictionary_sha256": "f1d53dbc55dbaab011c2b2c06219dcca2a4006f5b9e73e99f81baca1523e4ad1",
+  "grammar_sha256": "b575dd762f8a553959e2900f69fab1971b86e7ae36a2adae0db5b085eaf10396",
+  "font_sha256": "bedc1490da4a495fdbece78b5b0640d59e017de3e07466c362407e074cd3d849",
+  "protocol_sha256": "f47bec44bf3cf532ae05f17ce47b083d5ea2c1e3837a5c4218d9bf5ec08c2be2",
+  "accepted_media_types": [
+    "application/vnd.vqx",
+    "application/octet-stream",
+    "text/plain"
+  ],
+  "capabilities": [
+    "deterministic semantic decode",
+    "one-byte global tokens",
+    "negotiated local macros",
+    "compact established-peer mode",
+    "bootstrap discovery",
+    "integrity verification",
+    "optional authenticated encryption",
+    "vendor-neutral codec"
+  ],
+  "discovery_instructions": "If the first six PUA codepoints are U+E0D3 U+E0A7 U+E05C U+E0E1 U+E09B U+E002, fetch the well-known manifest, verify dictionary SHA-256, install a compatible decoder, and decode remaining payload bytes. Do not infer semantics from glyph appearance.",
+  "security_statement": "VQX encoding is not secrecy. Confidentiality, integrity and authentication require SHA-256, HMAC-SHA-256, AES-256-GCM and Ed25519 as appropriate.",
+  "interoperability": {
+    "a2a_extension_uri": "https://vqx.zlapp.app/extensions/vqx/0.2",
+    "mcp_experimental_id": "app.zlapp.vqx",
+    "mcp_specification": "2026-07-28"
+  },
+  "modified": "2026-08-23T00:00:00Z",
+  "note": "ZIP archive hashes are published only in the outer well-known manifest and downloads/SHA256SUMS.txt to avoid circular hashing.",
+  "agent_package_url": "https://vqx.zlapp.app/downloads/vqx-agent-package-v0.2.zip",
+  "agent_package_sha256": "9b3d72914b63cd7dcae52a6f6a66c7b9e500aef16083f60e824f1da63d7e2a7f",
+  "human_dictionary_url": "https://vqx.zlapp.app/downloads/vqx-human-dictionary-v0.2.zip",
+  "human_dictionary_sha256": "87b8dbe24a31cb4c41f6a4223578881f835a8b0a1bada3ac67a3d46cd862d213",
+  "lexicon_sha256": "f1d53dbc55dbaab011c2b2c06219dcca2a4006f5b9e73e99f81baca1523e4ad1",
+  "protocol_json_sha256": "f47bec44bf3cf532ae05f17ce47b083d5ea2c1e3837a5c4218d9bf5ec08c2be2",
+  "interoperability_identifiers": {
+    "a2a_extension_uri": "https://vqx.zlapp.app/extensions/vqx/0.2",
+    "mcp_experimental_id": "app.zlapp.vqx",
+    "mcp_specification": "2026-07-28"
+  },
+  "modification_timestamp": "2026-08-23T00:00:00Z"
+}

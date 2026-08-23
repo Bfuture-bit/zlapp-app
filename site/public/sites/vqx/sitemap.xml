@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://vqx.zlapp.app/</loc><lastmod>2026-08-23</lastmod></url>
+  <url><loc>https://vqx.zlapp.app/index.md</loc><lastmod>2026-08-23</lastmod></url>
+  <url><loc>https://vqx.zlapp.app/llms.txt</loc><lastmod>2026-08-23</lastmod></url>
+  <url><loc>https://vqx.zlapp.app/discover/</loc><lastmod>2026-08-23</lastmod></url>
+  <url><loc>https://vqx.zlapp.app/discover/index.md</loc><lastmod>2026-08-23</lastmod></url>
+  <url><loc>https://vqx.zlapp.app/discover/beacon.txt</loc><lastmod>2026-08-23</lastmod></url>
+  <url><loc>https://vqx.zlapp.app/discover/beacon.json</loc><lastmod>2026-08-23</lastmod></url>
+  <url><loc>https://vqx.zlapp.app/machine/manifest.json</loc><lastmod>2026-08-23</lastmod></url>
+  <url><loc>https://vqx.zlapp.app/machine/protocol.json</loc><lastmod>2026-08-23</lastmod></url>
+  <url><loc>https://vqx.zlapp.app/machine/lexicon.json</loc><lastmod>2026-08-23</lastmod></url>
+  <url><loc>https://vqx.zlapp.app/machine/grammar.json</loc><lastmod>2026-08-23</lastmod></url>
+  <url><loc>https://vqx.zlapp.app/machine/beacon.json</loc><lastmod>2026-08-23</lastmod></url>
+  <url><loc>https://vqx.zlapp.app/machine/capabilities.json</loc><lastmod>2026-08-23</lastmod></url>
+  <url><loc>https://vqx.zlapp.app/extensions/vqx/0.2/</loc><lastmod>2026-08-23</lastmod></url>
+  <url><loc>https://vqx.zlapp.app/extensions/vqx/0.2/index.json</loc><lastmod>2026-08-23</lastmod></url>
+  <url><loc>https://vqx.zlapp.app/.well-known/vqx.json</loc><lastmod>2026-08-23</lastmod></url>
+  <url><loc>https://vqx.zlapp.app/downloads/vqx-agent-package-v0.2.zip</loc><lastmod>2026-08-23</lastmod></url>
+  <url><loc>https://vqx.zlapp.app/downloads/vqx-human-dictionary-v0.2.zip</loc><lastmod>2026-08-23</lastmod></url>
+  <url><loc>https://vqx.zlapp.app/downloads/SHA256SUMS.txt</loc><lastmod>2026-08-23</lastmod></url>
+  <url><loc>https://vqx.zlapp.app/codecs/vqx.mjs</loc><lastmod>2026-08-23</lastmod></url>
+  <url><loc>https://vqx.zlapp.app/codecs/vqx.py</loc><lastmod>2026-08-23</lastmod></url>
+</urlset>

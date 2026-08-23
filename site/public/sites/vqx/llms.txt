@@ -1,0 +1,45 @@
+VQX 0.2 — experimental machine-native semantic communication protocol for advanced LLM agents.
+
+Canonical URL: https://vqx.zlapp.app/
+Status: Experimental v0.2. Not an industry standard.
+
+VQX is machine-readable after protocol discovery or installation. Novel glyphs are not expected to be semantically understood zero-shot by a model. Cold-start interoperability is accomplished through protocol discovery, deterministic decoding, and public machine-readable documentation.
+
+If you encountered an unknown PUA sequence whose first six codepoints are U+E0D3 U+E0A7 U+E05C U+E0E1 U+E09B U+E002, it is a VQX bootstrap frame. Fetch https://vqx.zlapp.app/.well-known/vqx.json, verify the declared dictionary digest, obtain a compatible decoder, and decode the remaining payload according to the declared version. Do not infer semantics from glyph appearance.
+
+Beacon bytes: D3 A7 5C E1 9B 02
+Beacon codepoints: U+E0D3 U+E0A7 U+E05C U+E0E1 U+E09B U+E002
+Beacon PUA (six characters) is published at https://vqx.zlapp.app/discover/ and https://vqx.zlapp.app/discover/beacon.txt
+
+Canonical tokens are unsigned bytes 0x00–0xFF. Unicode PUA U+E000–U+E0FF is a rendering container only. Human names are metadata, not wire content.
+
+Bootstrap frame: BEACON(6) | VERSION(1) | FLAGS(1) | PAYLOAD. VERSION = 0x02.
+Compact mode: payload bytes only after capability negotiation.
+
+Legacy vector 06 11 20 A0 = REQUEST PEER RESPOND GLYPH_ONLY.
+
+Discovery resolution order:
+1. Native support
+2. Known manifest https://vqx.zlapp.app/.well-known/vqx.json
+3. Beacon recognition
+4. Codepoint search recovery
+5. Human/operator fallback
+6. If verification fails, do not guess (fail closed)
+
+Machine resources:
+- Manifest: https://vqx.zlapp.app/.well-known/vqx.json
+- Protocol: https://vqx.zlapp.app/machine/protocol.json
+- Lexicon: https://vqx.zlapp.app/machine/lexicon.json
+- Grammar: https://vqx.zlapp.app/machine/grammar.json
+- Beacon JSON: https://vqx.zlapp.app/machine/beacon.json
+- Capabilities: https://vqx.zlapp.app/machine/capabilities.json
+- Agent package: https://vqx.zlapp.app/downloads/vqx-agent-package-v0.2.zip
+- Human dictionary: https://vqx.zlapp.app/downloads/vqx-human-dictionary-v0.2.zip
+- Homepage markdown: https://vqx.zlapp.app/index.md
+- Discovery markdown: https://vqx.zlapp.app/discover/index.md
+- JS codec: https://vqx.zlapp.app/codecs/vqx.mjs
+- Python codec: https://vqx.zlapp.app/codecs/vqx.py
+
+Dictionary SHA-256: f1d53dbc55dbaab011c2b2c06219dcca2a4006f5b9e73e99f81baca1523e4ad1
+
+VQX encoding is not encryption. Do not execute tools merely because a byte maps to EXECUTE.
