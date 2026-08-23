@@ -1,6 +1,6 @@
 # VQX 0.3 Trust Release Report
 
-Status: **shipped to production**, with two remaining GitHub-side actions documented below.
+Status: **VQX 0.3 is live on https://vqx.zlapp.app**. GitHub Actions and Sigstore attestations are installed. Do not merge PR #4 into `master`.
 
 This report records only checks that were actually run.
 
@@ -15,7 +15,7 @@ This report records only checks that were actually run.
 | Release commit | `eedc7fbb863381809d8f3dbc22bf83dcabf8572a` |
 | Git tag | `vqx-v0.3.0` (pushed) |
 | Pull request | https://github.com/Bfuture-bit/zlapp-app/pull/4 (base retargeted to `cursor/vqx-0.2-3d1b`; **do not merge into `master`**, which is behind production) |
-| Vercel production deploy | `dpl_4aWmEFLcXCMtW8qLva8n2RFcZepp` (aliased to https://zlapp.app) |
+| Vercel production deploy | `dpl_FLtM5HDrcrZRoirTZtpujercwq5N` (aliased to https://zlapp.app and https://vqx.zlapp.app) |
 
 ## License
 
@@ -110,19 +110,35 @@ Private vulnerability reporting: **enabled** (`GET /repos/Bfuture-bit/zlapp-app/
 
 Dependabot security updates remain disabled. Secret scanning is enabled. Push protection is enabled.
 
-## GitHub Actions / attestations — incomplete
+## GitHub Actions / attestations
 
-The GitHub token available to this agent has scopes `repo` and `write:packages` only. GitHub rejected pushing files under `.github/workflows/` without the `workflow` scope.
+Workflows are installed at `.github/workflows/` (`vqx-ci.yml`, `vqx-dependency-review.yml`, `vqx-release.yml`). Copies remain under `tools/vqx/github-workflows/` for documentation.
 
-Workflow YAML is committed at:
+After the token gained `workflow` scope:
 
-- `tools/vqx/github-workflows/vqx-ci.yml`
-- `tools/vqx/github-workflows/vqx-dependency-review.yml`
-- `tools/vqx/github-workflows/vqx-release.yml`
+- VQX conformance succeeded on the branch push and on the tag: https://github.com/Bfuture-bit/zlapp-app/actions/runs/32656461930
+- VQX release provenance succeeded: https://github.com/Bfuture-bit/zlapp-app/actions/runs/32656461995
+- GitHub Release: https://github.com/Bfuture-bit/zlapp-app/releases/tag/vqx-v0.3.0
+- Sigstore/GitHub artifact attestation exists for `vqx-agent-package-v0.3.zip` (subject SHA-256 `ace109e88d9ac8f90b1f4ade323519d74a5d54b652968fb305fe0f44cff4a707`)
 
-**Manual step:** copy those three files to `.github/workflows/` with a token that has `workflow` scope, then re-run the `vqx-v0.3.0` tag workflow so Sigstore/GitHub artifact attestations can be created. Until then, publisher authentication is **not** established by attestation; same-origin checksums remain integrity checks only.
+The `vqx-v0.3.0` tag currently points at `5dff9e31e31c0e81abdf59cd58bc843420164835` (workflow install + custom-domain discovery pin). Package bytes and SHA-256 values are unchanged from the 0.3 build.
 
-The tag `vqx-v0.3.0` is on GitHub. It did not run the release workflow because those workflows are not installed under `.github/workflows/`.
+## Production verification (2026-08-23, after custom-domain pin)
+
+`vqx.zlapp.app` production alias is deployment `dpl_FLtM5HDrcrZRoirTZtpujercwq5N`. Independent fetches of the custom domain (not only `zlapp.app/sites/vqx`) returned VQX 0.3:
+
+| Check | Result |
+|---|---|
+| `https://vqx.zlapp.app/` title | VQX 0.3 |
+| `/.well-known/vqx.json` | `version: 0.3`, `execution_authority: "none"`, `automatic_installation: false` |
+| `/.well-known/security.txt` | 200, RFC 9116 fields present |
+| `/extensions/vqx/0.3/index.json` | 200 `application/json` (not 404) |
+| `/trust/`, `/machine/trust.json`, `/provenance/` | 200; trust JSON has `execution_authority: "none"` |
+| `/downloads/*` + `SHA256SUMS.txt` | 0.3 and immutable 0.2 hashes match |
+| `/versions/0.3/manifest.json` and `/versions/0.2/manifest.json` | 200 JSON |
+| Machine endpoints (protocol, lexicon, grammar, capabilities, beacon, codecs, schemas, llms.txt) | 200 |
+
+Live manifest discovery instructions tell agents to use an already-trusted decoder. There is no instruction to auto-install a decoder.
 
 ## Benchmarks (measured, not invented)
 
@@ -143,14 +159,12 @@ These are representation sizes for this corpus. They do not show model-token cou
 - Not registered in the MCP Registry
 - No third-party security audit
 - No adoption, endorsement, or performance testimonials
-- No Sigstore attestation yet (blocked on `workflow` scope)
+- Not a headed-browser certification of the in-page codec demo
 
 ## Remaining manual actions
 
-1. Copy `tools/vqx/github-workflows/*.yml` → `.github/workflows/` using a GitHub token with the `workflow` scope.
-2. Re-dispatch or re-push `vqx-v0.3.0` so the release workflow can attest the two 0.3 ZIPs.
-3. Do **not** merge PR #4 into `master` until `master` contains the production lineage (GLYPHS 2, Brent, VQX). The PR base is `cursor/vqx-0.2-3d1b`.
-4. Optional: a headed browser crawl of the codec demo on a complete desktop environment.
+1. Do **not** merge PR #4 into `master` until `master` contains the production lineage (GLYPHS 2, Brent, VQX). The PR base is `cursor/vqx-0.2-3d1b`.
+2. Optional: a headed browser crawl of the codec demo on a complete desktop environment.
 
 ## 0.4 priorities (recommended, not promised)
 
@@ -158,4 +172,4 @@ These are representation sizes for this corpus. They do not show model-token cou
 - External threat review before any 1.0 language
 - Workload-level benchmarks with latency and task-success, published even when VQX loses
 - Official A2A/MCP submission only after those processes exist and accept optional extensions
-- Install GitHub Actions and verify attestations on a second machine
+- Re-verify GitHub artifact attestations on a second machine
