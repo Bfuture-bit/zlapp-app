@@ -1,0 +1,25 @@
+---
+import { getAgentGlyph2ById } from "../lib/agent-glyphs2";
+
+interface Props {
+  id: string;
+  animated?: boolean;
+  size?: number;
+}
+
+const { id, animated = false, size = 32 } = Astro.props;
+const glyph = getAgentGlyph2ById(id);
+if (!glyph) {
+  throw new Error(`Unknown GLYPHS 2 id: ${id}`);
+}
+const src = animated && glyph.gif ? glyph.gif : glyph.svg;
+const alt = `${glyph.emoji} ${glyph.meaning}`;
+---
+<img
+  class="g2-glyph"
+  src={src}
+  width={size}
+  height={size}
+  alt={alt}
+  decoding="async"
+/>

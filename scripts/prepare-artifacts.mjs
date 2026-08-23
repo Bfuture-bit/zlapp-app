@@ -123,6 +123,12 @@ const vercel = {
       ],
     },
     {
+      source: "/agent-glyphs2/(.*)\\.(gif|png|json|svg)",
+      headers: [
+        { key: "Cache-Control", value: "public, max-age=86400" },
+      ],
+    },
+    {
       source: "/(.*)",
       headers: [{ key: "Referrer-Policy", value: "strict-origin-when-cross-origin" }],
     },
@@ -131,6 +137,11 @@ const vercel = {
     {
       source: "/agent-glyphs",
       destination: "/agent-glyphs/",
+      permanent: true,
+    },
+    {
+      source: "/agent-glyphs2/",
+      destination: "/agent-glyphs2",
       permanent: true,
     },
   ],
