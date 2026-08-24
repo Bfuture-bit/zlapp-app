@@ -21,6 +21,12 @@ No models have been run. Scores, answers, curator labels, and result hashes rema
 
 ## Hashes
 
-SHA-256 cells in PROTOCOL.md stay empty in this freeze commit.
+Recorded after freeze commit `0c896fd` landed on master via PR #7 (merge `8f0d34b`). Source: jsdelivr freeze tree. The PROTOCOL.md hash table was not rewritten, so the freeze-commit bytes stay hashable.
 
-Hashes of PROTOCOL.md (and of the encode/decode shuffle orders) must be filled only after this commit lands on the archive. Do not invent hashes. Do not hash results that were never produced.
+| artifact | sha256 |
+| --- | --- |
+| `docs/lab/001/PROTOCOL.md` (jsdelivr freeze tree) | 5fd2b77b3a8989c99849b2ddec8411a9680bda87f2f1c69244929e8493eb4e8f |
+| encode shuffle order | db8781e5b7bda6b866a76df347394e8290937264ca4429cee0286c9ad8d059a9 |
+| decode shuffle order | 26f8c17da12f6297cc40f48e4e9309b81a4ca5668f3345b1928af55c7698b49e |
+
+PROTOCOL.md hash cells remain empty. Do not invent hashes. Do not hash results that were never produced. Scores, answers, curator labels, and result hashes remain empty. Models were not run.
