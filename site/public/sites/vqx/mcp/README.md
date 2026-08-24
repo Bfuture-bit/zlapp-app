@@ -5,7 +5,7 @@ Registry and is **not** an official MCP extension.
 
 Identifier (experimental only): `app.zlapp.vqx`
 
-Run locally after building VQX:
+Run locally from this candidate tree only (not a live MCP endpoint; `live_endpoint` is null):
 
 ```bash
 python tools/vqx/mcp/server.py

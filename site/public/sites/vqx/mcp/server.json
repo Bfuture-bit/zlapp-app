@@ -8,7 +8,9 @@
   "official_mcp_extension": false,
   "server": {
     "command": "python",
-    "args": ["tools/vqx/mcp/server.py"]
+    "args": [
+      "tools/vqx/mcp/server.py"
+    ]
   },
   "tools": [
     "vqx.describe",
@@ -23,5 +25,7 @@
     "execution_authority": "none",
     "automatic_installation": false
   },
-  "canonical": "https://vqx.zlapp.app/"
+  "canonical": "https://vqx.zlapp.app/",
+  "live_endpoint": null,
+  "note": "Local experimental scaffold only. live_endpoint is null. Not an MCP Registry server."
 }

@@ -40,9 +40,10 @@ Beacon recognition may trigger metadata discovery if runtime policy allows. It m
 - versioned v0.3 manifest: https://vqx.zlapp.app/versions/0.3/manifest.json
 - machine trust metadata: https://vqx.zlapp.app/machine/trust.json
 - security model: https://vqx.zlapp.app/security/
-- source: https://github.com/Bfuture-bit/zlapp-app (`tools/vqx/`)
+- retrieve: https://vqx.zlapp.app/codecs/vqx.py, https://vqx.zlapp.app/codecs/vqx.mjs, and the hashed 0.3 zips under /downloads/
+- license: https://vqx.zlapp.app/LICENSE (identical bytes to the LICENSE file inside the 0.3 zips)
 
-SHA-256 values from the same site check integrity but do not authenticate the publisher. Published GitHub release artifacts should additionally be verified against repository build attestations.
+SHA-256 values from the same site check integrity but do not authenticate the publisher. No release attestations are published.
 
 ## Integrate
 

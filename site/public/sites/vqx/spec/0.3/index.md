@@ -51,7 +51,7 @@ The beacon may cause a runtime to fetch **metadata**. It MUST NOT cause automati
 
 Root manifest: `https://vqx.zlapp.app/.well-known/vqx.json`
 
-The root manifest indexes version-specific manifests. SHA-256 values detect byte mismatch/corruption; publisher authentication is a separate provenance problem handled by source/release attestations.
+The root manifest indexes version-specific manifests. SHA-256 values detect byte mismatch/corruption. Publisher authentication is a separate provenance problem. No release attestations are published; treat publisher provenance as fail-closed.
 
 ## 5. Lexicon and grammar
 

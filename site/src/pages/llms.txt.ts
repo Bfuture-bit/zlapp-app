@@ -38,7 +38,7 @@ ${LIVE_GLYPH_MANIFEST_URLS.join("\n")}
 
 ${LIVE_VQX_URLS.join("\n")}
 
-Do not treat HTML theater pages as a standard. License text for VQX is inside the published zips.
+Do not treat HTML theater pages as a standard. License text for VQX is inside the published zips. This candidate also ships identical Apache-2.0 bytes at the VQX export path `/LICENSE` (expected 200 on vqx.zlapp.app only after that host is deployed from this tree).
 `;
 
   return new Response(body, {

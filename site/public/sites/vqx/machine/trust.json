@@ -4,15 +4,21 @@
   "status": "experimental",
   "source": {
     "repository": "https://github.com/Bfuture-bit/zlapp-app",
-    "path": "tools/vqx",
-    "build_command": "python tools/vqx/build.py"
+    "retrieve": [
+      "https://vqx.zlapp.app/codecs/vqx.py",
+      "https://vqx.zlapp.app/codecs/vqx.mjs",
+      "https://vqx.zlapp.app/downloads/vqx-agent-package-v0.3.zip",
+      "https://vqx.zlapp.app/downloads/vqx-human-dictionary-v0.3.zip",
+      "https://vqx.zlapp.app/downloads/SHA256SUMS.txt"
+    ],
+    "note": "Retrieve codecs and hashed zips from https://vqx.zlapp.app. Do not treat GitHub paths as live retrieve URLs unless they 200 on the default branch."
   },
   "license": {
     "id": "Apache-2.0",
     "name": "Apache License 2.0",
     "url": "https://vqx.zlapp.app/LICENSE",
     "spdx": "Apache-2.0",
-    "scope": "VQX protocol sources under tools/vqx and generated VQX artifacts. Does not relicense the rest of zlapp-app."
+    "scope": "VQX protocol sources and generated VQX artifacts. Does not relicense the rest of zlapp-app."
   },
   "semantic_identity": [
     "protocol version",
@@ -24,9 +30,9 @@
   "automatic_installation": false,
   "beacon_authentication": false,
   "release_provenance": {
-    "mechanism": "GitHub Actions artifact attestation",
-    "status": "available only after the release workflow is run on GitHub",
-    "repository": "https://github.com/Bfuture-bit/zlapp-app"
+    "mechanism": "none published",
+    "status": "no publisher attestations",
+    "attestations": false
   },
   "same_origin_sha256_role": "integrity/corruption detection; not publisher authentication",
   "security": "https://vqx.zlapp.app/security/",

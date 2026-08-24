@@ -1,6 +1,8 @@
 # VQX 0.3 Trust Release Report
 
-Status: **VQX 0.3 is live on https://vqx.zlapp.app**. GitHub Actions and Sigstore attestations are installed. Do not merge PR #4 into `master`.
+H-VQX1 (integration candidate): this report is historical notes from PR #4. Publisher attestations are **not** advertised. T1 remain fail-closed. Not a production PASS. Do not merge to master. Do not production-deploy.
+
+Status: **VQX 0.3 is live on https://vqx.zlapp.app**. Do not merge PR #4 into `master`.
 
 This report records only checks that were actually run.
 

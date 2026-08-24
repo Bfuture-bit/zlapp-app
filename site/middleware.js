@@ -22,8 +22,11 @@ export default function middleware(request) {
   if (url.hostname === "vqx.zlapp.app") {
     if (url.pathname.startsWith("/sites/vqx")) return;
     let p = url.pathname || "/";
+    const extensionlessFiles = new Set(["/LICENSE", "/NOTICE"]);
     if (p === "/extensions/vqx/0.3" || p === "/extensions/vqx/0.3/") {
       p = "/extensions/vqx/0.3/index.json";
+    } else if (extensionlessFiles.has(p)) {
+      // Serve the file; do not treat LICENSE/NOTICE as directories.
     } else if (p === "/") p = "/index.html";
     else if (p.endsWith("/")) p += "index.html";
     else if (!p.split("/").pop().includes(".")) p += "/index.html";
