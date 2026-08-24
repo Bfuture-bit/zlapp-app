@@ -97,6 +97,18 @@ const vercel = {
       headers: [{ key: "Referrer-Policy", value: "strict-origin-when-cross-origin" }],
     },
   ],
+  redirects: [
+    {
+      source: "/vqx",
+      destination: "https://vqx.zlapp.app/",
+      permanent: true,
+    },
+    {
+      source: "/vqx/:path*",
+      destination: "https://vqx.zlapp.app/:path*",
+      permanent: true,
+    },
+  ],
   rewrites,
 };
 
