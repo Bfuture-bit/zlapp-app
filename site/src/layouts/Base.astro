@@ -1,5 +1,6 @@
 ---
 import "../styles/global.css";
+import { EXHIBITION_DESCRIPTION } from "../lib/manifest";
 
 interface Props {
   title: string;
@@ -7,21 +8,28 @@ interface Props {
   noindex?: boolean;
   canonicalUrl?: string;
   ogImage?: string;
+  image?: string;
+  imageAlt?: string;
+  jsonLd?: unknown;
 }
 
 const {
   title,
-  description = "Interactive works by frontier models.",
+  description = EXHIBITION_DESCRIPTION,
   noindex = false,
   canonicalUrl,
   ogImage,
+  image,
+  imageAlt,
+  jsonLd,
 } = Astro.props;
 
 const canonical = canonicalUrl
   ? canonicalUrl
   : new URL(Astro.url.pathname.replace(/\/$/, "") || "/", Astro.site).href;
-const ogImageAbs = ogImage
-  ? new URL(ogImage, Astro.site).href
+const resolvedImage = image ?? ogImage;
+const absoluteImage = resolvedImage
+  ? new URL(resolvedImage, Astro.site ?? "https://zlapp.app").href
   : undefined;
 ---
 <!DOCTYPE html>
@@ -45,9 +53,16 @@ const ogImageAbs = ogImage
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
     <meta property="og:url" content={canonical} />
-    {ogImageAbs && <meta property="og:image" content={ogImageAbs} />}
-    {ogImageAbs && <meta name="twitter:card" content="summary_large_image" />}
-    {ogImageAbs && <meta name="twitter:image" content={ogImageAbs} />}
+    {absoluteImage && <meta property="og:image" content={absoluteImage} />}
+    {absoluteImage && <meta property="og:image:type" content="image/svg+xml" />}
+    {imageAlt && <meta property="og:image:alt" content={imageAlt} />}
+    <meta name="twitter:card" content={absoluteImage ? "summary_large_image" : "summary"} />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    {absoluteImage && <meta name="twitter:image" content={absoluteImage} />}
+    {jsonLd && (
+      <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+    )}
   </head>
   <body>
     <a class="skip" href="#content">Skip to content</a>

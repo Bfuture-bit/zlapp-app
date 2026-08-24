@@ -105,7 +105,9 @@ for (const site of satellites.sites) {
     has: [{ type: "host", value: site.host }],
     destination: homeDest,
   });
-  if (site.apexPath) {
+  // Apex /vqx is a 301 to the VQX host (see redirects). Do not also rewrite
+  // it to a second machine tree on zlapp.app.
+  if (site.apexPath && site.id !== "vqx") {
     rewrites.push({
       source: site.apexPath,
       destination: dest,
@@ -127,6 +129,16 @@ for (const site of satellites.sites) {
         source: "/extensions/vqx/0.3/index.json",
         has: [{ type: "host", value: site.host }],
         destination: "https://zlapp.app/sites/vqx/extensions/vqx/0.3/index.json",
+      },
+      {
+        source: "/LICENSE",
+        has: [{ type: "host", value: site.host }],
+        destination: "https://zlapp.app/sites/vqx/LICENSE",
+      },
+      {
+        source: "/NOTICE",
+        has: [{ type: "host", value: site.host }],
+        destination: "https://zlapp.app/sites/vqx/NOTICE",
       }
     );
   }
@@ -205,6 +217,22 @@ const vercel = {
     {
       source: "/agent-glyphs2/",
       destination: "/agent-glyphs2",
+      permanent: true,
+    },
+    {
+      source: "/vqx",
+      destination: "https://vqx.zlapp.app/",
+      permanent: true,
+    },
+    {
+      source: "/vqx/:path*",
+      destination: "https://vqx.zlapp.app/:path*",
+      permanent: true,
+    },
+    {
+      source: "/.well-known/vqx.json",
+      has: [{ type: "host", value: "zlapp.app" }],
+      destination: "https://vqx.zlapp.app/.well-known/vqx.json",
       permanent: true,
     },
   ],

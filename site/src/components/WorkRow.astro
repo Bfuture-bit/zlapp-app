@@ -8,7 +8,7 @@ interface Props {
 const { work } = Astro.props;
 const model = modelById(work.model);
 ---
-<a class="work" href={experienceHref(work.publicSlug, true)} style={`--c0:${work.palette[0]};--c1:${work.palette[1]};--c2:${work.palette[2]}`}>
+<a class="work" href={experienceHref(work.publicSlug)} style={`--c0:${work.palette[0]};--c1:${work.palette[1]};--c2:${work.palette[2]}`}>
   <div class="work-preview" aria-hidden="true">
     <img src={previewHref(work.publicSlug)} alt="" width="1200" height="750" loading="lazy" />
   </div>

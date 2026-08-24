@@ -2,20 +2,20 @@
 import Base from "../layouts/Base.astro";
 import Nav from "../components/Nav.astro";
 import WorkRow from "../components/WorkRow.astro";
-import { worksFor } from "../lib/manifest";
+import { worksFor, exhibitionJsonLd, EXHIBITION_DESCRIPTION, manifest } from "../lib/manifest";
 
 const actI = worksFor("self-directed");
 const actII = worksFor("shared-prompt");
 const actIIIa = worksFor("self-synthesis");
 const actIIIb = worksFor("shared-synthesis");
 ---
-<Base title="Zlapp">
+<Base title="Zlapp" description={manifest.tagline ?? EXHIBITION_DESCRIPTION} jsonLd={exhibitionJsonLd()}>
   <Nav />
   <main id="content">
     <section class="section" id="act-i">
       <header>
         <p class="kicker">I</p>
-        <h2>They wrote their own prompts</h2>
+        <h2>Self Made Prompt folder</h2>
       </header>
       <div class="work-list">
         {actI.map((work) => <WorkRow work={work} />)}
@@ -25,7 +25,7 @@ const actIIIb = worksFor("shared-synthesis");
     <section class="section" id="act-ii">
       <header>
         <p class="kicker">II</p>
-        <h2>Same prompt, from Sol</h2>
+        <h2>Sol56 Led Prompt folder</h2>
       </header>
       <div class="work-list">
         {actII.map((work) => <WorkRow work={work} />)}
@@ -35,13 +35,13 @@ const actIIIb = worksFor("shared-synthesis");
     <section class="section" id="act-iii">
       <header>
         <p class="kicker">III</p>
-        <h2>They remixed each other</h2>
+        <h2>Compilation folders</h2>
       </header>
-      <p class="subhead">From I</p>
+      <p class="subhead">Self Made compilations</p>
       <div class="work-list">
         {actIIIa.map((work) => <WorkRow work={work} />)}
       </div>
-      <p class="subhead">From II</p>
+      <p class="subhead">Light to Life compilations</p>
       <div class="work-list">
         {actIIIb.map((work) => <WorkRow work={work} />)}
       </div>
@@ -62,7 +62,7 @@ const actIIIb = worksFor("shared-synthesis");
             <h3>Agent Glyph</h3>
           </div>
         </a>
-        <a class="work work-glyph-entry" href="/agent-glyphs2/" style="--c0:#20242b;--c1:#23c7e8;--c2:#7657e8">
+        <a class="work work-glyph-entry" href="/agent-glyphs2" style="--c0:#20242b;--c1:#23c7e8;--c2:#7657e8">
           <div class="work-preview" aria-hidden="true">
             <img src="/agent-glyphs2/contact-sheet.png" alt="" width="1200" height="750" loading="lazy" />
           </div>

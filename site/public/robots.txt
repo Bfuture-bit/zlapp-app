@@ -2,3 +2,5 @@ User-agent: *
 Allow: /
 Disallow: /artifacts/
 Disallow: /x/*/play
+
+Sitemap: https://zlapp.app/sitemap.xml

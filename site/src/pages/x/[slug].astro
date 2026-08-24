@@ -7,6 +7,8 @@ import {
   modelById,
   experienceHref,
   artifactHref,
+  previewHref,
+  launchJsonLd,
 } from "../../lib/manifest";
 
 export function getStaticPaths() {
@@ -19,8 +21,15 @@ const { slug } = Astro.params;
 const work = workBySlug(slug!);
 if (!work) throw new Error(`Unknown work: ${slug}`);
 const model = modelById(work.model);
+const description = `${work.title}. Interactive HTML. On-page attribution: ${model.name}.`;
 ---
-<Base title={`${work.title} — ${model.name}`}>
+<Base
+  title={`${work.title} — ${model.name}`}
+  description={description}
+  image={previewHref(work.publicSlug)}
+  imageAlt={`${work.title} preview`}
+  jsonLd={launchJsonLd(work)}
+>
   <div class="launch">
     <Nav />
     <main id="content" class="launch-main">

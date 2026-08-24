@@ -115,6 +115,27 @@
       "source": "/agent-glyphs2/",
       "destination": "/agent-glyphs2",
       "permanent": true
+    },
+    {
+      "source": "/vqx",
+      "destination": "https://vqx.zlapp.app/",
+      "permanent": true
+    },
+    {
+      "source": "/vqx/:path*",
+      "destination": "https://vqx.zlapp.app/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/.well-known/vqx.json",
+      "has": [
+        {
+          "type": "host",
+          "value": "zlapp.app"
+        }
+      ],
+      "destination": "https://vqx.zlapp.app/.well-known/vqx.json",
+      "permanent": true
     }
   ],
   "rewrites": [
@@ -773,10 +794,6 @@
       "destination": "https://zlapp.app/sites/vqx/index.html?vqx=0.3"
     },
     {
-      "source": "/vqx",
-      "destination": "/sites/vqx/index.html"
-    },
-    {
       "source": "/.well-known/vqx.json",
       "has": [
         {
@@ -805,6 +822,26 @@
         }
       ],
       "destination": "https://zlapp.app/sites/vqx/extensions/vqx/0.3/index.json"
+    },
+    {
+      "source": "/LICENSE",
+      "has": [
+        {
+          "type": "host",
+          "value": "vqx.zlapp.app"
+        }
+      ],
+      "destination": "https://zlapp.app/sites/vqx/LICENSE"
+    },
+    {
+      "source": "/NOTICE",
+      "has": [
+        {
+          "type": "host",
+          "value": "vqx.zlapp.app"
+        }
+      ],
+      "destination": "https://zlapp.app/sites/vqx/NOTICE"
     },
     {
       "source": "/:path*",
