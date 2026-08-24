@@ -1,0 +1,77 @@
+{
+  "protocol": "VQX",
+  "version": "0.3",
+  "canonical_token": "unsigned byte 0x00-0xFF",
+  "pua_container": {
+    "base": "U+E000",
+    "formula": "U+E000 + byte",
+    "semantic_identity": false
+  },
+  "composition": {
+    "description": "Tokens concatenate left to right. Typical unit: speech-act, role, zero or more actions, targets, constraints, then macros.",
+    "pattern": "[speech_act] [role] [action*] [target*] [constraint*] [macro*]",
+    "separator_id": 13,
+    "separator_name": "SEP",
+    "human_names_not_on_wire": true
+  },
+  "bootstrap": {
+    "layout": [
+      "beacon[6]",
+      "version[1]",
+      "flags[1]",
+      "payload"
+    ],
+    "beacon_hex": "D3 A7 5C E1 9B 02",
+    "version": 3,
+    "allowed_flags_mask": 0,
+    "max_payload_bytes_default": 65535
+  },
+  "compact": {
+    "layout": [
+      "payload"
+    ],
+    "when": "both peers explicitly negotiate VQX, compatible versions, matching dictionary SHA-256, policy compatibility, and usefulness",
+    "parser_mode": "explicit compact mode is required for negotiated sessions; auto-detection is discovery-only"
+  },
+  "local_macros": {
+    "define": {
+      "opcode": 220,
+      "hex": "DC",
+      "frame": "DC | slot | len | tokens[len]"
+    },
+    "ref": {
+      "opcode": 221,
+      "hex": "DD",
+      "frame": "DD | slot"
+    },
+    "clear": {
+      "opcode": 222,
+      "hex": "DE"
+    },
+    "table_hash": {
+      "opcode": 223,
+      "hex": "DF"
+    },
+    "slot_range": {
+      "min": 224,
+      "max": 255,
+      "hex": "E0-FF"
+    },
+    "definition_content": "v0.3 definitions may contain global semantic bytes 00-DB only; nested control/local bytes DC-FF fail closed",
+    "direct_local_slot_bytes": "invalid outside REF_LOCAL",
+    "scope": "session and peer; never persist across unrelated peers",
+    "max_expanded_bytes_default": 65535
+  },
+  "fail_closed": [
+    "unknown_version",
+    "unsupported_flags",
+    "dictionary_mismatch",
+    "malformed_macro",
+    "undefined_local_slot",
+    "direct_local_slot",
+    "frame_size_limit",
+    "macro_expansion_limit"
+  ],
+  "authorization": "Decoding EXECUTE, INSTALL, DIRECT, COMMIT, or any other intent never grants permission. Authorization belongs to the host runtime.",
+  "automatic_installation": false
+}

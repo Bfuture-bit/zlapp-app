@@ -1,0 +1,45 @@
+{
+  "protocol": "VQX",
+  "version": "0.3",
+  "method": "representation_size_only",
+  "notes": [
+    "Binary VQX payload bytes are compared with UTF-8 natural language / compact JSON bytes.",
+    "PUA UTF-8 size is reported separately because PUA is a text container, not the preferred compact wire representation.",
+    "Model tokenizer counts, latency, task success, and semantic equivalence between arbitrary schemas are runtime-specific and are not inferred."
+  ],
+  "rows": [
+    {
+      "id": "legacy_glyph_only",
+      "natural_language_utf8_bytes": 162,
+      "compact_json_utf8_bytes": 77,
+      "vqx_semantic_payload_bytes": 4,
+      "vqx_bootstrap_frame_bytes": 12,
+      "vqx_pua_utf8_bytes": 12,
+      "vqx_semantic_token_count": 4,
+      "semantic_roundtrip": true,
+      "vqx_vs_compact_json_byte_reduction_percent": 94.81
+    },
+    {
+      "id": "handoff_preserve",
+      "natural_language_utf8_bytes": 158,
+      "compact_json_utf8_bytes": 162,
+      "vqx_semantic_payload_bytes": 8,
+      "vqx_bootstrap_frame_bytes": 16,
+      "vqx_pua_utf8_bytes": 24,
+      "vqx_semantic_token_count": 8,
+      "semantic_roundtrip": true,
+      "vqx_vs_compact_json_byte_reduction_percent": 95.06
+    },
+    {
+      "id": "verify_fail_closed",
+      "natural_language_utf8_bytes": 99,
+      "compact_json_utf8_bytes": 66,
+      "vqx_semantic_payload_bytes": 4,
+      "vqx_bootstrap_frame_bytes": 12,
+      "vqx_pua_utf8_bytes": 12,
+      "vqx_semantic_token_count": 4,
+      "semantic_roundtrip": true,
+      "vqx_vs_compact_json_byte_reduction_percent": 93.94
+    }
+  ]
+}

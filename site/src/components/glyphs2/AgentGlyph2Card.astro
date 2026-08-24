@@ -1,0 +1,39 @@
+---
+import AgentGlyph2Preview from "./AgentGlyph2Preview.astro";
+import type { AgentGlyph2Record } from "../../lib/agent-glyphs2";
+
+interface Props {
+  glyph: AgentGlyph2Record;
+}
+const { glyph } = Astro.props;
+const preview = glyph.svg;
+---
+<article
+  class="g2-card"
+  data-g2-card
+  data-id={glyph.id}
+  data-cat={glyph.category}
+  data-animated={glyph.animated ? "1" : "0"}
+  data-svg={glyph.svg}
+  data-png={glyph.png}
+  data-gif={glyph.gif ?? ""}
+  data-emoji={glyph.emoji}
+  data-meaning={glyph.meaning}
+>
+  <button type="button" class="g2-card-hit" data-g2-open aria-label={`Open ${glyph.emoji}`}>
+    <AgentGlyph2Preview src={preview} alt={glyph.emoji} />
+  </button>
+  <div class="g2-card-body">
+    <p class="g2-token">{glyph.emoji}</p>
+    <p class="g2-cat">{glyph.category}</p>
+    <p class="g2-mean">{glyph.meaning}</p>
+    <p class="g2-badge">{glyph.animated ? "Animated" : "Static"}</p>
+    <div class="g2-actions">
+      <button type="button" data-g2-copy="name">Copy Name</button>
+      <button type="button" data-g2-copy="asset">Copy Asset URL</button>
+      {glyph.animated && (
+        <button type="button" data-g2-toggle aria-pressed="false">Static / Animated</button>
+      )}
+    </div>
+  </div>
+</article>

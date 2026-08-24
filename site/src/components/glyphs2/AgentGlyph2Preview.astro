@@ -1,0 +1,11 @@
+---
+interface Props {
+  src: string;
+  alt: string;
+  animated?: boolean;
+}
+const { src, alt, animated = false } = Astro.props;
+---
+<div class:list={["g2-preview", animated && "is-animated"]} data-g2-preview>
+  <img src={src} alt={alt} width="256" height="256" decoding="async" />
+</div>

@@ -1,0 +1,13 @@
+{
+  "name": "zlapp-glyphs2",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "generate": "node generate.mjs",
+    "verify": "node generate.mjs --verify-only"
+  },
+  "dependencies": {
+    "canvas": "^3.0.0",
+    "gifenc": "1.0.3"
+  }
+}

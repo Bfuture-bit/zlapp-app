@@ -1,0 +1,40 @@
+{
+  "protocol": "VQX",
+  "version": "0.3",
+  "status": "experimental",
+  "source": {
+    "repository": "https://github.com/Bfuture-bit/zlapp-app",
+    "retrieve": [
+      "https://vqx.zlapp.app/codecs/vqx.py",
+      "https://vqx.zlapp.app/codecs/vqx.mjs",
+      "https://vqx.zlapp.app/downloads/vqx-agent-package-v0.3.zip",
+      "https://vqx.zlapp.app/downloads/vqx-human-dictionary-v0.3.zip",
+      "https://vqx.zlapp.app/downloads/SHA256SUMS.txt"
+    ],
+    "note": "Retrieve codecs and hashed zips from https://vqx.zlapp.app. Do not treat GitHub paths as live retrieve URLs unless they 200 on the default branch."
+  },
+  "license": {
+    "id": "Apache-2.0",
+    "name": "Apache License 2.0",
+    "url": "https://vqx.zlapp.app/LICENSE",
+    "spdx": "Apache-2.0",
+    "scope": "VQX protocol sources and generated VQX artifacts. Does not relicense the rest of zlapp-app."
+  },
+  "semantic_identity": [
+    "protocol version",
+    "lexicon SHA-256",
+    "grammar SHA-256"
+  ],
+  "presentation_assets_are_semantic_identity": false,
+  "execution_authority": "none",
+  "automatic_installation": false,
+  "beacon_authentication": false,
+  "release_provenance": {
+    "mechanism": "none published",
+    "status": "no publisher attestations",
+    "attestations": false
+  },
+  "same_origin_sha256_role": "integrity/corruption detection; not publisher authentication",
+  "security": "https://vqx.zlapp.app/security/",
+  "threat_model": "https://vqx.zlapp.app/security/threat-model.md"
+}

@@ -14,6 +14,24 @@
       ]
     },
     {
+      "source": "/agent-glyphs/(.*)\\.(gif|png|json|csv)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400"
+        }
+      ]
+    },
+    {
+      "source": "/agent-glyphs2/(.*)\\.(gif|png|json|svg)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400"
+        }
+      ]
+    },
+    {
       "source": "/(.*)",
       "headers": [
         {
@@ -21,6 +39,103 @@
           "value": "strict-origin-when-cross-origin"
         }
       ]
+    },
+    {
+      "source": "/.well-known/vqx.json",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        },
+        {
+          "key": "CDN-Cache-Control",
+          "value": "no-store"
+        },
+        {
+          "key": "Content-Type",
+          "value": "application/json; charset=utf-8"
+        }
+      ]
+    },
+    {
+      "source": "/.well-known/security.txt",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        },
+        {
+          "key": "CDN-Cache-Control",
+          "value": "no-store"
+        },
+        {
+          "key": "Content-Type",
+          "value": "text/plain; charset=utf-8"
+        }
+      ]
+    },
+    {
+      "source": "/extensions/vqx/0.3/index.json",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        },
+        {
+          "key": "CDN-Cache-Control",
+          "value": "no-store"
+        },
+        {
+          "key": "Content-Type",
+          "value": "application/json; charset=utf-8"
+        }
+      ]
+    },
+    {
+      "source": "/sites/vqx/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        },
+        {
+          "key": "CDN-Cache-Control",
+          "value": "max-age=0, must-revalidate"
+        }
+      ]
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/agent-glyphs",
+      "destination": "/agent-glyphs/",
+      "permanent": true
+    },
+    {
+      "source": "/agent-glyphs2/",
+      "destination": "/agent-glyphs2",
+      "permanent": true
+    },
+    {
+      "source": "/vqx",
+      "destination": "https://vqx.zlapp.app/",
+      "permanent": true
+    },
+    {
+      "source": "/vqx/:path*",
+      "destination": "https://vqx.zlapp.app/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/.well-known/vqx.json",
+      "has": [
+        {
+          "type": "host",
+          "value": "zlapp.app"
+        }
+      ],
+      "destination": "https://vqx.zlapp.app/.well-known/vqx.json",
+      "permanent": true
     }
   ],
   "rewrites": [
@@ -653,6 +768,90 @@
         }
       ],
       "destination": "/artifacts/gemini-synthesis.html"
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "brent.zlapp.app"
+        }
+      ],
+      "destination": "https://zlapp.app/sites/brent/index.html"
+    },
+    {
+      "source": "/brent",
+      "destination": "/sites/brent/index.html"
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "vqx.zlapp.app"
+        }
+      ],
+      "destination": "https://zlapp.app/sites/vqx/index.html?vqx=0.3"
+    },
+    {
+      "source": "/.well-known/vqx.json",
+      "has": [
+        {
+          "type": "host",
+          "value": "vqx.zlapp.app"
+        }
+      ],
+      "destination": "https://zlapp.app/sites/vqx/.well-known/vqx.json"
+    },
+    {
+      "source": "/.well-known/security.txt",
+      "has": [
+        {
+          "type": "host",
+          "value": "vqx.zlapp.app"
+        }
+      ],
+      "destination": "https://zlapp.app/sites/vqx/.well-known/security.txt"
+    },
+    {
+      "source": "/extensions/vqx/0.3/index.json",
+      "has": [
+        {
+          "type": "host",
+          "value": "vqx.zlapp.app"
+        }
+      ],
+      "destination": "https://zlapp.app/sites/vqx/extensions/vqx/0.3/index.json"
+    },
+    {
+      "source": "/LICENSE",
+      "has": [
+        {
+          "type": "host",
+          "value": "vqx.zlapp.app"
+        }
+      ],
+      "destination": "https://zlapp.app/sites/vqx/LICENSE"
+    },
+    {
+      "source": "/NOTICE",
+      "has": [
+        {
+          "type": "host",
+          "value": "vqx.zlapp.app"
+        }
+      ],
+      "destination": "https://zlapp.app/sites/vqx/NOTICE"
+    },
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "vqx.zlapp.app"
+        }
+      ],
+      "destination": "https://zlapp.app/sites/vqx/:path*"
     }
   ]
 }

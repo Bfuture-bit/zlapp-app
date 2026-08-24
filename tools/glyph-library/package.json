@@ -1,0 +1,17 @@
+{
+  "name": "agent-glyph-library",
+  "version": "1.0.0",
+  "description": "173 procedural agent-state glyphs from AGENT_GLYPH_MASTER_1.0 \u2014 canvas animation exported as GIF and vector SVG",
+  "main": "src/index.js",
+  "scripts": {
+    "export": "node export.js",
+    "export:one": "node export.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "canvas": "^3.0.0",
+    "gifenc": "1.0.3"
+  }
+}

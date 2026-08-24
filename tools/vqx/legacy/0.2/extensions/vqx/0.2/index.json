@@ -1,0 +1,21 @@
+{
+  "uri": "https://vqx.zlapp.app/extensions/vqx/0.2",
+  "name": "VQX",
+  "version": "0.2",
+  "status": "experimental",
+  "official_a2a_standard": false,
+  "description": "Optional A2A 1.x extension for compact semantic byte transport. Not an official A2A standard.",
+  "manifest": "https://vqx.zlapp.app/.well-known/vqx.json",
+  "params": {
+    "protocol": "VQX",
+    "version": "0.2",
+    "dictionary_sha256": "f1d53dbc55dbaab011c2b2c06219dcca2a4006f5b9e73e99f81baca1523e4ad1",
+    "modes": [
+      "bootstrap",
+      "compact"
+    ],
+    "dynamic_macros": true
+  },
+  "live_a2a_endpoint": null,
+  "note": "This host documents the extension and does not operate a live A2A agent service."
+}

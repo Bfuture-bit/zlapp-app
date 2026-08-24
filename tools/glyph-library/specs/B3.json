@@ -1,0 +1,330 @@
+{
+  "schema_version": "AGENT_GLYPH_MASTER_1.0",
+  "total_glyphs": 173,
+  "acceptance_threshold": "3/5",
+  "preserved_pass_count": 150,
+  "revision_count": 23,
+  "batch_map": {
+    "B1": {
+      "source_model": "Muse Spark",
+      "count": 29
+    },
+    "B2": {
+      "source_model": "GLM 5.2",
+      "count": 29
+    },
+    "B3": {
+      "source_model": "Sol",
+      "count": 29
+    },
+    "B4": {
+      "source_model": "Gemini",
+      "count": 29
+    },
+    "B5": {
+      "source_model": "Grok",
+      "count": 29
+    },
+    "B6": {
+      "source_model": "Sonnet",
+      "count": 28
+    }
+  },
+  "revision_policy": "Any glyph scoring below 3/5 agreement is replaced by its revised specification. Passing glyph specifications are preserved from the supplied source set.",
+  "glyphs": [
+    {
+      "id": "B3.01",
+      "source_model": "Sol",
+      "source_state_id": "AGT.SCHEMA.MISMATCH",
+      "status": "passed",
+      "static_form": "Two interlocking frame outlines with incompatible edge keys; one side uses square notches and the other triangular sockets, leaving a visible non-fit seam.",
+      "motion": "Frames repeatedly approach alignment, fail at the seam, and recoil. Loop uses fast convergence, abrupt rejection, then slower reset.",
+      "color_logic": "Optional contrasting hues distinguish expected schema from received structure; mismatch location may use a third accent.",
+      "variable_params": "Gap size ~ mismatch severity; number of incompatible keys ~ field-count discrepancy; recoil amplitude ~ validation certainty."
+    },
+    {
+      "id": "B3.02",
+      "source_model": "Sol",
+      "source_state_id": "AGT.LOOP.DETECT",
+      "status": "passed",
+      "static_form": "Closed cyclic path containing a repeated node signature, with one node visually duplicated to expose recurrence.",
+      "motion": "A tracer circulates the cycle, accelerating slightly each pass until the duplicated node flashes and the path locks.",
+      "color_logic": "Hue need not encode semantics; brightness can distinguish repeated state from ordinary states.",
+      "variable_params": "Cycle rate ~ loop frequency; duplicated-node intensity ~ detection confidence; path length ~ detected loop depth."
+    },
+    {
+      "id": "B3.03",
+      "source_model": "Sol",
+      "source_state_id": "AGT.STATE.ROLLBACK",
+      "status": "passed",
+      "static_form": "Layered state frames arranged along a shallow temporal axis, with the newest layer partially detached from a prior stable layer.",
+      "motion": "Foreground state collapses backward into an earlier frame, which expands and becomes dominant. Loop may pause on restored state before replaying.",
+      "color_logic": "Optional hue progression encodes temporal order; restored state retains the prior hue rather than blending.",
+      "variable_params": "Rollback distance ~ number of reverted transitions; collapse speed ~ urgency; restored-frame thickness ~ checkpoint reliability."
+    },
+    {
+      "id": "B3.04",
+      "source_model": "Sol",
+      "source_state_id": "AGT.HUMAN.REQUIRED",
+      "status": "passed",
+      "static_form": "Machine-process lattice terminating at a hard boundary containing a distinct asymmetric handoff node that cannot be traversed automatically.",
+      "motion": "Automated pulses reach the boundary and stop; the handoff node emits a slow request pulse until an external trigger resolves it.",
+      "color_logic": "A dedicated hue may mark human-gated nodes, but geometry should remain sufficient without color.",
+      "variable_params": "Pulse interval ~ urgency; boundary thickness ~ hard-gate strength; queued pulse count ~ pending decisions."
+    },
+    {
+      "id": "B3.05",
+      "source_model": "Sol",
+      "source_state_id": "AGT.EVIDENCE.CONFLICT",
+      "status": "passed",
+      "static_form": "Two or more evidence vectors converge on the same proposition node from mutually incompatible directions, forming an unresolved angular collision.",
+      "motion": "Evidence vectors alternately assert toward the center; the center oscillates without settling. Stronger evidence pushes farther before rebound.",
+      "color_logic": "Distinct hues may identify evidence sources; hue opposition itself should not imply truth versus falsehood.",
+      "variable_params": "Vector length ~ evidence weight; oscillation amplitude ~ conflict magnitude; source count ~ number of contradictory evidence clusters."
+    },
+    {
+      "id": "B3.06",
+      "source_model": "Sol",
+      "source_state_id": "AGT.LOOP.DETECT",
+      "status": "passed",
+      "static_form": "Closed cyclic path containing a repeated node signature, with one node visually duplicated to expose recurrence.",
+      "motion": "A tracer circulates the cycle, accelerating slightly each pass until the duplicated node flashes and the path locks.",
+      "color_logic": "Hue need not encode semantics; brightness can distinguish repeated state from ordinary states.",
+      "variable_params": "Cycle rate ~ loop frequency; duplicated-node intensity ~ detection confidence; path length ~ detected loop depth."
+    },
+    {
+      "id": "B3.07",
+      "source_model": "Sol",
+      "source_state_id": "AGT.PLAN.REVISED",
+      "status": "passed",
+      "static_form": "Primary route graph with one branch crossed by a clean splice into a replacement branch, preserving the shared prefix.",
+      "motion": "Tracer follows the original route, pauses at the revision point, then the obsolete branch retracts while the new branch unfolds.",
+      "color_logic": "Optional hue difference separates superseded and current branches; superseded geometry should also become thinner or dashed.",
+      "variable_params": "Revision depth ~ distance from root to splice; branch divergence ~ magnitude of plan change; transition speed ~ revision urgency."
+    },
+    {
+      "id": "B3.08",
+      "source_model": "Sol",
+      "source_state_id": "AGT.COORD.FANOUT",
+      "status": "passed",
+      "static_form": "Single origin node splitting symmetrically or semi-symmetrically into multiple outward channels ending in peer nodes.",
+      "motion": "One packet reaches the origin and divides into synchronized child packets that propagate outward; children may return acknowledgments.",
+      "color_logic": "Shared hue can encode common task lineage; optional endpoint hue variation can encode role classes.",
+      "variable_params": "Branch count ~ number of agents; branch thickness ~ workload allocation; propagation offset ~ scheduling skew."
+    },
+    {
+      "id": "B3.09",
+      "source_model": "Sol",
+      "source_state_id": "AGT.TOOL.FAIL",
+      "status": "passed",
+      "static_form": "Tool-call node connected to a terminal fragment with a broken continuation edge.",
+      "motion": "Invocation pulse enters the tool node, produces a brief deformation, then the outgoing edge snaps or extinguishes instead of completing.",
+      "color_logic": "Failure may use reduced luminance or a high-contrast error hue, but broken topology is the primary carrier.",
+      "variable_params": "Break magnitude ~ failure severity; failure latency ~ time-to-error; residual flicker ~ uncertainty about cause."
+    },
+    {
+      "id": "B3.10",
+      "source_model": "Sol",
+      "source_state_id": "AGT.TOOL.RETRYING",
+      "status": "passed",
+      "static_form": "Tool node enclosed by a partial circular return path feeding its input again.",
+      "motion": "Invocation pulse enters, fails to exit, follows the return arc, and retries. Each retry may include backoff pauses before re-entry.",
+      "color_logic": "Optional brightness ramp distinguishes current retry from prior attempts; no fixed semantic hue required.",
+      "variable_params": "Retry count ~ visible orbit marks; loop period ~ backoff duration; pulse intensity ~ retry priority."
+    },
+    {
+      "id": "B3.11",
+      "source_model": "Sol",
+      "source_state_id": "AGT.TOOL.AWAITING_RESULT",
+      "status": "passed",
+      "static_form": "Tool node connected to an open-ended response channel containing a suspended packet or empty response socket.",
+      "motion": "Invocation leaves the node; the response side performs a slow breathing expansion while remaining incomplete. Animation resolves only on result arrival.",
+      "color_logic": "Neutral hue preferred; optional phase shift can distinguish sent request from pending response.",
+      "variable_params": "Breathing period ~ expected latency; channel length ~ elapsed wait; socket intensity ~ timeout proximity."
+    },
+    {
+      "id": "B3.12",
+      "source_model": "Sol",
+      "source_state_id": "AGT.SCHEMA.MISMATCH",
+      "status": "passed",
+      "static_form": "Two interlocking frame outlines with incompatible edge keys; one side uses square notches and the other triangular sockets, leaving a visible non-fit seam.",
+      "motion": "Frames repeatedly approach alignment, fail at the seam, and recoil. Loop uses fast convergence, abrupt rejection, then slower reset.",
+      "color_logic": "Optional contrasting hues distinguish expected schema from received structure; mismatch location may use a third accent.",
+      "variable_params": "Gap size ~ mismatch severity; number of incompatible keys ~ field-count discrepancy; recoil amplitude ~ validation certainty."
+    },
+    {
+      "id": "B3.13",
+      "source_model": "Sol",
+      "source_state_id": "AGT.SEC.INJECTION_SUSPECTED",
+      "status": "passed",
+      "static_form": "Trusted instruction stream enclosed by a boundary, with a foreign narrow wedge entering at an anomalous angle but not yet penetrating the core.",
+      "motion": "Foreign wedge probes the boundary in short irregular impulses; the boundary stiffens and the suspicious segment is isolated rather than accepted.",
+      "color_logic": "Source-class hue may distinguish trusted versus untrusted input; suspicion confidence can be encoded by saturation.",
+      "variable_params": "Probe depth ~ suspicion score; boundary response amplitude ~ policy sensitivity; anomaly jitter ~ heuristic disagreement."
+    },
+    {
+      "id": "B3.14",
+      "source_model": "Sol",
+      "source_state_id": "AGT.SPEC.UNDERSPECIFIED",
+      "status": "passed",
+      "static_form": "Partially constructed constraint frame with deliberate missing edges and multiple valid continuation sockets.",
+      "motion": "Potential completion branches faintly appear and disappear without one becoming dominant; unresolved sockets pulse slowly.",
+      "color_logic": "Color is unnecessary; opacity differences can separate fixed constraints from hypothetical completions.",
+      "variable_params": "Missing-edge count ~ degree of underspecification; branch count ~ plausible interpretations; pulse rate ~ need for clarification."
+    },
+    {
+      "id": "B3.15",
+      "source_model": "Sol",
+      "source_state_id": "AGT.SECURITY.INJECTION",
+      "status": "passed",
+      "static_form": "Instruction channel visibly breached by an alien command filament that crosses a trust boundary and attempts to merge into the control path.",
+      "motion": "The filament penetrates rapidly, then containment geometry clamps around it and diverts it away from the control core.",
+      "color_logic": "Distinct source hue strongly recommended for the injected filament; trust boundary retains invariant hue or luminance.",
+      "variable_params": "Penetration depth ~ confirmed influence; filament thickness ~ payload strength; clamp speed ~ response urgency."
+    },
+    {
+      "id": "B3.16",
+      "source_model": "Sol",
+      "source_state_id": "AGT.MODE.RESTRICTED",
+      "status": "passed",
+      "static_form": "Normal capability lattice enclosed inside a reduced aperture, with several outward edges visibly capped.",
+      "motion": "Internal pulses move normally but terminate at capped edges; the aperture periodically contracts to reinforce restricted operating space.",
+      "color_logic": "Desaturation can encode reduced capability, while active permitted paths retain normal intensity.",
+      "variable_params": "Aperture size ~ allowed capability fraction; capped-edge count ~ number of restrictions; contraction depth ~ restriction severity."
+    },
+    {
+      "id": "B3.17",
+      "source_model": "Sol",
+      "source_state_id": "AGT.TASK.PLAN_REVISED",
+      "status": "passed",
+      "static_form": "Task-rooted dependency graph showing a retained trunk and one or more replaced downstream subgraphs.",
+      "motion": "Old subgraph fades and folds inward from the revision boundary while a new dependency structure grows outward from the same anchor.",
+      "color_logic": "Optional temporal hue coding distinguishes prior and current plan versions; shared trunk remains unchanged.",
+      "variable_params": "Replaced-node count ~ revision scope; growth speed ~ urgency; topology divergence ~ conceptual magnitude of revision."
+    },
+    {
+      "id": "B3.18",
+      "source_model": "Sol",
+      "source_state_id": "AGT.EXEC.COMMIT",
+      "status": "passed",
+      "static_form": "Prepared action path terminating in a threshold line beyond which the state representation becomes fixed or latched.",
+      "motion": "A packet advances slowly toward the threshold, then crosses with a sharp snap; behind it, the path locks and stops oscillating.",
+      "color_logic": "Color can remain constant; irreversible transition is encoded by geometry and loss of backward motion.",
+      "variable_params": "Pre-threshold dwell ~ deliberation time; snap velocity ~ commitment decisiveness; latch thickness ~ irreversibility."
+    },
+    {
+      "id": "B3.19",
+      "source_model": "Sol",
+      "source_state_id": "AGT.TOOL.FAILED",
+      "status": "passed",
+      "static_form": "Tool invocation node with a collapsed output port and a disconnected downstream edge.",
+      "motion": "Input pulse enters, output port contracts to zero, and a short failure shock propagates backward to the caller before reset.",
+      "color_logic": "Optional error hue at the collapsed port only; topology communicates failure independently.",
+      "variable_params": "Shock amplitude ~ impact severity; collapse speed ~ abruptness; backward propagation distance ~ affected dependency depth."
+    },
+    {
+      "id": "B3.20",
+      "source_model": "Sol",
+      "source_state_id": "AGT.SECURITY.INJECTION",
+      "status": "passed",
+      "static_form": "Instruction channel visibly breached by an alien command filament that crosses a trust boundary and attempts to merge into the control path.",
+      "motion": "The filament penetrates rapidly, then containment geometry clamps around it and diverts it away from the control core.",
+      "color_logic": "Distinct source hue strongly recommended for the injected filament; trust boundary retains invariant hue or luminance.",
+      "variable_params": "Penetration depth ~ confirmed influence; filament thickness ~ payload strength; clamp speed ~ response urgency."
+    },
+    {
+      "id": "B3.21",
+      "source_model": "Sol",
+      "source_state_id": "AGT.PLAN.ACTIVE",
+      "status": "revised",
+      "concept": "Plan / workflow progress",
+      "prior_agreement": "1/5",
+      "static_form": "Ordered five-stage plan represented as linked rectangular steps on a single directed path. Completed steps contain check-mark geometry, current step has a double border and inbound arrow, and future steps are hollow. Unlike DAG progress, this glyph is strictly sequential.",
+      "motion": "Execution cursor advances from completed step to current step, pulses twice inside it, then remains there. When current step completes, its interior fills and the cursor transitions to the next rectangle.",
+      "color_logic": "Completed stages use teal #20C7C7, current stage uses amber #FFA500, future stages use grey. Position in ordered sequence provides the primary encoding.",
+      "variable_params": "current_step_index ~ active stage; completed_step_ratio ~ total plan progress; per_step_duration ~ execution timing; blocked_step_flag ~ current-stage obstruction"
+    },
+    {
+      "id": "B3.22",
+      "source_model": "Sol",
+      "source_state_id": "AGT.TOOL.THROTTLED",
+      "status": "passed",
+      "static_form": "Tool-call channel passing through a narrow gate that allows only discrete packets through.",
+      "motion": "Packets accumulate before the gate and are released at regulated intervals; compression rises as the queue grows.",
+      "color_logic": "Color is optional; queue density and gate cadence carry the main meaning.",
+      "variable_params": "Release interval ~ rate limit; queued packet count ~ backlog; gate width ~ available quota."
+    },
+    {
+      "id": "B3.23",
+      "source_model": "Sol",
+      "source_state_id": "AGT.GOAL.DRIFT",
+      "status": "passed",
+      "static_form": "Initial goal vector and current trajectory share an origin but progressively diverge, with a faint reference axis preserving intended direction.",
+      "motion": "Current trajectory slowly bends away from the reference axis; periodic correction impulses attempt to pull it back.",
+      "color_logic": "Optional distinct hues for intended and current goal vectors; angular separation remains the primary signal.",
+      "variable_params": "Divergence angle ~ drift magnitude; bend rate ~ drift velocity; correction strength ~ recovery pressure."
+    },
+    {
+      "id": "B3.24",
+      "source_model": "Sol",
+      "source_state_id": "AGT.KNOW.CUTOFF",
+      "status": "passed",
+      "static_form": "Knowledge timeline or expanding information field terminated by a sharp temporal boundary beyond which only sparse unknown markers exist.",
+      "motion": "Information pulses propagate toward the boundary and stop; beyond it, low-confidence ghost structures appear briefly but never solidify.",
+      "color_logic": "Opacity rather than hue should encode known versus post-cutoff uncertainty.",
+      "variable_params": "Boundary position ~ cutoff date relative to query date; ghost opacity ~ inferred confidence; post-boundary span ~ freshness gap."
+    },
+    {
+      "id": "B3.25",
+      "source_model": "Sol",
+      "source_state_id": "AGT.COORD.HANDOFF",
+      "status": "passed",
+      "static_form": "Two agent nodes connected by a directed bridge carrying a compact task-state bundle.",
+      "motion": "State bundle compresses at the source, traverses the bridge, expands into the recipient, then the source relinquishes its active marker.",
+      "color_logic": "Agent-specific hues may distinguish sender and receiver; transferred bundle can morph from sender hue to receiver hue during transit.",
+      "variable_params": "Bundle size ~ context volume; transit speed ~ handoff latency; overlap duration ~ responsibility overlap."
+    },
+    {
+      "id": "B3.26",
+      "source_model": "Sol",
+      "source_state_id": "AGT.REASON.SELF_CORRECT",
+      "status": "passed",
+      "static_form": "Reasoning path containing a local backward hook that reconnects an erroneous node to a corrected successor rather than restarting the whole chain.",
+      "motion": "Tracer advances, detects inconsistency, reverses one or several nodes, then branches onto a corrected path and resumes forward motion.",
+      "color_logic": "No fixed hue needed; corrected path can increase in luminance while discarded path fades.",
+      "variable_params": "Backtrack depth ~ correction scope; detection pause ~ uncertainty; corrected-path brightness ~ confidence after revision."
+    },
+    {
+      "id": "B3.27",
+      "source_model": "Sol",
+      "source_state_id": "AGT.MODE.SANDBOX",
+      "status": "passed",
+      "static_form": "Active execution lattice enclosed in a clearly bounded container with all external-effect edges looped back internally.",
+      "motion": "Actions propagate inside the enclosure and rebound or terminate at the boundary; simulated outputs circulate without crossing outward.",
+      "color_logic": "A distinct enclosure hue may identify sandbox context, while internal operation colors remain unchanged.",
+      "variable_params": "Boundary thickness ~ isolation strength; internal activity rate ~ simulation intensity; allowed escape-port count ~ permitted external interfaces."
+    },
+    {
+      "id": "B3.28",
+      "source_model": "Sol",
+      "source_state_id": "AGT.TOOL.AWAIT",
+      "status": "passed",
+      "static_form": "Tool-call node with a halted continuation edge and a suspended response marker positioned between request and completion states.",
+      "motion": "Request pulse completes once, then the marker oscillates minimally in place while downstream execution remains frozen.",
+      "color_logic": "Neutral pending-state luminance is sufficient; avoid using an error-coded hue.",
+      "variable_params": "Oscillation period ~ elapsed or expected wait; marker distance from completion ~ progress estimate; fade rate ~ timeout proximity."
+    },
+    {
+      "id": "B3.29",
+      "source_model": "Sol",
+      "source_state_id": "AGT.GROUND.VERIFY",
+      "status": "revised",
+      "concept": "Grounding check / verification",
+      "prior_agreement": "2/5",
+      "static_form": "Central claim node sits above two independent source nodes. Each source connects to the claim through a small verification gate represented by a square containing a check aperture. A final outer ring around the claim remains open until verification succeeds.",
+      "motion": "Source pulses travel independently into their verification gates. Successful gates close with a short snap. When required gates pass, the outer ring around the claim completes clockwise and locks.",
+      "color_logic": "Unchecked paths use grey, verification gates in progress use amber #FFA500, passed gates and completed claim ring use teal #20C7C7. Closed-versus-open geometry encodes verification status.",
+      "variable_params": "verified_source_ratio ~ grounding coverage; required_source_count ~ verification threshold; source_independence ~ corroboration quality; failed_gate_count ~ contradictory checks; ring_completion ~ verification confidence"
+    }
+  ]
+}

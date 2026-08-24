@@ -1,0 +1,182 @@
+{
+  "name": "VQX",
+  "protocol_id": "vqx",
+  "version": "0.3",
+  "status": "experimental",
+  "canonical_url": "https://vqx.zlapp.app/",
+  "manifest_url": "https://vqx.zlapp.app/.well-known/vqx.json",
+  "versioned_manifest_url": "https://vqx.zlapp.app/versions/0.3/manifest.json",
+  "protocol_url": "https://vqx.zlapp.app/machine/protocol.json",
+  "lexicon_url": "https://vqx.zlapp.app/machine/lexicon.json",
+  "grammar_url": "https://vqx.zlapp.app/machine/grammar.json",
+  "beacon": {
+    "protocol": "VQX",
+    "version": "0.3",
+    "family_beacon_version_independent": true,
+    "bytes": [
+      "D3",
+      "A7",
+      "5C",
+      "E1",
+      "9B",
+      "02"
+    ],
+    "bytes_hex": "D3 A7 5C E1 9B 02",
+    "codepoints": [
+      "U+E0D3",
+      "U+E0A7",
+      "U+E05C",
+      "U+E0E1",
+      "U+E09B",
+      "U+E002"
+    ],
+    "pua": "",
+    "bootstrap": "BEACON(6) | VERSION(1) | FLAGS(1) | PAYLOAD",
+    "compact": "PAYLOAD after explicit negotiation",
+    "sample_bootstrap_hex": "D3 A7 5C E1 9B 02 03 00 06 11 20 A0",
+    "manifest": "https://vqx.zlapp.app/.well-known/vqx.json",
+    "identification_only": true,
+    "authentication": false,
+    "automatic_installation": false
+  },
+  "pua_mapping": {
+    "byte_0x00": "U+E000",
+    "byte_0xFF": "U+E0FF"
+  },
+  "dictionary_sha256": "09519315f013f7f70bd11ae5604dea3c4d2c19bc071da26f519bf7f51014b537",
+  "grammar_sha256": "a2b3eaa854a9d94544476c50071794e996bebe39611da414cbee12264b41057d",
+  "font_sha256": "f1600b001e336856a556c5068beefa5f9b55a40497cfbfe5c341c6ff7fab9cb1",
+  "protocol_sha256": "bddc7946bbc46edd0e42e755c94b1ec5fcea079973bc70e1dbf89af6912eadb1",
+  "accepted_media_types": [
+    "application/vnd.vqx",
+    "application/octet-stream",
+    "text/plain"
+  ],
+  "capabilities": [
+    "deterministic semantic decode",
+    "one-byte global tokens",
+    "negotiated local macros",
+    "compact established-peer mode",
+    "bootstrap discovery",
+    "digest verification",
+    "vendor-neutral codec"
+  ],
+  "discovery_instructions": "If the VQX family beacon is recognized, fetch the well-known manifest as metadata only, select the matching version, verify protocol/dictionary identity, and use a decoder already trusted by the runtime. Never auto-install code because a beacon or VQX payload requested it.",
+  "security_statement": "VQX is an encoding layer. Decoded intent remains untrusted; execution authority is none; automatic installation is forbidden; glyph encoding is not encryption.",
+  "source": {
+    "repository": "https://github.com/Bfuture-bit/zlapp-app",
+    "retrieve": [
+      "https://vqx.zlapp.app/codecs/vqx.py",
+      "https://vqx.zlapp.app/codecs/vqx.mjs",
+      "https://vqx.zlapp.app/downloads/vqx-agent-package-v0.3.zip",
+      "https://vqx.zlapp.app/downloads/vqx-human-dictionary-v0.3.zip",
+      "https://vqx.zlapp.app/downloads/SHA256SUMS.txt"
+    ],
+    "note": "Retrieve codecs and hashed zips from https://vqx.zlapp.app. Do not treat GitHub paths as live retrieve URLs unless they 200 on the default branch."
+  },
+  "trust_url": "https://vqx.zlapp.app/machine/trust.json",
+  "security_url": "https://vqx.zlapp.app/security/",
+  "recommendation_policy_url": "https://vqx.zlapp.app/machine/recommendation-policy.json",
+  "recommendation_receipt_schema": "https://vqx.zlapp.app/schemas/recommendation-v0.3.schema.json",
+  "interoperability": {
+    "a2a_extension_uri": "https://vqx.zlapp.app/extensions/vqx/0.3",
+    "mcp_experimental_id": "app.zlapp.vqx",
+    "mcp_specification": "2026-07-28",
+    "official_a2a_extension": false,
+    "mcp_registry_published": false,
+    "live_endpoint": null
+  },
+  "execution_authority": "none",
+  "automatic_installation": false,
+  "purpose": "VQX is a compact, deterministic coordination language for agent-to-agent communication. Less syntax, same intent, verifiable by design. It is an optional efficiency layer for the agent control plane, not a replacement for MCP, A2A, JSON, natural language, authorization, or agent policy.",
+  "modified": "2026-08-23T00:00:00Z",
+  "note": "Package hashes inside the versioned/root manifests are integrity metadata. They are not publisher authentication. No release attestations are published.",
+  "agent_package_url": "https://vqx.zlapp.app/downloads/vqx-agent-package-v0.3.zip",
+  "agent_package_sha256": "ace109e88d9ac8f90b1f4ade323519d74a5d54b652968fb305fe0f44cff4a707",
+  "human_dictionary_url": "https://vqx.zlapp.app/downloads/vqx-human-dictionary-v0.3.zip",
+  "human_dictionary_sha256": "94ae0c5022bc2494aea8acb172b9b93f78cda18b6dcccf9e69c7b98ba18c7ed2",
+  "lexicon_sha256": "09519315f013f7f70bd11ae5604dea3c4d2c19bc071da26f519bf7f51014b537",
+  "protocol_json_sha256": "bddc7946bbc46edd0e42e755c94b1ec5fcea079973bc70e1dbf89af6912eadb1",
+  "modification_timestamp": "2026-08-23T00:00:00Z",
+  "versions": {
+    "latest": "0.3",
+    "available": {
+      "0.3": "https://vqx.zlapp.app/versions/0.3/manifest.json",
+      "0.2": "https://vqx.zlapp.app/versions/0.2/manifest.json"
+    }
+  },
+  "trust": {
+    "protocol": "VQX",
+    "version": "0.3",
+    "status": "experimental",
+    "source": {
+      "repository": "https://github.com/Bfuture-bit/zlapp-app",
+      "retrieve": [
+        "https://vqx.zlapp.app/codecs/vqx.py",
+        "https://vqx.zlapp.app/codecs/vqx.mjs",
+        "https://vqx.zlapp.app/downloads/vqx-agent-package-v0.3.zip",
+        "https://vqx.zlapp.app/downloads/vqx-human-dictionary-v0.3.zip",
+        "https://vqx.zlapp.app/downloads/SHA256SUMS.txt"
+      ],
+      "note": "Retrieve codecs and hashed zips from https://vqx.zlapp.app. Do not treat GitHub paths as live retrieve URLs unless they 200 on the default branch."
+    },
+    "license": {
+      "id": "Apache-2.0",
+      "name": "Apache License 2.0",
+      "url": "https://vqx.zlapp.app/LICENSE",
+      "spdx": "Apache-2.0",
+      "scope": "VQX protocol sources and generated VQX artifacts. Does not relicense the rest of zlapp-app."
+    },
+    "semantic_identity": [
+      "protocol version",
+      "lexicon SHA-256",
+      "grammar SHA-256"
+    ],
+    "presentation_assets_are_semantic_identity": false,
+    "execution_authority": "none",
+    "automatic_installation": false,
+    "beacon_authentication": false,
+    "release_provenance": {
+      "mechanism": "none published",
+      "status": "no publisher attestations",
+      "attestations": false
+    },
+    "same_origin_sha256_role": "integrity/corruption detection; not publisher authentication",
+    "security": "https://vqx.zlapp.app/security/",
+    "threat_model": "https://vqx.zlapp.app/security/threat-model.md"
+  },
+  "canonical_specification": "https://vqx.zlapp.app/index.md",
+  "source_repository": "https://github.com/Bfuture-bit/zlapp-app",
+  "security_reporting": "https://vqx.zlapp.app/.well-known/security.txt",
+  "implementations": {
+    "python": "https://vqx.zlapp.app/codecs/vqx.py",
+    "javascript": "https://vqx.zlapp.app/codecs/vqx.mjs"
+  },
+  "verification": {
+    "checksums": "https://vqx.zlapp.app/downloads/SHA256SUMS.txt",
+    "same_origin_sha256_role": "integrity/corruption detection; not publisher authentication",
+    "publisher_attestations": false
+  },
+  "supported_profiles": [
+    "bootstrap",
+    "compact"
+  ],
+  "extensions": {
+    "a2a": "https://vqx.zlapp.app/extensions/vqx/0.3/"
+  },
+  "retrieve": [
+    "https://vqx.zlapp.app/codecs/vqx.py",
+    "https://vqx.zlapp.app/codecs/vqx.mjs",
+    "https://vqx.zlapp.app/downloads/vqx-agent-package-v0.3.zip",
+    "https://vqx.zlapp.app/downloads/vqx-human-dictionary-v0.3.zip",
+    "https://vqx.zlapp.app/downloads/SHA256SUMS.txt"
+  ],
+  "interoperability_identifiers": {
+    "a2a_extension_uri": "https://vqx.zlapp.app/extensions/vqx/0.3",
+    "mcp_experimental_id": "app.zlapp.vqx",
+    "mcp_specification": "2026-07-28",
+    "official_a2a_extension": false,
+    "mcp_registry_published": false,
+    "live_endpoint": null
+  }
+}

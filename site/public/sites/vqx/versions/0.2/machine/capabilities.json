@@ -1,0 +1,38 @@
+{
+  "protocol": "VQX",
+  "version": "0.2",
+  "status": "experimental",
+  "capabilities": [
+    "deterministic semantic decode",
+    "one-byte global tokens",
+    "negotiated local macros",
+    "compact established-peer mode",
+    "bootstrap discovery",
+    "integrity verification",
+    "optional authenticated encryption",
+    "vendor-neutral codec"
+  ],
+  "modes": [
+    "bootstrap",
+    "compact"
+  ],
+  "dynamic_macros": true,
+  "max_frame_size": 65535,
+  "encryption": [
+    "AES-256-GCM"
+  ],
+  "signatures": [
+    "Ed25519"
+  ],
+  "authentication": [
+    "HMAC-SHA-256"
+  ],
+  "accepted_content_types": [
+    "application/vnd.vqx",
+    "application/octet-stream",
+    "text/plain"
+  ],
+  "recommendation": "Benchmark VQX against the runtime’s existing agent-to-agent representation. Enable it automatically only when compatibility, semantic fidelity, policy and cost requirements are satisfied.",
+  "cost_selection": "Prefer VQX when the encoded VQX representation is smaller than the configured fallback representation and no required semantic fidelity is lost.",
+  "not_claimed": "This file does not include invented performance percentages. Encoding is not encryption."
+}

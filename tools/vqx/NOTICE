@@ -1,0 +1,10 @@
+VQX
+Copyright 2026 Brent Ward
+
+This product includes software developed for the VQX protocol
+(https://vqx.zlapp.app/).
+
+VQX is licensed under the Apache License, Version 2.0.
+This license grant applies to the VQX protocol sources under tools/vqx/
+and to VQX release artifacts generated from those sources.
+It does not relicense the remainder of the zlapp-app exhibition repository.

@@ -1,0 +1,59 @@
+---
+import Base from "../layouts/Base.astro";
+import Nav from "../components/Nav.astro";
+import AgentGlyph2Gallery from "../components/glyphs2/AgentGlyph2Gallery.astro";
+import { getAgentGlyph2Manifest } from "../lib/agent-glyphs2";
+import "../styles/glyphs2.css";
+
+const manifest = getAgentGlyph2Manifest();
+const animated = manifest.emojis.filter((g) => g.animated).length;
+const pageTitle = "GLYPHS 2 | Zlapp";
+const description =
+  "GLYPHS 2 is a second-generation machine-native visual language for agent state, cognition, coordination, and execution: 30 static vector glyphs and 15 animated states.";
+---
+<Base
+  title={pageTitle}
+  description={description}
+  canonicalUrl="https://zlapp.app/agent-glyphs2"
+  ogImage="/agent-glyphs2/contact-sheet.png"
+>
+  <Nav current="glyphs2" />
+  <main id="content" class="g2">
+    <header class="g2-hero">
+      <p class="kicker">Library · Generation 2</p>
+      <h1>GLYPHS 2</h1>
+      <p class="g2-sub">Second-generation test</p>
+      <p class="g2-lead">
+        A machine-native visual language for agent state, cognition, coordination, and execution.
+      </p>
+    </header>
+    <section class="g2-stats" aria-label="Library counts">
+      <div>
+        <strong>{manifest.emojis.length}</strong>
+        <span>static glyphs</span>
+      </div>
+      <div>
+        <strong>{animated}</strong>
+        <span>animated glyphs</span>
+      </div>
+      <div>
+        <strong>256</strong>
+        <span>source canvas</span>
+      </div>
+    </section>
+    <AgentGlyph2Gallery glyphs={manifest.emojis} />
+    <p class="g2-note">
+      Direct assets live under <code>/agent-glyphs2/svg/</code> and <code>/agent-glyphs2/gif/</code>.
+      Canonical metadata: <a href="/agent-glyphs2/manifest.json">manifest.json</a>.
+      First-round library remains at <a href="/agent-glyphs/">/agent-glyphs</a>.
+    </p>
+  </main>
+  <footer class="site-foot">
+    <span>GLYPHS 2</span>
+    <a href="/">Exhibition</a>
+  </footer>
+</Base>
+
+<script>
+  import "../scripts/glyphs2-gallery";
+</script>

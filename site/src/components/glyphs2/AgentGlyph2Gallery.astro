@@ -1,0 +1,41 @@
+---
+import AgentGlyph2Card from "./AgentGlyph2Card.astro";
+import AgentGlyph2Filters from "./AgentGlyph2Filters.astro";
+import type { AgentGlyph2Record } from "../../lib/agent-glyphs2";
+
+interface Props {
+  glyphs: AgentGlyph2Record[];
+}
+const { glyphs } = Astro.props;
+const categories = [...new Set(glyphs.map((g) => g.category))];
+---
+<section class="g2-gallery" data-g2-gallery>
+  <AgentGlyph2Filters categories={categories} />
+  <p class="g2-count" data-g2-count>{glyphs.length} shown</p>
+  <div class="g2-grid">
+    {glyphs.map((glyph) => (
+      <AgentGlyph2Card glyph={glyph} />
+    ))}
+  </div>
+  <p class="g2-empty" data-g2-empty hidden>No glyphs match those filters.</p>
+</section>
+
+<dialog class="g2-dialog" data-g2-dialog>
+  <form method="dialog" class="g2-dialog-inner">
+    <button class="g2-dialog-close" value="close" type="submit">Close</button>
+    <div class="g2-dialog-preview" data-g2-dialog-preview></div>
+    <p class="g2-token" data-g2-dialog-token></p>
+    <p class="g2-cat" data-g2-dialog-cat></p>
+    <p class="g2-mean" data-g2-dialog-mean></p>
+    <p class="g2-urls">
+      <a data-g2-dialog-svg href="#">SVG</a>
+      <a data-g2-dialog-gif href="#" hidden>GIF</a>
+    </p>
+    <pre class="g2-code" data-g2-dialog-code></pre>
+    <div class="g2-actions">
+      <button type="button" data-g2-copy="name">Copy Name</button>
+      <button type="button" data-g2-copy="svg">Copy SVG URL</button>
+      <button type="button" data-g2-copy="gif">Copy GIF URL</button>
+    </div>
+  </form>
+</dialog>

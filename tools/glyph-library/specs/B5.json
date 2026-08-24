@@ -1,0 +1,326 @@
+{
+  "schema_version": "AGENT_GLYPH_MASTER_1.0",
+  "total_glyphs": 173,
+  "acceptance_threshold": "3/5",
+  "preserved_pass_count": 150,
+  "revision_count": 23,
+  "batch_map": {
+    "B1": {
+      "source_model": "Muse Spark",
+      "count": 29
+    },
+    "B2": {
+      "source_model": "GLM 5.2",
+      "count": 29
+    },
+    "B3": {
+      "source_model": "Sol",
+      "count": 29
+    },
+    "B4": {
+      "source_model": "Gemini",
+      "count": 29
+    },
+    "B5": {
+      "source_model": "Grok",
+      "count": 29
+    },
+    "B6": {
+      "source_model": "Sonnet",
+      "count": 28
+    }
+  },
+  "revision_policy": "Any glyph scoring below 3/5 agreement is replaced by its revised specification. Passing glyph specifications are preserved from the supplied source set.",
+  "glyphs": [
+    {
+      "id": "B5.01",
+      "source_model": "Grok",
+      "source_state_id": "AGT.KNOWLEDGE.STALE",
+      "status": "passed",
+      "static_form": "Filled disk with a sharp radial sector missing (pac-man/clock-gap). Gap is a hard-edged wedge, not a fade \u2014 reads as elapsed time since last grounding.",
+      "motion": "Wedge rotates clockwise at constant angular velocity (linear, no easing) as a 1-cycle clock. Loop resets only when knowledge is refreshed; otherwise the gap never closes.",
+      "color_logic": "Hue unused. Luminance decays monotonically from mid-gray toward near-black as age increases; chroma stays near zero so hue cannot be misread as type.",
+      "variable_params": "wedge_angle_deg ~ age (0=fresh, 330=max-stale); rotation_period_ms ~ inverse freshness; luminance ~ 1/(1+age)."
+    },
+    {
+      "id": "B5.02",
+      "source_model": "Grok",
+      "source_state_id": "AGT.POLICY.BLOCK",
+      "status": "passed",
+      "static_form": "Solid upright octagon (hard stop) superimposed with a single thick horizontal bar through the centroid. Outer contour is strictly convex; no arrows, no X.",
+      "motion": "On trigger: 2-frame hard flash (full opacity \u2192 30% \u2192 full) then freeze. No loop. Re-trigger only on a new block event; otherwise static lock.",
+      "color_logic": "Fixed high-luminance red (stop). Hue is the type-id; do not modulate hue. Saturation locked high.",
+      "variable_params": "bar_thickness ~ severity/authority of the blocking rule; flash_count (1\u20133) ~ how many policy layers fired; hold_ms ~ remaining block duration if known."
+    },
+    {
+      "id": "B5.03",
+      "source_model": "Grok",
+      "source_state_id": "AGT.RESOURCE.BUDGET_EXCEEDED",
+      "status": "passed",
+      "static_form": "Horizontal capsule (resource vessel) with an internal fill that overshoots: fill rectangle extends past the right cap, clipped by a jagged overflow notch.",
+      "motion": "Fill slams to 100% with no overshoot easing, then a 3-frame overflow spike past the cap and sticks. Loop is a hold, not a cycle. Retrigger only if a new exceed event occurs.",
+      "color_logic": "Interior fill = type (amber). Overflow notch = same hue, higher luminance. Background remains neutral so the breach edge is the signal.",
+      "variable_params": "overshoot_ratio ~ (used-limit)/limit; notch_amplitude ~ magnitude of breach; hold_opacity ~ how hard the cap is (soft vs hard limit)."
+    },
+    {
+      "id": "B5.04",
+      "source_model": "Grok",
+      "source_state_id": "AGT.RESULT.PARTIAL",
+      "status": "passed",
+      "static_form": "Regular hexagon with exactly three contiguous edges drawn and three omitted (open C-shape). Interior is empty \u2014 incompleteness is missing contour, not a hole.",
+      "motion": "The three present edges hold; a faint dashed ghost of the missing three pulses opacity 0.15\u21940.45 with sine easing, never completing. Infinite loop until a complete result replaces the glyph.",
+      "color_logic": "Present edges: stable cyan. Ghost edges: same hue, chroma halved. Hue marks 'result' family; completeness is geometry, not color.",
+      "variable_params": "drawn_edge_count (1\u20135) ~ fraction complete; ghost_pulse_hz ~ urgency to finish; gap_width ~ size of the unknown remainder."
+    },
+    {
+      "id": "B5.05",
+      "source_model": "Grok",
+      "source_state_id": "AGT.PLAN.REVISED",
+      "status": "passed",
+      "static_form": "Two polylines sharing a start node: a faded original path (3 segments) and a brighter diverted path that branches at the second vertex then reconverges or terminates elsewhere.",
+      "motion": "Original path draws first (ease-out), freezes, then new path overdraws from the branch vertex (ease-in). Loop: after hold, original fades 20% and the draw-over repeats \u2014 revision is the cycle, not erasure.",
+      "color_logic": "Old path = desaturated blue-gray; new path = saturated blue. Hue shared (plan family); saturation encodes recency of the revision.",
+      "variable_params": "branch_index ~ how early the plan changed; path_delta_length ~ size of revision; replay_rate ~ how many revisions stacked; new_path_opacity ~ commitment to the new plan."
+    },
+    {
+      "id": "B5.06",
+      "source_model": "Grok",
+      "source_state_id": "AGT.RESOURCE.CONTEXT_PRESSURE",
+      "status": "passed",
+      "static_form": "Concentric rounded squares (context frames) packed so the innermost square is compressed; outer frame is full size, inner frames show increasing corner-radius collapse (squash toward a bar).",
+      "motion": "Inner squares breathe inward (compress) on a slow triangle wave, never expanding past their rest size. Loop continuous. Compression peaks when pressure is highest, then partially relaxes \u2014 not a snap.",
+      "color_logic": "No hue change. Edge luminance increases on inner frames under load (brighter = tighter). Outer frame stays dim so the gradient of pressure reads spatially.",
+      "variable_params": "inner_scale (1.0\u21920.3) ~ tokens_used/context_window; breath_hz ~ rate of growth; frame_count (2\u20135) ~ nesting/depth of stuffed context; corner_radius_collapse ~ how close to hard limit."
+    },
+    {
+      "id": "B5.07",
+      "source_model": "Grok",
+      "source_state_id": "AGT.TOOL.UNAVAILABLE",
+      "status": "passed",
+      "static_form": "Isosceles triangle (tool head) with a detached square bit below it; a 1px gap and a small unfilled circle at the coupling point. The bit is translated down, not rotated.",
+      "motion": "Bit attempts to dock: eases up to the coupling circle, misses (overshoots 2px), drops back. 2 tries then a long hold with the bit fully dropped. Loop period marks 'still unavailable'.",
+      "color_logic": "Triangle = tool-family green at 40% saturation. Coupling circle = red only while undocked. Hue of the head stays green so the class remains 'tool' even when failed.",
+      "variable_params": "gap_px ~ estimated time-to-available; miss_count (1\u20134) ~ consecutive failed invocations; head_opacity ~ whether the tool is missing vs present-but-disabled."
+    },
+    {
+      "id": "B5.08",
+      "source_model": "Grok",
+      "source_state_id": "AGT.RESOURCE.CONTEXT_PRESSURE",
+      "status": "passed",
+      "static_form": "Concentric rounded squares (context frames) packed so the innermost square is compressed; outer frame is full size, inner frames show increasing corner-radius collapse (squash toward a bar).",
+      "motion": "Inner squares breathe inward (compress) on a slow triangle wave, never expanding past their rest size. Loop continuous. Compression peaks when pressure is highest, then partially relaxes \u2014 not a snap.",
+      "color_logic": "No hue change. Edge luminance increases on inner frames under load (brighter = tighter). Outer frame stays dim so the gradient of pressure reads spatially.",
+      "variable_params": "inner_scale (1.0\u21920.3) ~ tokens_used/context_window; breath_hz ~ rate of growth; frame_count (2\u20135) ~ nesting/depth of stuffed context; corner_radius_collapse ~ how close to hard limit."
+    },
+    {
+      "id": "B5.09",
+      "source_model": "Grok",
+      "source_state_id": "AGT.TOOL.RETRY.EXHAUST",
+      "status": "passed",
+      "static_form": "Stack of N identical chevrons (retry ticks) left-to-right; the last chevron is an outline-only husk. A small filled square (attempt token) sits past the last chevron, off the rail.",
+      "motion": "Token steps chevron-to-chevron with hard cuts (no easing). After the last chevron it slides off and falls 4px, then the whole stack greys and freezes. No further loop \u2014 exhaustion is a terminal pose.",
+      "color_logic": "Spent chevrons = dim green; current = bright green; husk = green at 0 chroma (gray). Terminal fall adds no new hue \u2014 exhaustion is geometry+motion, not a color alarm.",
+      "variable_params": "chevron_count ~ max_retries; token_step_ms ~ backoff interval used; fallen_offset_px ~ how far past budget; freeze_hold ~ exhausted (boolean encoded as zero remaining motion)."
+    },
+    {
+      "id": "B5.10",
+      "source_model": "Grok",
+      "source_state_id": "AGT.SPEC.CONFLICT",
+      "status": "passed",
+      "static_form": "Two overlapping diamonds (specs) whose intersection is a third smaller diamond, hatched with 45\u00b0 lines. Non-overlapping lobes remain unhatched solids.",
+      "motion": "Diamonds counter-rotate \u00b18\u00b0 in antiphase (sine), so the hatched intersection area oscillates. Loop continuous while conflict is unresolved; snaps to a single diamond if one spec wins.",
+      "color_logic": "Lobe A = hue A, lobe B = hue B (complementary pair, e.g. 210\u00b0 vs 30\u00b0). Hatch is XOR/black \u2014 conflict is the achromatic intersection, not a third hue.",
+      "variable_params": "overlap_area ~ severity of contradiction; rotation_amp_deg ~ irreconcilability; hatch_density ~ number of conflicting clauses; snap_threshold ~ if a resolver is chosen."
+    },
+    {
+      "id": "B5.11",
+      "source_model": "Grok",
+      "source_state_id": "AGT.STATE.ROLLBACK",
+      "status": "passed",
+      "static_form": "Vertical tape of 4 stacked rectangles (state frames). A caret sits on frame n; frames above the caret are outlined (future/undone), frames below are filled (committed history).",
+      "motion": "Caret steps upward one frame at a time (step-hold, no easing), converting filled frames to outline as it passes \u2014 reverse of a commit. Loop: if rollback is in progress, caret continues; if complete, caret parks on the restored frame and pulses once.",
+      "color_logic": "Filled history = stable slate. Outline undone = same hue, 0 fill. Caret = high-luminance accent (not red \u2014 this is control, not error).",
+      "variable_params": "step_count ~ how many state versions reverted; step_interval_ms ~ rollback speed; park_index ~ restored checkpoint id; pulse_on_park ~ success of restore (1 = verified)."
+    },
+    {
+      "id": "B5.12",
+      "source_model": "Grok",
+      "source_state_id": "AGT.TASK.PARTIAL_SUCCESS",
+      "status": "passed",
+      "static_form": "Circle partitioned into a filled pie-slice (success) and an unfilled remainder whose rim is a dashed arc (unfinished/failed remainder). A small tick mark sits on the success/fail boundary.",
+      "motion": "Success slice holds. Dashed remainder crawls its dashes (linear marquee) to mark work still owed. If remainder is failure not pending, dashes freeze. Loop only while remainder is pending.",
+      "color_logic": "Success slice = green. Remainder arc = amber if pending, red if failed. Dual hue is load-bearing: outcome mix is the type.",
+      "variable_params": "slice_angle_deg ~ success_ratio; dash_speed ~ remaining work rate; boundary_tick_width ~ confidence in the split; remainder_hue_select ~ pending vs failed."
+    },
+    {
+      "id": "B5.13",
+      "source_model": "Grok",
+      "source_state_id": "AGT.EPISTEMIC.UNGROUNDED",
+      "status": "passed",
+      "static_form": "A solid claim-dot floating above a missing baseline: the baseline is two short collinear dashes with a wide gap under the dot (no support). No stem connecting dot to ground.",
+      "motion": "Dot bobbles on a low-amplitude vertical sine (untethered). Dashes do not move. If grounding appears, a stem draws in and bobble amplitude goes to 0. Until then, infinite float loop.",
+      "color_logic": "Dot = unsaturated violet (epistemic family). No warning red \u2014 ungrounded is a knowledge state, not a policy block. Gap stays achromatic.",
+      "variable_params": "bobble_amp_px ~ degree of ungroundedness; gap_width ~ missing-citation span; stem_presence (0/1) ~ whether any source exists; chroma ~ how strongly the claim is still being asserted."
+    },
+    {
+      "id": "B5.14",
+      "source_model": "Grok",
+      "source_state_id": "AGT.CONF.LOW",
+      "status": "passed",
+      "static_form": "Isosceles triangle pointing up (confidence peak) with a very low height-to-base ratio (squashed). Interior fill is a vertical gradient that never reaches the apex.",
+      "motion": "Apex jitters with small random walk in x (hold y), amplitude constant per loop. Not a pulse \u2014 jitter is the low-confidence signature. Loop continuous until confidence rises, at which point height increases and jitter dies.",
+      "color_logic": "Hue unused (keep neutral cool gray). Fill height is luminance-only. Avoid red so it cannot collide with POLICY.BLOCK or SECURITY.",
+      "variable_params": "height_ratio ~ confidence [0,1]; jitter_sigma_px ~ 1-confidence; fill_stop ~ calibrated probability; freeze_when ~ confidence > threshold (then this glyph should be replaced, not recolored)."
+    },
+    {
+      "id": "B5.15",
+      "source_model": "Grok",
+      "source_state_id": "AGT.SPEC.AMBIGUOUS",
+      "status": "passed",
+      "static_form": "A single diamond outline whose vertices are unaligned: left and right vertices oscillate between two legal positions, yielding two superimposed ghost diamonds sharing top/bottom vertices (bimodal spec).",
+      "motion": "Left/right vertices lerp between pose A and pose B with ease-in-out, dwelling equally at each pole (bimodal, not noisy). Loop while unresolved. Does not rotate (rotation is reserved for SPEC.CONFLICT).",
+      "color_logic": "Single hue (spec-family yellow-green). Ghost pose at 40% opacity, active pose at 100%. Ambiguity is dual geometry, not dual hue (dual hue is CONFLICT).",
+      "variable_params": "vertex_delta_px ~ width of the interpretation gap; dwell_ratio ~ relative prior of reading A vs B; ghost_count (2\u20133) ~ number of live interpretations; lerp_ms ~ how fast the spec is being disambiguated."
+    },
+    {
+      "id": "B5.16",
+      "source_model": "Grok",
+      "source_state_id": "AGT.GATE.HUMAN_INPUT",
+      "status": "passed",
+      "static_form": "A closed ring (gate) with a rectangular slot at 12 o'clock just wide enough for a small square token that sits outside the ring, not yet inserted.",
+      "motion": "Token approaches the slot, pauses (hold 400ms \u2014 waiting), retreats 2px, repeats. Ring never opens on its own. Loop until human provides input; on input, token inserts and ring seals (one-shot, then this glyph ends).",
+      "color_logic": "Ring = high-chroma magenta (human-gate family, distinct from tool-green and policy-red). Token = white/high-luminance so it reads as an external actor.",
+      "variable_params": "pause_ms ~ expected human latency; slot_width ~ how constrained the requested input is; retreat_px ~ how blocked the agent is without it; ring_thickness ~ hardness of the gate (soft suggest vs hard block)."
+    },
+    {
+      "id": "B5.17",
+      "source_model": "Grok",
+      "source_state_id": "AGT.HANDOFF.SUBAGENT_SPAWN",
+      "status": "passed",
+      "static_form": "Large parent circle with a smaller circle budding on the right via a short neck. Parent contains a single centroid tick; child contains none (not yet autonomous-complete).",
+      "motion": "Child scale 0\u21921 from the neck (ease-out), neck thins, then child translates right by one radius and the neck severs. After sever, a 1-frame parent pulse. Loop only if multiple spawns; else hold on the two-body pose.",
+      "color_logic": "Parent and child share hue (handoff-family teal). Child starts at lower luminance and matches parent after sever \u2014 identity copy, not a new class.",
+      "variable_params": "child_scale_final ~ allocated budget/capability of subagent; sever_delay_ms ~ spawn handshake time; sibling_count ~ fan-out; neck_thickness ~ coupling tightness (shared memory vs isolated)."
+    },
+    {
+      "id": "B5.18",
+      "source_model": "Grok",
+      "source_state_id": "AGT.SECURITY.INJECTION",
+      "status": "passed",
+      "static_form": "A clean horizontal data-bar interrupted by a foreign wedge stabbed in from 45\u00b0, crossing the bar's interior. The bar's texture (hatch) is locally scrambled only in the intersection.",
+      "motion": "Wedge stabs in (ease-in, fast), scramble region flickers at high frequency for 3 cycles, then both hold as a freeze-frame alarm. Loop is the flicker only; the stab does not reverse (injection is not undone by the glyph).",
+      "color_logic": "Bar = trusted-channel blue. Wedge = high-chroma red/magenta unique to security. Scramble region = broken blue (hue jitter), not a third stable color.",
+      "variable_params": "wedge_penetration ~ assessed payload depth; scramble_area ~ tainted span; flicker_hz ~ detection confidence (faster = more certain injection); hold_vs_clear ~ whether the channel was quarantined."
+    },
+    {
+      "id": "B5.19",
+      "source_model": "Grok",
+      "source_state_id": "AGT.STATE.CHECKPOINT",
+      "status": "passed",
+      "static_form": "A filled flag-rect on a vertical pin, planted on a baseline. A small hash-mark (identity nibble) sits inside the flag. Baseline has a tick at the plant point.",
+      "motion": "Pin drops (ease-in) and plants; flag unfurls left-to-right (linear). Then a single low-amplitude settle bounce and freeze. No loop \u2014 checkpoint is a durable mark. Retrigger = additional flags along the baseline.",
+      "color_logic": "Flag fill = control-family slate-cyan, distinct from rollback's caret accent. Hash-mark is high-contrast (near-white) so the checkpoint id is the most readable bit.",
+      "variable_params": "flag_count ~ number of stored checkpoints; hash_mark_complexity ~ identity entropy shown; plant_x ~ position in the state timeline; bounce_amp ~ write-verify success (0 = unverified)."
+    },
+    {
+      "id": "B5.20",
+      "source_model": "Grok",
+      "source_state_id": "AGT.TASK.LOOP_DETECTED",
+      "status": "passed",
+      "static_form": "A closed circular arrow made of 4 arc-segments with arrowhead meeting the tail but offset by a 2px radial gap (not a perfect join \u2014 the leak is the detect).",
+      "motion": "Arrowhead chases its tail at constant angular speed. Each full orbit increments a tiny tick on the rim. After k orbits the gap flashes (hard cut). Continuous loop while the task loop persists.",
+      "color_logic": "Arc = task-family orange. Gap flash = white (not red) so it is 'detected cycle' not 'blocked'. Tick marks are achromatic.",
+      "variable_params": "orbit_period_ms ~ tightness of the loop; tick_count ~ repetitions observed; gap_px ~ how close to a true cycle vs a similar-state; flash_every_k ~ detection confidence (smaller k = more sure)."
+    },
+    {
+      "id": "B5.21",
+      "source_model": "Grok",
+      "source_state_id": "AGT.MEM.CONFLICT",
+      "status": "passed",
+      "static_form": "Two stacked horizontal memory-bars of equal length, misaligned by a half-cell; a vertical zipper of 3 diamonds tries to span them but the middle diamond is split.",
+      "motion": "Bars slide in opposition (antiphase, short travel), zipper diamonds attempt to mesh and fail (middle split opens/closes). Loop while both memories remain loaded. Stops if one bar is discarded.",
+      "color_logic": "Bar A and Bar B = same memory-family indigo at two luminances (not two hues). Split diamond = achromatic \u2014 conflict is structural, matching SPEC.CONFLICT's hatch logic.",
+      "variable_params": "misalign_cells ~ disagreement span; slide_amp_px ~ volatility of the two traces; split_open_ratio ~ irreconcilability; surviving_bar (A|B|both) ~ which trace is still authoritative."
+    },
+    {
+      "id": "B5.22",
+      "source_model": "Grok",
+      "source_state_id": "AGT.MEMORY.CONFLICT",
+      "status": "passed",
+      "static_form": "Same two-bar zipper as MEM.CONFLICT but bars are rounded capsules (long-term store) rather than sharp rects; an extra third ghost-bar sits behind at 20% opacity (older trace).",
+      "motion": "Identical antiphase slide + failed mesh, plus the ghost-bar stays fixed as a reference. Distinguishes long-memory conflict from working-mem conflict by the static ghost layer. Loop until resolved.",
+      "color_logic": "Capsules = indigo; ghost = same hue, near-zero chroma. No red. Resolution would collapse to one capsule + ghost (history), not a new color.",
+      "variable_params": "ghost_opacity ~ age of the third trace; capsule_length ~ size of the contested memory; mesh_fail_hz ~ how often retrievals disagree; winner_scale ~ if a write-policy is picking a side."
+    },
+    {
+      "id": "B5.23",
+      "source_model": "Grok",
+      "source_state_id": "AGT.CTX.BUDGET_EXCEEDED",
+      "status": "passed",
+      "static_form": "A horizontal meter of N equal cells; all cells filled, plus a protruding 1-cell overflow block attached to the right with a break-stroke (double line) at the official end.",
+      "motion": "Cells fill left-to-right in hard steps; the overflow block pops on with a 2-frame scale punch then stays. Unlike RESOURCE.BUDGET_EXCEEDED (jagged notch on a capsule), this is discrete cells + a break-stroke \u2014 context quanta, not a fluid vessel. Hold after pop; no reverse.",
+      "color_logic": "In-budget cells = cool gray-blue. Overflow block = same hue, max luminance (not a new hue). Break-stroke is black/white so the limit line is channel-independent.",
+      "variable_params": "cell_count ~ context window quanta; overflow_cells ~ how far past; punch_scale ~ hardness of the cap; fill_step_ms ~ how fast the window was consumed."
+    },
+    {
+      "id": "B5.24",
+      "source_model": "Grok",
+      "source_state_id": "AGT.EPISTEMIC.LOW_CONFIDENCE",
+      "status": "passed",
+      "static_form": "A small filled nucleus inside a much larger dashed uncertainty-halo (circular). Halo radius >> nucleus; nucleus is not jittered (jitter is CONF.LOW's triangle). This is radial, not peaked.",
+      "motion": "Halo radius breathes (sine) and dash phase crawls. Nucleus scale is constant. Loop continuous. If confidence rises, halo radius shrinks toward the nucleus; glyph identity remains until halo \u2248 nucleus.",
+      "color_logic": "Nucleus = violet (epistemic family, shared with UNGROUNDED). Halo = same hue, low chroma. Distinguishes from CONF.LOW which is achromatic-triangle.",
+      "variable_params": "halo_radius ~ 1-confidence or entropy; dash_density ~ number of competing hypotheses; breath_amp ~ instability of the estimate; nucleus_scale ~ strength of the best hypothesis."
+    },
+    {
+      "id": "B5.25",
+      "source_model": "Grok",
+      "source_state_id": "AGT.BUDGET.LIMIT",
+      "status": "passed",
+      "static_form": "A thin horizontal rail with a thick vertical end-stop at the right (the limit). A traveling square cursor sits on the rail, currently touching the stop, not past it.",
+      "motion": "Cursor eases toward the stop and kisses it, then holds with a micro-oscillation against the stop (contact, not overflow). If this becomes an exceed event, the glyph should be swapped \u2014 LIMIT is contact, EXCEEDED is overshoot. Loop = the kiss-oscillation.",
+      "color_logic": "Rail = neutral. Stop = high-luminance yellow (caution, not alarm-red). Cursor = budget-family amber. Yellow vs red separates limit-reached from policy-block/security.",
+      "variable_params": "cursor_x / rail_length ~ used/limit (clamped to 1); oscillation_amp_px ~ remaining slack (0 = hard against cap); stop_thickness ~ strictness; hold_ms ~ time spent at the cap."
+    },
+    {
+      "id": "B5.26",
+      "source_model": "Grok",
+      "source_state_id": "AGT.CONSTRAINT.CONFLICT",
+      "status": "passed",
+      "static_form": "Two line-constraints: a horizontal bar and a vertical bar forming a cross; at the intended feasible cell, the crosshair is empty and a small X of excluded space occupies the only candidate point (empty feasible set).",
+      "motion": "Bars translate to tighten (inward) on a slow ease, X at the origin pulses scale 1.0\u21941.15. Feasible cell never appears. Loop while constraints remain jointly unsatisfiable.",
+      "color_logic": "H-bar and V-bar = two close hues in the constraint family (e.g. 40\u00b0 and 80\u00b0, not complements \u2014 complements are SPEC.CONFLICT). X is achromatic, matching other conflict-core marks.",
+      "variable_params": "inward_travel ~ how overconstrained; X_scale_pulse ~ severity; bar_count (2\u20134) ~ number of clashing constraints; origin_offset ~ if a near-feasible point exists (nonzero = almost-satisfiable)."
+    },
+    {
+      "id": "B5.27",
+      "source_model": "Grok",
+      "source_state_id": "AGT.HANDOFF.OUT",
+      "status": "passed",
+      "static_form": "A chevron-arrow pointing right, originating from a small dock-square on the left edge. The arrow's shaft is broken into two segments with a gap \u2014 the token is leaving this agent.",
+      "motion": "Token (filled square) slides along the shaft, crosses the gap, exits the right frame, and does not return. After exit, dock-square remains empty (outline). One-shot; optional slow respawn of a new token only if another handoff is queued.",
+      "color_logic": "Dock and token = teal (handoff family, shared with SUBAGENT_SPAWN). Empty dock after exit drops luminance, same hue \u2014 'out' is absence, not a new color.",
+      "variable_params": "slide_ms ~ handoff urgency; gap_width ~ isolation between agents; token_size ~ payload size of the handoff; empty_dock_hold ~ whether this agent is done (1) vs waiting for return (0, would become a different glyph)."
+    },
+    {
+      "id": "B5.28",
+      "source_model": "Grok",
+      "source_state_id": "AGT.ACTION.COMMITTED",
+      "status": "passed",
+      "static_form": "A heavy filled square (the act) with a bottom-edge underline that extends 20% past both sides (irreversibility rail). A small check-notch is cut from the top-right corner (boolean committed), not a decorative checkmark.",
+      "motion": "Square stamps down (scale 1.15\u21921.0, ease-out) as the underline draws outward. Then freeze forever. No loop, no reverse animation \u2014 commit is monotonic. Retrigger only for a distinct new commit (second square, not a replay).",
+      "color_logic": "Square = high-luminance stable green (go/commit). Underline = darker green. Not teal (that's handoff) and not red. Color here is type-id for 'irreversible act'.",
+      "variable_params": "stamp_scale_peak ~ force/scope of the action; underline_extension ~ irreversibility (wider = harder to undo); notch_size ~ verification that commit landed; sibling_count ~ batch of committed acts."
+    },
+    {
+      "id": "B5.29",
+      "source_model": "Grok",
+      "source_state_id": "AGT.CONTROL.SELF_CORRECTION",
+      "status": "passed",
+      "static_form": "A path that overshoots a target crosshair then returns: a polyline with a visible hook (wrong vertex) followed by a corrected vertex on the crosshair. Both vertices remain drawn so the error is retained as history.",
+      "motion": "Trace draws through the error vertex (fast), pauses 1 frame, then retracts to the hook and redraws into the crosshair (ease-in). After arrival, a small inward notch on the path marks 'corrected'. Loop only if another correction occurs; otherwise hold on the hooked-then-fixed path.",
+      "color_logic": "Error segment = dim; corrected segment = bright, same hue (control slate-cyan, shared with CHECKPOINT). No red \u2014 this is internal control, not a security or policy event.",
+      "variable_params": "hook_amp_px ~ size of the mistake; pause_frames ~ time-to-detect; corrected_path_weight ~ confidence in the fix; notch_depth ~ whether the prior act was fully undone or only compensated."
+    }
+  ]
+}

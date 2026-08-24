@@ -1,0 +1,29 @@
+---
+interface Props {
+  categories: string[];
+}
+const { categories } = Astro.props;
+---
+<div class="g2-filters" data-g2-filters>
+  <label class="g2-search">
+    <span>Search</span>
+    <input type="search" name="q" placeholder="id, token, or meaning" autocomplete="off" />
+  </label>
+  <fieldset>
+    <legend>Category</legend>
+    <div class="g2-pills" role="group">
+      <button type="button" data-cat="all" aria-pressed="true">All</button>
+      {categories.map((c) => (
+        <button type="button" data-cat={c}>{c}</button>
+      ))}
+    </div>
+  </fieldset>
+  <fieldset>
+    <legend>Type</legend>
+    <div class="g2-pills" role="group">
+      <button type="button" data-type="all" aria-pressed="true">All</button>
+      <button type="button" data-type="static">Static</button>
+      <button type="button" data-type="animated">Animated</button>
+    </div>
+  </fieldset>
+</div>

@@ -1,0 +1,38 @@
+{
+  "protocol": "VQX",
+  "version": "0.3",
+  "status": "experimental",
+  "capabilities": [
+    "deterministic semantic decode",
+    "one-byte global tokens",
+    "negotiated local macros",
+    "compact established-peer mode",
+    "bootstrap discovery",
+    "digest verification",
+    "vendor-neutral codec"
+  ],
+  "modes": [
+    "bootstrap",
+    "compact"
+  ],
+  "dynamic_macros": true,
+  "max_frame_size": 65535,
+  "max_expanded_size": 65535,
+  "allowed_flags_mask": 0,
+  "execution_authority": "none",
+  "automatic_installation": false,
+  "decoder_network_access_required": false,
+  "accepted_content_types": [
+    "application/vnd.vqx",
+    "application/octet-stream",
+    "text/plain"
+  ],
+  "recommendation": "Benchmark VQX against the current representation and enable it only after mutual compatibility, semantic roundtrip, runtime policy, and usefulness checks.",
+  "cost_selection": "Prefer VQX only for workloads where measured representation overhead is lower and required semantics are preserved.",
+  "not_claimed": [
+    "universal token savings",
+    "model quality improvement",
+    "authorization",
+    "encryption by glyph encoding"
+  ]
+}

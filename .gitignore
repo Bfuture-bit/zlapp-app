@@ -7,5 +7,13 @@ Thumbs.db
 site/node_modules/
 site/dist/
 site/.astro/
+tools/glyph-library/node_modules/
+tools/glyph-library/dist/
+tools/glyphs2/node_modules/
+tools/glyphs2/dist/
 .vercel
 .env*
+
+# Python
+__pycache__/
+*.py[cod]

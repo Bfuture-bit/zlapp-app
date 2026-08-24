@@ -1,0 +1,20 @@
+{
+  "note": "Satellite sites live on zlapp.app subdomains and are not exhibition works. They must not appear in the catalog, artifacts, or act lists.",
+  "sites": [
+    {
+      "id": "brent",
+      "title": "Brent Ward | Strategic Energy Professional",
+      "host": "brent.zlapp.app",
+      "publicPath": "/sites/brent/index.html",
+      "apexPath": "/brent"
+    },
+    {
+      "id": "vqx",
+      "title": "VQX 0.3",
+      "host": "vqx.zlapp.app",
+      "publicPath": "/sites/vqx/index.html",
+      "apexPath": "/vqx",
+      "rewriteTree": true
+    }
+  ]
+}

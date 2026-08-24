@@ -1,0 +1,277 @@
+.g2 {
+  width: min(var(--max), calc(100% - 2 * var(--pad)));
+  margin-inline: auto;
+  padding: 1.4rem 0 3.5rem;
+  overflow-x: hidden;
+}
+
+.g2-hero h1 {
+  margin: 0;
+  font-family: var(--serif);
+  font-weight: 300;
+  font-size: clamp(2.4rem, 8vw, 5.4rem);
+  letter-spacing: -0.04em;
+  line-height: 0.92;
+}
+
+.g2-sub {
+  margin: 0.85rem 0 0;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.g2-lead {
+  margin: 1.4rem 0 0;
+  max-width: 40rem;
+  color: var(--muted);
+  font-weight: 300;
+}
+
+.g2-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.2rem 2rem;
+  margin: 1.6rem 0 0;
+  padding: 1rem 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.g2-stats strong {
+  display: block;
+  font-family: var(--serif);
+  font-size: 1.8rem;
+  font-weight: 400;
+}
+
+.g2-stats span {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.g2-filters {
+  display: grid;
+  gap: 1rem;
+  margin: 1.6rem 0 1rem;
+}
+
+.g2-search span,
+.g2-filters legend {
+  display: block;
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 0.4rem;
+}
+
+.g2-search input {
+  width: 100%;
+  min-height: 2.75rem;
+  border: 1px solid var(--line);
+  background: var(--bg-2);
+  color: var(--ink);
+  padding: 0.7rem 0.85rem;
+  font: inherit;
+}
+
+.g2-filters fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+
+.g2-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.g2-pills button,
+.g2-actions button,
+.g2-dialog-close {
+  min-height: 2.5rem;
+  padding: 0.45rem 0.75rem;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.g2-pills button[aria-pressed="true"],
+.g2-actions button[aria-pressed="true"] {
+  color: var(--ink);
+  border-color: var(--accent);
+}
+
+.g2-count {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  color: var(--faint);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.g2-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 720px) {
+  .g2-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (min-width: 1100px) {
+  .g2-grid {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+}
+
+.g2-card {
+  border: 1px solid var(--line);
+  background: var(--bg-2);
+  min-width: 0;
+}
+
+.g2-card-hit {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.g2-preview {
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  padding: 1.2rem;
+  background-color: #16181c;
+  background-image:
+    linear-gradient(45deg, #1d2026 25%, transparent 25%),
+    linear-gradient(-45deg, #1d2026 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #1d2026 75%),
+    linear-gradient(-45deg, transparent 75%, #1d2026 75%);
+  background-size: 18px 18px;
+  background-position: 0 0, 0 9px, 9px -9px, -9px 0;
+}
+
+.g2-preview img,
+.g2-glyph {
+  width: min(100%, 256px);
+  height: auto;
+  max-height: 16rem;
+  object-fit: contain;
+}
+
+.g2-card-body {
+  padding: 0.9rem 1rem 1.1rem;
+}
+
+.g2-token {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
+.g2-cat,
+.g2-badge {
+  margin: 0.35rem 0 0;
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.g2-mean {
+  margin: 0.55rem 0 0;
+  color: var(--muted);
+  font-weight: 300;
+  font-size: 0.95rem;
+}
+
+.g2-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.85rem;
+}
+
+.g2-empty {
+  color: var(--muted);
+}
+
+.g2-dialog {
+  width: min(34rem, calc(100vw - 1.5rem));
+  max-height: calc(100dvh - 1.5rem);
+  overflow: auto;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--ink);
+  padding: 0;
+}
+
+.g2-dialog::backdrop {
+  background: rgba(8, 8, 8, 0.72);
+}
+
+.g2-dialog-inner {
+  padding: 1rem 1.1rem 1.3rem;
+}
+
+.g2-dialog-preview {
+  margin: 0.7rem 0 1rem;
+}
+
+.g2-dialog-preview img {
+  width: 100%;
+  height: auto;
+  max-height: 16rem;
+  object-fit: contain;
+}
+
+.g2-urls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+}
+
+.g2-urls a {
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
+.g2-code {
+  margin: 0.8rem 0 0;
+  padding: 0.7rem;
+  background: #16181c;
+  overflow-x: auto;
+  font-size: 0.78rem;
+}
+
+.g2-note {
+  margin-top: 2rem;
+  color: var(--faint);
+  font-size: 0.92rem;
+}

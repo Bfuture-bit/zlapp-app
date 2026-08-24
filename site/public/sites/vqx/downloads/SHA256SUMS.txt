@@ -1,0 +1,4 @@
+ace109e88d9ac8f90b1f4ade323519d74a5d54b652968fb305fe0f44cff4a707  vqx-agent-package-v0.3.zip
+94ae0c5022bc2494aea8acb172b9b93f78cda18b6dcccf9e69c7b98ba18c7ed2  vqx-human-dictionary-v0.3.zip
+9b3d72914b63cd7dcae52a6f6a66c7b9e500aef16083f60e824f1da63d7e2a7f  vqx-agent-package-v0.2.zip
+87b8dbe24a31cb4c41f6a4223578881f835a8b0a1bada3ac67a3d46cd862d213  vqx-human-dictionary-v0.2.zip

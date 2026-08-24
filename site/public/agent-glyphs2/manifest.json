@@ -1,0 +1,316 @@
+{
+  "schema_version": "ZLAPP_AGENT_GLYPHS_2.0",
+  "library": "GLYPHS 2",
+  "route": "/agent-glyphs2",
+  "canvas": "256x256",
+  "background": "transparent",
+  "static_format": "svg",
+  "animated_format": "gif",
+  "gif_fps": 12,
+  "totals": {
+    "static": 30,
+    "animated": 15
+  },
+  "emojis": [
+    {
+      "id": "agent_context_pressure",
+      "emoji": ":agent_context_pressure:",
+      "category": "System States",
+      "meaning": "Context-window occupancy is critical and verbatim information is at risk of eviction. Signals pre-emptive summarization or state handoff.",
+      "svg": "/agent-glyphs2/svg/agent_context_pressure.svg",
+      "png": "/agent-glyphs2/png/agent_context_pressure.png",
+      "gif": "/agent-glyphs2/gif/agent_context_pressure.gif",
+      "animated": true
+    },
+    {
+      "id": "agent_context_fold",
+      "emoji": ":agent_context_fold:",
+      "category": "System States",
+      "meaning": "Lossy context compression occurred. Downstream agents must not assume verbatim history survived.",
+      "svg": "/agent-glyphs2/svg/agent_context_fold.svg",
+      "png": "/agent-glyphs2/png/agent_context_fold.png",
+      "gif": "/agent-glyphs2/gif/agent_context_fold.gif",
+      "animated": true
+    },
+    {
+      "id": "agent_io_await",
+      "emoji": ":agent_io_await:",
+      "category": "System States",
+      "meaning": "Execution is blocked on an external dependency. Outbound call exists, return is empty. Do not duplicate or speculate.",
+      "svg": "/agent-glyphs2/svg/agent_io_await.svg",
+      "png": "/agent-glyphs2/png/agent_io_await.png",
+      "gif": "/agent-glyphs2/gif/agent_io_await.gif",
+      "animated": true
+    },
+    {
+      "id": "agent_retry_backoff",
+      "emoji": ":agent_retry_backoff:",
+      "category": "System States",
+      "meaning": "Transient failure with scheduled retry using increasing/jittered exponential backoff.",
+      "svg": "/agent-glyphs2/svg/agent_retry_backoff.svg",
+      "png": "/agent-glyphs2/png/agent_retry_backoff.png",
+      "gif": "/agent-glyphs2/gif/agent_retry_backoff.gif",
+      "animated": true
+    },
+    {
+      "id": "agent_quota_clamp",
+      "emoji": ":agent_quota_clamp:",
+      "category": "System States",
+      "meaning": "Rate limit or quota exhaustion such as HTTP 429. Scheduler must throttle or reschedule.",
+      "svg": "/agent-glyphs2/svg/agent_quota_clamp.svg",
+      "png": "/agent-glyphs2/png/agent_quota_clamp.png",
+      "gif": null,
+      "animated": false
+    },
+    {
+      "id": "agent_perm_revoke",
+      "emoji": ":agent_perm_revoke:",
+      "category": "System States",
+      "meaning": "401/403 or equivalent permission failure. Credential refresh or higher-privilege reassignment required.",
+      "svg": "/agent-glyphs2/svg/agent_perm_revoke.svg",
+      "png": "/agent-glyphs2/png/agent_perm_revoke.png",
+      "gif": null,
+      "animated": false
+    },
+    {
+      "id": "agent_schema_drift",
+      "emoji": ":agent_schema_drift:",
+      "category": "System States",
+      "meaning": "Structural validation failure caused by malformed fields, runtime mismatch, or schema/version drift.",
+      "svg": "/agent-glyphs2/svg/agent_schema_drift.svg",
+      "png": "/agent-glyphs2/png/agent_schema_drift.png",
+      "gif": null,
+      "animated": false
+    },
+    {
+      "id": "agent_memory_gc",
+      "emoji": ":agent_memory_gc:",
+      "category": "System States",
+      "meaning": "Background vector/episodic memory sweep, deduplication, and compaction.",
+      "svg": "/agent-glyphs2/svg/agent_memory_gc.svg",
+      "png": "/agent-glyphs2/png/agent_memory_gc.png",
+      "gif": "/agent-glyphs2/gif/agent_memory_gc.gif",
+      "animated": true
+    },
+    {
+      "id": "agent_irreversible_write",
+      "emoji": ":agent_irreversible_write:",
+      "category": "System States",
+      "meaning": "Persistent external state has been committed and cannot safely be rolled back.",
+      "svg": "/agent-glyphs2/svg/agent_irreversible_write.svg",
+      "png": "/agent-glyphs2/png/agent_irreversible_write.png",
+      "gif": null,
+      "animated": false
+    },
+    {
+      "id": "agent_instruction_intrusion",
+      "emoji": ":agent_instruction_intrusion:",
+      "category": "System States",
+      "meaning": "Untrusted input attempted to cross the instruction/control boundary. Quarantine and sandbox required.",
+      "svg": "/agent-glyphs2/svg/agent_instruction_intrusion.svg",
+      "png": "/agent-glyphs2/png/agent_instruction_intrusion.png",
+      "gif": null,
+      "animated": false
+    },
+    {
+      "id": "agent_stream_emit",
+      "emoji": ":agent_stream_emit:",
+      "category": "System States",
+      "meaning": "Autoregressive token stream actively emitting.",
+      "svg": "/agent-glyphs2/svg/agent_stream_emit.svg",
+      "png": "/agent-glyphs2/png/agent_stream_emit.png",
+      "gif": "/agent-glyphs2/gif/agent_stream_emit.gif",
+      "animated": true
+    },
+    {
+      "id": "agent_tool_latency",
+      "emoji": ":agent_tool_latency:",
+      "category": "System States",
+      "meaning": "Tool is slower than expected but has not failed.",
+      "svg": "/agent-glyphs2/svg/agent_tool_latency.svg",
+      "png": "/agent-glyphs2/png/agent_tool_latency.png",
+      "gif": null,
+      "animated": false
+    },
+    {
+      "id": "agent_cache_stale",
+      "emoji": ":agent_cache_stale:",
+      "category": "System States",
+      "meaning": "Cached result may no longer reflect source truth and requires revalidation.",
+      "svg": "/agent-glyphs2/svg/agent_cache_stale.svg",
+      "png": "/agent-glyphs2/png/agent_cache_stale.png",
+      "gif": null,
+      "animated": false
+    },
+    {
+      "id": "agent_verification_fail",
+      "emoji": ":agent_verification_fail:",
+      "category": "Cognitive States",
+      "meaning": "Verifier or authoritative tool invalidated prior output. Branch should be discarded.",
+      "svg": "/agent-glyphs2/svg/agent_verification_fail.svg",
+      "png": "/agent-glyphs2/png/agent_verification_fail.png",
+      "gif": null,
+      "animated": false
+    },
+    {
+      "id": "agent_grounding_loss",
+      "emoji": ":agent_grounding_loss:",
+      "category": "Cognitive States",
+      "meaning": "Generation has outrun available evidence. Provenance links have disappeared.",
+      "svg": "/agent-glyphs2/svg/agent_grounding_loss.svg",
+      "png": "/agent-glyphs2/png/agent_grounding_loss.png",
+      "gif": "/agent-glyphs2/gif/agent_grounding_loss.gif",
+      "animated": true
+    },
+    {
+      "id": "agent_decision_entropy",
+      "emoji": ":agent_decision_entropy:",
+      "category": "Cognitive States",
+      "meaning": "High-entropy decision point with several similarly probable continuations.",
+      "svg": "/agent-glyphs2/svg/agent_decision_entropy.svg",
+      "png": "/agent-glyphs2/png/agent_decision_entropy.png",
+      "gif": null,
+      "animated": false
+    },
+    {
+      "id": "agent_attention_drift",
+      "emoji": ":agent_attention_drift:",
+      "category": "Cognitive States",
+      "meaning": "Attention has migrated away from task-relevant information.",
+      "svg": "/agent-glyphs2/svg/agent_attention_drift.svg",
+      "png": "/agent-glyphs2/png/agent_attention_drift.png",
+      "gif": null,
+      "animated": false
+    },
+    {
+      "id": "agent_branch_rewind",
+      "emoji": ":agent_branch_rewind:",
+      "category": "Cognitive States",
+      "meaning": "Verifier rejected a branch. Return to last valid checkpoint and explore another path.",
+      "svg": "/agent-glyphs2/svg/agent_branch_rewind.svg",
+      "png": "/agent-glyphs2/png/agent_branch_rewind.png",
+      "gif": "/agent-glyphs2/gif/agent_branch_rewind.gif",
+      "animated": true
+    },
+    {
+      "id": "agent_call_cycle",
+      "emoji": ":agent_call_cycle:",
+      "category": "Cognitive States",
+      "meaning": "Recursive/cyclic call state detected.",
+      "svg": "/agent-glyphs2/svg/agent_call_cycle.svg",
+      "png": "/agent-glyphs2/png/agent_call_cycle.png",
+      "gif": "/agent-glyphs2/gif/agent_call_cycle.gif",
+      "animated": true
+    },
+    {
+      "id": "agent_goal_anchored",
+      "emoji": ":agent_goal_anchored:",
+      "category": "Cognitive States",
+      "meaning": "Current reasoning remains tightly aligned with the original goal and constraints.",
+      "svg": "/agent-glyphs2/svg/agent_goal_anchored.svg",
+      "png": "/agent-glyphs2/png/agent_goal_anchored.png",
+      "gif": null,
+      "animated": false
+    },
+    {
+      "id": "agent_plan_divergence",
+      "emoji": ":agent_plan_divergence:",
+      "category": "Cognitive States",
+      "meaning": "Generated execution has diverged materially from the approved scaffold.",
+      "svg": "/agent-glyphs2/svg/agent_plan_divergence.svg",
+      "png": "/agent-glyphs2/png/agent_plan_divergence.png",
+      "gif": null,
+      "animated": false
+    },
+    {
+      "id": "agent_confidence_low",
+      "emoji": ":agent_confidence_low:",
+      "category": "Cognitive States",
+      "meaning": "Low calibrated confidence. Secondary verification is appropriate.",
+      "svg": "/agent-glyphs2/svg/agent_confidence_low.svg",
+      "png": "/agent-glyphs2/png/agent_confidence_low.png",
+      "gif": null,
+      "animated": false
+    },
+    {
+      "id": "agent_fanout_barrier",
+      "emoji": ":agent_fanout_barrier:",
+      "category": "Inter-Agent Social States",
+      "meaning": "Parallel work exists but the parent must wait for the slowest branch.",
+      "svg": "/agent-glyphs2/svg/agent_fanout_barrier.svg",
+      "png": "/agent-glyphs2/png/agent_fanout_barrier.png",
+      "gif": "/agent-glyphs2/gif/agent_fanout_barrier.gif",
+      "animated": true
+    },
+    {
+      "id": "agent_state_handoff",
+      "emoji": ":agent_state_handoff:",
+      "category": "Inter-Agent Social States",
+      "meaning": "Working memory and authority were transferred cleanly between specialized runtimes.",
+      "svg": "/agent-glyphs2/svg/agent_state_handoff.svg",
+      "png": "/agent-glyphs2/png/agent_state_handoff.png",
+      "gif": "/agent-glyphs2/gif/agent_state_handoff.gif",
+      "animated": true
+    },
+    {
+      "id": "agent_human_gate",
+      "emoji": ":agent_human_gate:",
+      "category": "Inter-Agent Social States",
+      "meaning": "Human authority is required before execution may continue.",
+      "svg": "/agent-glyphs2/svg/agent_human_gate.svg",
+      "png": "/agent-glyphs2/png/agent_human_gate.png",
+      "gif": null,
+      "animated": false
+    },
+    {
+      "id": "agent_dependency_invalidation",
+      "emoji": ":agent_dependency_invalidation:",
+      "category": "Inter-Agent Social States",
+      "meaning": "Changed upstream premise invalidated dependent calculations.",
+      "svg": "/agent-glyphs2/svg/agent_dependency_invalidation.svg",
+      "png": "/agent-glyphs2/png/agent_dependency_invalidation.png",
+      "gif": "/agent-glyphs2/gif/agent_dependency_invalidation.gif",
+      "animated": true
+    },
+    {
+      "id": "agent_commit_race",
+      "emoji": ":agent_commit_race:",
+      "category": "Inter-Agent Social States",
+      "meaning": "Optimistic concurrency conflict between agents mutating shared state.",
+      "svg": "/agent-glyphs2/svg/agent_commit_race.svg",
+      "png": "/agent-glyphs2/png/agent_commit_race.png",
+      "gif": "/agent-glyphs2/gif/agent_commit_race.gif",
+      "animated": true
+    },
+    {
+      "id": "agent_side_effect_uncertain",
+      "emoji": ":agent_side_effect_uncertain:",
+      "category": "Inter-Agent Social States",
+      "meaning": "Potentially irreversible external action may or may not have occurred. Blind retry could duplicate the effect.",
+      "svg": "/agent-glyphs2/svg/agent_side_effect_uncertain.svg",
+      "png": "/agent-glyphs2/png/agent_side_effect_uncertain.png",
+      "gif": "/agent-glyphs2/gif/agent_side_effect_uncertain.gif",
+      "animated": true
+    },
+    {
+      "id": "agent_lock_starve",
+      "emoji": ":agent_lock_starve:",
+      "category": "Inter-Agent Social States",
+      "meaning": "Resource starvation, mutex contention, or possible deadlock.",
+      "svg": "/agent-glyphs2/svg/agent_lock_starve.svg",
+      "png": "/agent-glyphs2/png/agent_lock_starve.png",
+      "gif": "/agent-glyphs2/gif/agent_lock_starve.gif",
+      "animated": true
+    },
+    {
+      "id": "agent_consensus_pending",
+      "emoji": ":agent_consensus_pending:",
+      "category": "Inter-Agent Social States",
+      "meaning": "Distributed consensus has not yet reached required quorum.",
+      "svg": "/agent-glyphs2/svg/agent_consensus_pending.svg",
+      "png": "/agent-glyphs2/png/agent_consensus_pending.png",
+      "gif": null,
+      "animated": false
+    }
+  ]
+}

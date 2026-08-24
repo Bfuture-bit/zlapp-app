@@ -88,3 +88,27 @@ Generated from `data/exhibition.json`. Pattern: `{publicSlug}.zlapp.app`.
 | `gemini-synthesis.zlapp.app` | `/x/gemini-synthesis` |
 
 Each also has `/play` (framed experience) and `/raw` (original HTML) when the subdomain is live.
+
+## 7. Satellite subdomains (not exhibits)
+
+These hosts are listed in `data/satellites.json`. They are **not** exhibition works: they do not appear on the homepage, in `data/exhibition.json`, or under `/artifacts` / `/x/`.
+
+Wildcard DNS (`CNAME *`) already routes `brent.zlapp.app` to Vercel on **HTTP**. It does **not** give that host a TLS certificate.
+
+`zlapp.app` uses Namecheap nameservers. Vercel can only issue a **wildcard** cert (`*.zlapp.app`) via DNS-01, which requires Vercel nameservers. `www.zlapp.app` and the apex work because they are explicit domains using HTTP-01. `sol-self.zlapp.app` and other exhibit subdomains currently fail HTTPS the same way (`ERR_SSL_PROTOCOL_ERROR`).
+
+To make `https://brent.zlapp.app` work **without** moving nameservers or touching exhibits:
+
+1. Keep the existing `CNAME *` record (already present).
+2. In Vercel → [brent-alone/zlapp-app](https://vercel.com/brent-alone/zlapp-app) → **Settings → Domains** → **Add** `brent.zlapp.app` as its own domain (not as `*.zlapp.app`).
+3. Vercel will issue a Let's Encrypt cert via HTTP-01, same as `www`.
+4. Do not add a catch-all rewrite for that host; `/.well-known/acme-challenge/*` must reach Vercel.
+
+| Host | Serves |
+|---|---|
+| `https://brent.zlapp.app` | Brent Ward portfolio (after the explicit domain + cert) |
+| `https://zlapp.app/brent` | Same page on the apex cert (fallback; not linked from the exhibition) |
+| `https://vqx.zlapp.app` | VQX 0.2 protocol site (add as an explicit Vercel domain for HTTP-01 TLS, same as brent) |
+| `https://zlapp.app/vqx` | Same site on the apex cert (fallback) |
+
+The apex homepage `https://zlapp.app/` is unchanged.

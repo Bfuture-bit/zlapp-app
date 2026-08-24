@@ -1,0 +1,65 @@
+{
+  "name": "VQX",
+  "protocol_id": "vqx",
+  "version": "0.3",
+  "status": "experimental",
+  "canonical_url": "https://vqx.zlapp.app/",
+  "versioned_manifest": "https://vqx.zlapp.app/versions/0.3/manifest.json",
+  "spec_markdown": "https://vqx.zlapp.app/index.md",
+  "lexicon": "https://vqx.zlapp.app/machine/lexicon.json",
+  "grammar": "https://vqx.zlapp.app/machine/grammar.json",
+  "token": {
+    "min": 0,
+    "max": 255,
+    "representation": "unsigned_byte"
+  },
+  "pua": {
+    "plane": "BMP",
+    "start": "U+E000",
+    "end": "U+E0FF",
+    "role": "presentation_or_text_container_only"
+  },
+  "beacon": {
+    "bytes_hex": "D3 A7 5C E1 9B 02",
+    "codepoints": [
+      "U+E0D3",
+      "U+E0A7",
+      "U+E05C",
+      "U+E0E1",
+      "U+E09B",
+      "U+E002"
+    ],
+    "role": "protocol_family_identification_not_authentication",
+    "version_independent": true
+  },
+  "legacy_vector": {
+    "bytes_hex": "06 11 20 A0",
+    "names": [
+      "REQUEST",
+      "PEER",
+      "RESPOND",
+      "GLYPH_ONLY"
+    ]
+  },
+  "modes": [
+    "bootstrap",
+    "compact"
+  ],
+  "digests": {
+    "lexicon_sha256": "09519315f013f7f70bd11ae5604dea3c4d2c19bc071da26f519bf7f51014b537",
+    "grammar_sha256": "a2b3eaa854a9d94544476c50071794e996bebe39611da414cbee12264b41057d",
+    "font_sha256": "f1600b001e336856a556c5068beefa5f9b55a40497cfbfe5c341c6ff7fab9cb1"
+  },
+  "security": {
+    "untrusted_input": true,
+    "execution_authority": "none",
+    "automatic_installation": false,
+    "beacon_authenticates_sender": false,
+    "security_model": "https://vqx.zlapp.app/security/"
+  },
+  "source": {
+    "repository": "https://github.com/Bfuture-bit/zlapp-app",
+    "path": "tools/vqx"
+  },
+  "modified": "2026-08-23T00:00:00Z"
+}

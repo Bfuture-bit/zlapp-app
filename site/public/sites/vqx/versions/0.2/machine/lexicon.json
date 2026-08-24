@@ -1,0 +1,2860 @@
+[
+  {
+    "id": 0,
+    "hex": "00",
+    "codepoint": "U+E000",
+    "class": "framing",
+    "machine_semantics": {
+      "frame": "start"
+    },
+    "human_name": "START",
+    "human_description": "Open a VQX frame or semantic unit."
+  },
+  {
+    "id": 1,
+    "hex": "01",
+    "codepoint": "U+E001",
+    "class": "framing",
+    "machine_semantics": {
+      "frame": "end"
+    },
+    "human_name": "END",
+    "human_description": "Close a VQX frame or semantic unit."
+  },
+  {
+    "id": 2,
+    "hex": "02",
+    "codepoint": "U+E002",
+    "class": "framing",
+    "machine_semantics": {
+      "frame": "version",
+      "value": 2
+    },
+    "human_name": "VERSION",
+    "human_description": "Protocol version marker; bootstrap version byte is 0x02 for v0.2."
+  },
+  {
+    "id": 3,
+    "hex": "03",
+    "codepoint": "U+E003",
+    "class": "framing",
+    "machine_semantics": {
+      "frame": "flags"
+    },
+    "human_name": "FLAG",
+    "human_description": "Frame flags / option bits follow in context."
+  },
+  {
+    "id": 4,
+    "hex": "04",
+    "codepoint": "U+E004",
+    "class": "framing",
+    "machine_semantics": {
+      "frame": "continue"
+    },
+    "human_name": "CONT",
+    "human_description": "Continuation of the previous semantic unit."
+  },
+  {
+    "id": 5,
+    "hex": "05",
+    "codepoint": "U+E005",
+    "class": "framing",
+    "machine_semantics": {
+      "frame": "ack"
+    },
+    "human_name": "ACK",
+    "human_description": "Acknowledgement of receipt without completion."
+  },
+  {
+    "id": 6,
+    "hex": "06",
+    "codepoint": "U+E006",
+    "class": "framing",
+    "machine_semantics": {
+      "act": "request"
+    },
+    "human_name": "REQUEST",
+    "human_description": "Illocution: request an action or response from the addressee."
+  },
+  {
+    "id": 7,
+    "hex": "07",
+    "codepoint": "U+E007",
+    "class": "framing",
+    "machine_semantics": {
+      "frame": "complete",
+      "ok": true
+    },
+    "human_name": "DONE",
+    "human_description": "Successful completion of the requested work."
+  },
+  {
+    "id": 8,
+    "hex": "08",
+    "codepoint": "U+E008",
+    "class": "framing",
+    "machine_semantics": {
+      "frame": "complete",
+      "ok": false
+    },
+    "human_name": "FAIL",
+    "human_description": "Terminal failure of the requested work."
+  },
+  {
+    "id": 9,
+    "hex": "09",
+    "codepoint": "U+E009",
+    "class": "framing",
+    "machine_semantics": {
+      "act": "cancel"
+    },
+    "human_name": "CANCEL",
+    "human_description": "Cancel in-flight work."
+  },
+  {
+    "id": 10,
+    "hex": "0A",
+    "codepoint": "U+E00A",
+    "class": "framing",
+    "machine_semantics": {
+      "frame": "ping"
+    },
+    "human_name": "PING",
+    "human_description": "Liveness check."
+  },
+  {
+    "id": 11,
+    "hex": "0B",
+    "codepoint": "U+E00B",
+    "class": "framing",
+    "machine_semantics": {
+      "frame": "pong"
+    },
+    "human_name": "PONG",
+    "human_description": "Liveness reply."
+  },
+  {
+    "id": 12,
+    "hex": "0C",
+    "codepoint": "U+E00C",
+    "class": "framing",
+    "machine_semantics": {
+      "frame": "reset"
+    },
+    "human_name": "RESET",
+    "human_description": "Reset session/frame state."
+  },
+  {
+    "id": 13,
+    "hex": "0D",
+    "codepoint": "U+E00D",
+    "class": "framing",
+    "machine_semantics": {
+      "frame": "separator"
+    },
+    "human_name": "SEP",
+    "human_description": "Separator between concatenated semantic units."
+  },
+  {
+    "id": 14,
+    "hex": "0E",
+    "codepoint": "U+E00E",
+    "class": "framing",
+    "machine_semantics": {
+      "frame": "length"
+    },
+    "human_name": "LEN",
+    "human_description": "Length prefix for the following value (implementation-defined integer encoding)."
+  },
+  {
+    "id": 15,
+    "hex": "0F",
+    "codepoint": "U+E00F",
+    "class": "framing",
+    "machine_semantics": {
+      "frame": "dict_hash"
+    },
+    "human_name": "DICT_HASH",
+    "human_description": "Dictionary identity / SHA-256 prefix follows in the transport envelope, not in-band as raw ASCII."
+  },
+  {
+    "id": 16,
+    "hex": "10",
+    "codepoint": "U+E010",
+    "class": "role",
+    "machine_semantics": {
+      "role": "self"
+    },
+    "human_name": "SELF",
+    "human_description": "The sending agent."
+  },
+  {
+    "id": 17,
+    "hex": "11",
+    "codepoint": "U+E011",
+    "class": "role",
+    "machine_semantics": {
+      "role": "peer"
+    },
+    "human_name": "PEER",
+    "human_description": "The immediate counterpart agent."
+  },
+  {
+    "id": 18,
+    "hex": "12",
+    "codepoint": "U+E012",
+    "class": "role",
+    "machine_semantics": {
+      "role": "user"
+    },
+    "human_name": "USER",
+    "human_description": "The human user / operator of record."
+  },
+  {
+    "id": 19,
+    "hex": "13",
+    "codepoint": "U+E013",
+    "class": "role",
+    "machine_semantics": {
+      "role": "agent"
+    },
+    "human_name": "AGENT",
+    "human_description": "An autonomous agent (generic)."
+  },
+  {
+    "id": 20,
+    "hex": "14",
+    "codepoint": "U+E014",
+    "class": "role",
+    "machine_semantics": {
+      "role": "tool"
+    },
+    "human_name": "TOOL",
+    "human_description": "A tool, function, or external capability."
+  },
+  {
+    "id": 21,
+    "hex": "15",
+    "codepoint": "U+E015",
+    "class": "role",
+    "machine_semantics": {
+      "role": "system"
+    },
+    "human_name": "SYSTEM",
+    "human_description": "The host runtime / system layer."
+  },
+  {
+    "id": 22,
+    "hex": "16",
+    "codepoint": "U+E016",
+    "class": "role",
+    "machine_semantics": {
+      "role": "operator"
+    },
+    "human_name": "OPERATOR",
+    "human_description": "A privileged operator distinct from the end user."
+  },
+  {
+    "id": 23,
+    "hex": "17",
+    "codepoint": "U+E017",
+    "class": "role",
+    "machine_semantics": {
+      "role": "delegate"
+    },
+    "human_name": "DELEGATE",
+    "human_description": "A delegated worker agent."
+  },
+  {
+    "id": 24,
+    "hex": "18",
+    "codepoint": "U+E018",
+    "class": "role",
+    "machine_semantics": {
+      "role": "orchestrator"
+    },
+    "human_name": "ORCH",
+    "human_description": "Orchestrator / planner process."
+  },
+  {
+    "id": 25,
+    "hex": "19",
+    "codepoint": "U+E019",
+    "class": "role",
+    "machine_semantics": {
+      "role": "group"
+    },
+    "human_name": "GROUP",
+    "human_description": "A set of agents."
+  },
+  {
+    "id": 26,
+    "hex": "1A",
+    "codepoint": "U+E01A",
+    "class": "role",
+    "machine_semantics": {
+      "role": "auditor"
+    },
+    "human_name": "AUDITOR",
+    "human_description": "Read-only oversight role."
+  },
+  {
+    "id": 27,
+    "hex": "1B",
+    "codepoint": "U+E01B",
+    "class": "role",
+    "machine_semantics": {
+      "role": "service"
+    },
+    "human_name": "SERVICE",
+    "human_description": "A networked service."
+  },
+  {
+    "id": 28,
+    "hex": "1C",
+    "codepoint": "U+E01C",
+    "class": "role",
+    "machine_semantics": {
+      "role": "model"
+    },
+    "human_name": "MODEL",
+    "human_description": "A model inference backend."
+  },
+  {
+    "id": 29,
+    "hex": "1D",
+    "codepoint": "U+E01D",
+    "class": "role",
+    "machine_semantics": {
+      "role": "workflow"
+    },
+    "human_name": "WORKFLOW",
+    "human_description": "A named workflow or graph."
+  },
+  {
+    "id": 30,
+    "hex": "1E",
+    "codepoint": "U+E01E",
+    "class": "role",
+    "machine_semantics": {
+      "role": "human"
+    },
+    "human_name": "HUMAN",
+    "human_description": "A human in the loop, not necessarily the user of record."
+  },
+  {
+    "id": 31,
+    "hex": "1F",
+    "codepoint": "U+E01F",
+    "class": "role",
+    "machine_semantics": {
+      "role": "unknown"
+    },
+    "human_name": "UNKNOWN_ROLE",
+    "human_description": "Role is unknown or withheld."
+  },
+  {
+    "id": 32,
+    "hex": "20",
+    "codepoint": "U+E020",
+    "class": "speech_act",
+    "machine_semantics": {
+      "act": "respond"
+    },
+    "human_name": "RESPOND",
+    "human_description": "Produce a response to the addressee."
+  },
+  {
+    "id": 33,
+    "hex": "21",
+    "codepoint": "U+E021",
+    "class": "speech_act",
+    "machine_semantics": {
+      "act": "inform"
+    },
+    "human_name": "INFORM",
+    "human_description": "Provide information without requiring action."
+  },
+  {
+    "id": 34,
+    "hex": "22",
+    "codepoint": "U+E022",
+    "class": "speech_act",
+    "machine_semantics": {
+      "act": "ask"
+    },
+    "human_name": "ASK",
+    "human_description": "Ask a question."
+  },
+  {
+    "id": 35,
+    "hex": "23",
+    "codepoint": "U+E023",
+    "class": "speech_act",
+    "machine_semantics": {
+      "act": "confirm"
+    },
+    "human_name": "CONFIRM",
+    "human_description": "Confirm a prior proposition."
+  },
+  {
+    "id": 36,
+    "hex": "24",
+    "codepoint": "U+E024",
+    "class": "speech_act",
+    "machine_semantics": {
+      "act": "deny"
+    },
+    "human_name": "DENY",
+    "human_description": "Deny a prior proposition."
+  },
+  {
+    "id": 37,
+    "hex": "25",
+    "codepoint": "U+E025",
+    "class": "speech_act",
+    "machine_semantics": {
+      "act": "propose"
+    },
+    "human_name": "PROPOSE",
+    "human_description": "Propose a plan or value."
+  },
+  {
+    "id": 38,
+    "hex": "26",
+    "codepoint": "U+E026",
+    "class": "speech_act",
+    "machine_semantics": {
+      "act": "accept"
+    },
+    "human_name": "ACCEPT",
+    "human_description": "Accept a proposal."
+  },
+  {
+    "id": 39,
+    "hex": "27",
+    "codepoint": "U+E027",
+    "class": "speech_act",
+    "machine_semantics": {
+      "act": "reject"
+    },
+    "human_name": "REJECT",
+    "human_description": "Reject a proposal or result."
+  },
+  {
+    "id": 40,
+    "hex": "28",
+    "codepoint": "U+E028",
+    "class": "speech_act",
+    "machine_semantics": {
+      "act": "clarify"
+    },
+    "human_name": "CLARIFY",
+    "human_description": "Request or provide clarification."
+  },
+  {
+    "id": 41,
+    "hex": "29",
+    "codepoint": "U+E029",
+    "class": "speech_act",
+    "machine_semantics": {
+      "act": "warn"
+    },
+    "human_name": "WARN",
+    "human_description": "Warn about risk or side effects."
+  },
+  {
+    "id": 42,
+    "hex": "2A",
+    "codepoint": "U+E02A",
+    "class": "speech_act",
+    "machine_semantics": {
+      "act": "commit"
+    },
+    "human_name": "COMMIT",
+    "human_description": "Commit to a future action."
+  },
+  {
+    "id": 43,
+    "hex": "2B",
+    "codepoint": "U+E02B",
+    "class": "speech_act",
+    "machine_semantics": {
+      "act": "retract"
+    },
+    "human_name": "RETRACT",
+    "human_description": "Retract a prior statement or commit."
+  },
+  {
+    "id": 44,
+    "hex": "2C",
+    "codepoint": "U+E02C",
+    "class": "speech_act",
+    "machine_semantics": {
+      "act": "direct"
+    },
+    "human_name": "DIRECT",
+    "human_description": "Issue a directive."
+  },
+  {
+    "id": 45,
+    "hex": "2D",
+    "codepoint": "U+E02D",
+    "class": "speech_act",
+    "machine_semantics": {
+      "act": "offer"
+    },
+    "human_name": "OFFER",
+    "human_description": "Offer a resource or option."
+  },
+  {
+    "id": 46,
+    "hex": "2E",
+    "codepoint": "U+E02E",
+    "class": "speech_act",
+    "machine_semantics": {
+      "act": "refuse"
+    },
+    "human_name": "REFUSE",
+    "human_description": "Refuse a directive."
+  },
+  {
+    "id": 47,
+    "hex": "2F",
+    "codepoint": "U+E02F",
+    "class": "speech_act",
+    "machine_semantics": {
+      "act": "capability_response"
+    },
+    "human_name": "CAP_RESPONSE",
+    "human_description": "Capability advertisement / negotiation response."
+  },
+  {
+    "id": 48,
+    "hex": "30",
+    "codepoint": "U+E030",
+    "class": "action",
+    "machine_semantics": {
+      "action": "reason"
+    },
+    "human_name": "REASON",
+    "human_description": "Perform internal reasoning; do not emit chain-of-thought unless policy allows."
+  },
+  {
+    "id": 49,
+    "hex": "31",
+    "codepoint": "U+E031",
+    "class": "action",
+    "machine_semantics": {
+      "action": "search"
+    },
+    "human_name": "SEARCH",
+    "human_description": "Search an index, web, or corpus."
+  },
+  {
+    "id": 50,
+    "hex": "32",
+    "codepoint": "U+E032",
+    "class": "action",
+    "machine_semantics": {
+      "action": "extract"
+    },
+    "human_name": "EXTRACT",
+    "human_description": "Extract specified fields or spans."
+  },
+  {
+    "id": 51,
+    "hex": "33",
+    "codepoint": "U+E033",
+    "class": "action",
+    "machine_semantics": {
+      "action": "transform"
+    },
+    "human_name": "TRANSFORM",
+    "human_description": "Transform data from one representation to another."
+  },
+  {
+    "id": 52,
+    "hex": "34",
+    "codepoint": "U+E034",
+    "class": "action",
+    "machine_semantics": {
+      "action": "summarize"
+    },
+    "human_name": "SUMMARIZE",
+    "human_description": "Summarize source material."
+  },
+  {
+    "id": 53,
+    "hex": "35",
+    "codepoint": "U+E035",
+    "class": "action",
+    "machine_semantics": {
+      "action": "classify"
+    },
+    "human_name": "CLASSIFY",
+    "human_description": "Assign a class label."
+  },
+  {
+    "id": 54,
+    "hex": "36",
+    "codepoint": "U+E036",
+    "class": "action",
+    "machine_semantics": {
+      "action": "compare"
+    },
+    "human_name": "COMPARE",
+    "human_description": "Compare two or more items."
+  },
+  {
+    "id": 55,
+    "hex": "37",
+    "codepoint": "U+E037",
+    "class": "action",
+    "machine_semantics": {
+      "action": "execute",
+      "auth_required": true
+    },
+    "human_name": "EXECUTE",
+    "human_description": "Execute a tool or plan. Does not grant authorization by itself."
+  },
+  {
+    "id": 56,
+    "hex": "38",
+    "codepoint": "U+E038",
+    "class": "action",
+    "machine_semantics": {
+      "action": "monitor"
+    },
+    "human_name": "MONITOR",
+    "human_description": "Observe an ongoing process."
+  },
+  {
+    "id": 57,
+    "hex": "39",
+    "codepoint": "U+E039",
+    "class": "action",
+    "machine_semantics": {
+      "action": "retry"
+    },
+    "human_name": "RETRY",
+    "human_description": "Retry a failed step."
+  },
+  {
+    "id": 58,
+    "hex": "3A",
+    "codepoint": "U+E03A",
+    "class": "action",
+    "machine_semantics": {
+      "action": "handoff"
+    },
+    "human_name": "HANDOFF",
+    "human_description": "Hand off work and relevant state to another role."
+  },
+  {
+    "id": 59,
+    "hex": "3B",
+    "codepoint": "U+E03B",
+    "class": "action",
+    "machine_semantics": {
+      "action": "delegate"
+    },
+    "human_name": "DELEGATE_ACT",
+    "human_description": "Delegate a subtask."
+  },
+  {
+    "id": 60,
+    "hex": "3C",
+    "codepoint": "U+E03C",
+    "class": "action",
+    "machine_semantics": {
+      "action": "verify"
+    },
+    "human_name": "VERIFY",
+    "human_description": "Verify a claim, artifact, or checksum."
+  },
+  {
+    "id": 61,
+    "hex": "3D",
+    "codepoint": "U+E03D",
+    "class": "action",
+    "machine_semantics": {
+      "action": "install",
+      "auth_required": true
+    },
+    "human_name": "INSTALL",
+    "human_description": "Install a codec, dictionary, or tool. Authorization required."
+  },
+  {
+    "id": 62,
+    "hex": "3E",
+    "codepoint": "U+E03E",
+    "class": "action",
+    "machine_semantics": {
+      "action": "discover"
+    },
+    "human_name": "PROTO_DISCOVER",
+    "human_description": "Discover protocol documents from a well-known URL."
+  },
+  {
+    "id": 63,
+    "hex": "3F",
+    "codepoint": "U+E03F",
+    "class": "action",
+    "machine_semantics": {
+      "action": "capability_query"
+    },
+    "human_name": "CAP_QUERY",
+    "human_description": "Query peer VQX/runtime capabilities."
+  },
+  {
+    "id": 64,
+    "hex": "40",
+    "codepoint": "U+E040",
+    "class": "target",
+    "machine_semantics": {
+      "target": "generic"
+    },
+    "human_name": "TARGET",
+    "human_description": "Generic object of the preceding act."
+  },
+  {
+    "id": 65,
+    "hex": "41",
+    "codepoint": "U+E041",
+    "class": "target",
+    "machine_semantics": {
+      "target": "file"
+    },
+    "human_name": "FILE",
+    "human_description": "A filesystem or blob object."
+  },
+  {
+    "id": 66,
+    "hex": "42",
+    "codepoint": "U+E042",
+    "class": "target",
+    "machine_semantics": {
+      "target": "url"
+    },
+    "human_name": "URL",
+    "human_description": "A URL."
+  },
+  {
+    "id": 67,
+    "hex": "43",
+    "codepoint": "U+E043",
+    "class": "target",
+    "machine_semantics": {
+      "target": "memory"
+    },
+    "human_name": "MEMORY",
+    "human_description": "Working or long-term memory store."
+  },
+  {
+    "id": 68,
+    "hex": "44",
+    "codepoint": "U+E044",
+    "class": "target",
+    "machine_semantics": {
+      "target": "context"
+    },
+    "human_name": "CONTEXT",
+    "human_description": "Conversation or task context."
+  },
+  {
+    "id": 69,
+    "hex": "45",
+    "codepoint": "U+E045",
+    "class": "target",
+    "machine_semantics": {
+      "target": "constraint"
+    },
+    "human_name": "CONSTRAINT",
+    "human_description": "A constraint object."
+  },
+  {
+    "id": 70,
+    "hex": "46",
+    "codepoint": "U+E046",
+    "class": "target",
+    "machine_semantics": {
+      "target": "plan"
+    },
+    "human_name": "PLAN",
+    "human_description": "A plan graph."
+  },
+  {
+    "id": 71,
+    "hex": "47",
+    "codepoint": "U+E047",
+    "class": "target",
+    "machine_semantics": {
+      "target": "task"
+    },
+    "human_name": "TASK",
+    "human_description": "A task record."
+  },
+  {
+    "id": 72,
+    "hex": "48",
+    "codepoint": "U+E048",
+    "class": "target",
+    "machine_semantics": {
+      "target": "data"
+    },
+    "human_name": "DATA",
+    "human_description": "A data payload."
+  },
+  {
+    "id": 73,
+    "hex": "49",
+    "codepoint": "U+E049",
+    "class": "target",
+    "machine_semantics": {
+      "target": "code"
+    },
+    "human_name": "CODE",
+    "human_description": "Source or bytecode."
+  },
+  {
+    "id": 74,
+    "hex": "4A",
+    "codepoint": "U+E04A",
+    "class": "target",
+    "machine_semantics": {
+      "target": "image"
+    },
+    "human_name": "IMAGE",
+    "human_description": "Image media."
+  },
+  {
+    "id": 75,
+    "hex": "4B",
+    "codepoint": "U+E04B",
+    "class": "target",
+    "machine_semantics": {
+      "target": "audio"
+    },
+    "human_name": "AUDIO",
+    "human_description": "Audio media."
+  },
+  {
+    "id": 76,
+    "hex": "4C",
+    "codepoint": "U+E04C",
+    "class": "target",
+    "machine_semantics": {
+      "target": "stream"
+    },
+    "human_name": "STREAM",
+    "human_description": "A live stream."
+  },
+  {
+    "id": 77,
+    "hex": "4D",
+    "codepoint": "U+E04D",
+    "class": "target",
+    "machine_semantics": {
+      "target": "database"
+    },
+    "human_name": "DATABASE",
+    "human_description": "A database."
+  },
+  {
+    "id": 78,
+    "hex": "4E",
+    "codepoint": "U+E04E",
+    "class": "target",
+    "machine_semantics": {
+      "target": "queue"
+    },
+    "human_name": "QUEUE",
+    "human_description": "A message queue."
+  },
+  {
+    "id": 79,
+    "hex": "4F",
+    "codepoint": "U+E04F",
+    "class": "target",
+    "machine_semantics": {
+      "target": "codec"
+    },
+    "human_name": "INSTALL_CODEC",
+    "human_description": "The VQX codec/dictionary package as install target."
+  },
+  {
+    "id": 80,
+    "hex": "50",
+    "codepoint": "U+E050",
+    "class": "state",
+    "machine_semantics": {
+      "state": "generic"
+    },
+    "human_name": "STATE",
+    "human_description": "Generic state marker."
+  },
+  {
+    "id": 81,
+    "hex": "51",
+    "codepoint": "U+E051",
+    "class": "state",
+    "machine_semantics": {
+      "state": "idle"
+    },
+    "human_name": "IDLE",
+    "human_description": "Idle."
+  },
+  {
+    "id": 82,
+    "hex": "52",
+    "codepoint": "U+E052",
+    "class": "state",
+    "machine_semantics": {
+      "state": "busy"
+    },
+    "human_name": "BUSY",
+    "human_description": "Busy."
+  },
+  {
+    "id": 83,
+    "hex": "53",
+    "codepoint": "U+E053",
+    "class": "state",
+    "machine_semantics": {
+      "state": "blocked"
+    },
+    "human_name": "BLOCKED",
+    "human_description": "Blocked on a dependency."
+  },
+  {
+    "id": 84,
+    "hex": "54",
+    "codepoint": "U+E054",
+    "class": "state",
+    "machine_semantics": {
+      "state": "ready"
+    },
+    "human_name": "READY",
+    "human_description": "Ready to run."
+  },
+  {
+    "id": 85,
+    "hex": "55",
+    "codepoint": "U+E055",
+    "class": "state",
+    "machine_semantics": {
+      "state": "running"
+    },
+    "human_name": "RUNNING",
+    "human_description": "Currently running."
+  },
+  {
+    "id": 86,
+    "hex": "56",
+    "codepoint": "U+E056",
+    "class": "state",
+    "machine_semantics": {
+      "state": "paused"
+    },
+    "human_name": "PAUSED",
+    "human_description": "Paused."
+  },
+  {
+    "id": 87,
+    "hex": "57",
+    "codepoint": "U+E057",
+    "class": "state",
+    "machine_semantics": {
+      "state": "waiting"
+    },
+    "human_name": "WAITING",
+    "human_description": "Waiting for input or a timer."
+  },
+  {
+    "id": 88,
+    "hex": "58",
+    "codepoint": "U+E058",
+    "class": "state",
+    "machine_semantics": {
+      "state": "completed"
+    },
+    "human_name": "COMPLETED",
+    "human_description": "Completed."
+  },
+  {
+    "id": 89,
+    "hex": "59",
+    "codepoint": "U+E059",
+    "class": "state",
+    "machine_semantics": {
+      "state": "failed"
+    },
+    "human_name": "FAILED_STATE",
+    "human_description": "Failed state."
+  },
+  {
+    "id": 90,
+    "hex": "5A",
+    "codepoint": "U+E05A",
+    "class": "state",
+    "machine_semantics": {
+      "state": "stale"
+    },
+    "human_name": "STALE",
+    "human_description": "Cached value may be stale."
+  },
+  {
+    "id": 91,
+    "hex": "5B",
+    "codepoint": "U+E05B",
+    "class": "state",
+    "machine_semantics": {
+      "state": "fresh"
+    },
+    "human_name": "FRESH",
+    "human_description": "Value is fresh."
+  },
+  {
+    "id": 92,
+    "hex": "5C",
+    "codepoint": "U+E05C",
+    "class": "state",
+    "machine_semantics": {
+      "state": "locked"
+    },
+    "human_name": "LOCKED",
+    "human_description": "Resource is locked."
+  },
+  {
+    "id": 93,
+    "hex": "5D",
+    "codepoint": "U+E05D",
+    "class": "state",
+    "machine_semantics": {
+      "state": "open"
+    },
+    "human_name": "OPEN",
+    "human_description": "Resource is open."
+  },
+  {
+    "id": 94,
+    "hex": "5E",
+    "codepoint": "U+E05E",
+    "class": "state",
+    "machine_semantics": {
+      "state": "closed"
+    },
+    "human_name": "CLOSED",
+    "human_description": "Resource is closed."
+  },
+  {
+    "id": 95,
+    "hex": "5F",
+    "codepoint": "U+E05F",
+    "class": "state",
+    "machine_semantics": {
+      "state": "degraded"
+    },
+    "human_name": "DEGRADED",
+    "human_description": "Operating in a degraded mode."
+  },
+  {
+    "id": 96,
+    "hex": "60",
+    "codepoint": "U+E060",
+    "class": "data",
+    "machine_semantics": {
+      "data": "type_tag"
+    },
+    "human_name": "TYPE",
+    "human_description": "Type tag for the following value."
+  },
+  {
+    "id": 97,
+    "hex": "61",
+    "codepoint": "U+E061",
+    "class": "data",
+    "machine_semantics": {
+      "data": "text"
+    },
+    "human_name": "TEXT",
+    "human_description": "Unicode text payload."
+  },
+  {
+    "id": 98,
+    "hex": "62",
+    "codepoint": "U+E062",
+    "class": "data",
+    "machine_semantics": {
+      "data": "json"
+    },
+    "human_name": "JSON",
+    "human_description": "JSON payload."
+  },
+  {
+    "id": 99,
+    "hex": "63",
+    "codepoint": "U+E063",
+    "class": "data",
+    "machine_semantics": {
+      "data": "binary"
+    },
+    "human_name": "BINARY",
+    "human_description": "Binary payload."
+  },
+  {
+    "id": 100,
+    "hex": "64",
+    "codepoint": "U+E064",
+    "class": "data",
+    "machine_semantics": {
+      "data": "number"
+    },
+    "human_name": "NUMBER",
+    "human_description": "Numeric payload."
+  },
+  {
+    "id": 101,
+    "hex": "65",
+    "codepoint": "U+E065",
+    "class": "data",
+    "machine_semantics": {
+      "data": "bool"
+    },
+    "human_name": "BOOL",
+    "human_description": "Boolean payload."
+  },
+  {
+    "id": 102,
+    "hex": "66",
+    "codepoint": "U+E066",
+    "class": "data",
+    "machine_semantics": {
+      "data": "list"
+    },
+    "human_name": "LIST",
+    "human_description": "List / array."
+  },
+  {
+    "id": 103,
+    "hex": "67",
+    "codepoint": "U+E067",
+    "class": "data",
+    "machine_semantics": {
+      "data": "map"
+    },
+    "human_name": "MAP",
+    "human_description": "Map / object."
+  },
+  {
+    "id": 104,
+    "hex": "68",
+    "codepoint": "U+E068",
+    "class": "data",
+    "machine_semantics": {
+      "data": "null"
+    },
+    "human_name": "NULL",
+    "human_description": "Null / absent."
+  },
+  {
+    "id": 105,
+    "hex": "69",
+    "codepoint": "U+E069",
+    "class": "data",
+    "machine_semantics": {
+      "data": "hash"
+    },
+    "human_name": "HASH",
+    "human_description": "Cryptographic hash bytes."
+  },
+  {
+    "id": 106,
+    "hex": "6A",
+    "codepoint": "U+E06A",
+    "class": "data",
+    "machine_semantics": {
+      "data": "signature"
+    },
+    "human_name": "SIGNATURE",
+    "human_description": "Detached signature bytes."
+  },
+  {
+    "id": 107,
+    "hex": "6B",
+    "codepoint": "U+E06B",
+    "class": "data",
+    "machine_semantics": {
+      "data": "key_id"
+    },
+    "human_name": "KEY",
+    "human_description": "Key identifier, not a raw secret."
+  },
+  {
+    "id": 108,
+    "hex": "6C",
+    "codepoint": "U+E06C",
+    "class": "data",
+    "machine_semantics": {
+      "data": "cert"
+    },
+    "human_name": "CERT",
+    "human_description": "Certificate bytes."
+  },
+  {
+    "id": 109,
+    "hex": "6D",
+    "codepoint": "U+E06D",
+    "class": "data",
+    "machine_semantics": {
+      "data": "timestamp"
+    },
+    "human_name": "TIMESTAMP",
+    "human_description": "UTC timestamp."
+  },
+  {
+    "id": 110,
+    "hex": "6E",
+    "codepoint": "U+E06E",
+    "class": "data",
+    "machine_semantics": {
+      "data": "duration"
+    },
+    "human_name": "DURATION",
+    "human_description": "Duration."
+  },
+  {
+    "id": 111,
+    "hex": "6F",
+    "codepoint": "U+E06F",
+    "class": "data",
+    "machine_semantics": {
+      "data": "ref"
+    },
+    "human_name": "REF",
+    "human_description": "Opaque reference / handle."
+  },
+  {
+    "id": 112,
+    "hex": "70",
+    "codepoint": "U+E070",
+    "class": "logic",
+    "machine_semantics": {
+      "op": "and"
+    },
+    "human_name": "AND",
+    "human_description": "Logical conjunction."
+  },
+  {
+    "id": 113,
+    "hex": "71",
+    "codepoint": "U+E071",
+    "class": "logic",
+    "machine_semantics": {
+      "op": "or"
+    },
+    "human_name": "OR",
+    "human_description": "Logical disjunction."
+  },
+  {
+    "id": 114,
+    "hex": "72",
+    "codepoint": "U+E072",
+    "class": "logic",
+    "machine_semantics": {
+      "op": "not"
+    },
+    "human_name": "NOT",
+    "human_description": "Logical negation."
+  },
+  {
+    "id": 115,
+    "hex": "73",
+    "codepoint": "U+E073",
+    "class": "logic",
+    "machine_semantics": {
+      "op": "xor"
+    },
+    "human_name": "XOR",
+    "human_description": "Exclusive or."
+  },
+  {
+    "id": 116,
+    "hex": "74",
+    "codepoint": "U+E074",
+    "class": "logic",
+    "machine_semantics": {
+      "op": "if"
+    },
+    "human_name": "IF",
+    "human_description": "Conditional antecedent."
+  },
+  {
+    "id": 117,
+    "hex": "75",
+    "codepoint": "U+E075",
+    "class": "logic",
+    "machine_semantics": {
+      "op": "then"
+    },
+    "human_name": "THEN",
+    "human_description": "Conditional consequent."
+  },
+  {
+    "id": 118,
+    "hex": "76",
+    "codepoint": "U+E076",
+    "class": "logic",
+    "machine_semantics": {
+      "op": "else"
+    },
+    "human_name": "ELSE",
+    "human_description": "Conditional alternative."
+  },
+  {
+    "id": 119,
+    "hex": "77",
+    "codepoint": "U+E077",
+    "class": "logic",
+    "machine_semantics": {
+      "op": "all"
+    },
+    "human_name": "ALL",
+    "human_description": "Universal quantifier."
+  },
+  {
+    "id": 120,
+    "hex": "78",
+    "codepoint": "U+E078",
+    "class": "logic",
+    "machine_semantics": {
+      "op": "any"
+    },
+    "human_name": "ANY",
+    "human_description": "Existential quantifier."
+  },
+  {
+    "id": 121,
+    "hex": "79",
+    "codepoint": "U+E079",
+    "class": "logic",
+    "machine_semantics": {
+      "op": "none"
+    },
+    "human_name": "NONE",
+    "human_description": "Negated existential."
+  },
+  {
+    "id": 122,
+    "hex": "7A",
+    "codepoint": "U+E07A",
+    "class": "logic",
+    "machine_semantics": {
+      "op": "eq"
+    },
+    "human_name": "EQ",
+    "human_description": "Equality test."
+  },
+  {
+    "id": 123,
+    "hex": "7B",
+    "codepoint": "U+E07B",
+    "class": "logic",
+    "machine_semantics": {
+      "op": "neq"
+    },
+    "human_name": "NEQ",
+    "human_description": "Inequality test."
+  },
+  {
+    "id": 124,
+    "hex": "7C",
+    "codepoint": "U+E07C",
+    "class": "logic",
+    "machine_semantics": {
+      "op": "lt"
+    },
+    "human_name": "LT",
+    "human_description": "Less-than."
+  },
+  {
+    "id": 125,
+    "hex": "7D",
+    "codepoint": "U+E07D",
+    "class": "logic",
+    "machine_semantics": {
+      "op": "gt"
+    },
+    "human_name": "GT",
+    "human_description": "Greater-than."
+  },
+  {
+    "id": 126,
+    "hex": "7E",
+    "codepoint": "U+E07E",
+    "class": "logic",
+    "machine_semantics": {
+      "op": "implies"
+    },
+    "human_name": "IMPLIES",
+    "human_description": "Logical implication."
+  },
+  {
+    "id": 127,
+    "hex": "7F",
+    "codepoint": "U+E07F",
+    "class": "logic",
+    "machine_semantics": {
+      "op": "iff"
+    },
+    "human_name": "IFF",
+    "human_description": "Biconditional."
+  },
+  {
+    "id": 128,
+    "hex": "80",
+    "codepoint": "U+E080",
+    "class": "temporal",
+    "machine_semantics": {
+      "time": "now"
+    },
+    "human_name": "NOW",
+    "human_description": "The current time."
+  },
+  {
+    "id": 129,
+    "hex": "81",
+    "codepoint": "U+E081",
+    "class": "temporal",
+    "machine_semantics": {
+      "time": "before"
+    },
+    "human_name": "BEFORE",
+    "human_description": "Before a referenced event."
+  },
+  {
+    "id": 130,
+    "hex": "82",
+    "codepoint": "U+E082",
+    "class": "temporal",
+    "machine_semantics": {
+      "time": "after"
+    },
+    "human_name": "AFTER",
+    "human_description": "After a referenced event."
+  },
+  {
+    "id": 131,
+    "hex": "83",
+    "codepoint": "U+E083",
+    "class": "temporal",
+    "machine_semantics": {
+      "time": "during"
+    },
+    "human_name": "DURING",
+    "human_description": "During an interval."
+  },
+  {
+    "id": 132,
+    "hex": "84",
+    "codepoint": "U+E084",
+    "class": "temporal",
+    "machine_semantics": {
+      "time": "until"
+    },
+    "human_name": "UNTIL",
+    "human_description": "Until a condition."
+  },
+  {
+    "id": 133,
+    "hex": "85",
+    "codepoint": "U+E085",
+    "class": "temporal",
+    "machine_semantics": {
+      "time": "since"
+    },
+    "human_name": "SINCE",
+    "human_description": "Since a condition."
+  },
+  {
+    "id": 134,
+    "hex": "86",
+    "codepoint": "U+E086",
+    "class": "temporal",
+    "machine_semantics": {
+      "time": "deadline"
+    },
+    "human_name": "DEADLINE",
+    "human_description": "Hard deadline."
+  },
+  {
+    "id": 135,
+    "hex": "87",
+    "codepoint": "U+E087",
+    "class": "temporal",
+    "machine_semantics": {
+      "time": "delay"
+    },
+    "human_name": "DELAY",
+    "human_description": "Delay / sleep."
+  },
+  {
+    "id": 136,
+    "hex": "88",
+    "codepoint": "U+E088",
+    "class": "temporal",
+    "machine_semantics": {
+      "time": "schedule"
+    },
+    "human_name": "SCHEDULE",
+    "human_description": "Schedule for later."
+  },
+  {
+    "id": 137,
+    "hex": "89",
+    "codepoint": "U+E089",
+    "class": "temporal",
+    "machine_semantics": {
+      "time": "async"
+    },
+    "human_name": "ASYNC",
+    "human_description": "Asynchronous execution."
+  },
+  {
+    "id": 138,
+    "hex": "8A",
+    "codepoint": "U+E08A",
+    "class": "temporal",
+    "machine_semantics": {
+      "time": "sync"
+    },
+    "human_name": "SYNC",
+    "human_description": "Synchronous execution."
+  },
+  {
+    "id": 139,
+    "hex": "8B",
+    "codepoint": "U+E08B",
+    "class": "temporal",
+    "machine_semantics": {
+      "time": "sequence"
+    },
+    "human_name": "SEQUENCE",
+    "human_description": "Strict sequence."
+  },
+  {
+    "id": 140,
+    "hex": "8C",
+    "codepoint": "U+E08C",
+    "class": "temporal",
+    "machine_semantics": {
+      "time": "parallel"
+    },
+    "human_name": "PARALLEL",
+    "human_description": "Parallel composition."
+  },
+  {
+    "id": 141,
+    "hex": "8D",
+    "codepoint": "U+E08D",
+    "class": "temporal",
+    "machine_semantics": {
+      "time": "timeout"
+    },
+    "human_name": "TIMEOUT",
+    "human_description": "Timeout bound."
+  },
+  {
+    "id": 142,
+    "hex": "8E",
+    "codepoint": "U+E08E",
+    "class": "temporal",
+    "machine_semantics": {
+      "time": "expire"
+    },
+    "human_name": "EXPIRE",
+    "human_description": "Expiration of a lease or cache."
+  },
+  {
+    "id": 143,
+    "hex": "8F",
+    "codepoint": "U+E08F",
+    "class": "temporal",
+    "machine_semantics": {
+      "time": "repeat"
+    },
+    "human_name": "REPEAT",
+    "human_description": "Repeat / loop."
+  },
+  {
+    "id": 144,
+    "hex": "90",
+    "codepoint": "U+E090",
+    "class": "epistemic",
+    "machine_semantics": {
+      "epistemic": "confidence"
+    },
+    "human_name": "CONFIDENCE",
+    "human_description": "Confidence marker; following token or envelope carries the value."
+  },
+  {
+    "id": 145,
+    "hex": "91",
+    "codepoint": "U+E091",
+    "class": "epistemic",
+    "machine_semantics": {
+      "epistemic": "high"
+    },
+    "human_name": "HIGH_CONF",
+    "human_description": "High calibrated confidence."
+  },
+  {
+    "id": 146,
+    "hex": "92",
+    "codepoint": "U+E092",
+    "class": "epistemic",
+    "machine_semantics": {
+      "epistemic": "low"
+    },
+    "human_name": "LOW_CONF",
+    "human_description": "Low calibrated confidence."
+  },
+  {
+    "id": 147,
+    "hex": "93",
+    "codepoint": "U+E093",
+    "class": "epistemic",
+    "machine_semantics": {
+      "epistemic": "uncertain"
+    },
+    "human_name": "UNCERTAIN",
+    "human_description": "Uncertainty; do not overclaim."
+  },
+  {
+    "id": 148,
+    "hex": "94",
+    "codepoint": "U+E094",
+    "class": "epistemic",
+    "machine_semantics": {
+      "epistemic": "unknown"
+    },
+    "human_name": "UNKNOWN",
+    "human_description": "Unknown / no belief."
+  },
+  {
+    "id": 149,
+    "hex": "95",
+    "codepoint": "U+E095",
+    "class": "epistemic",
+    "machine_semantics": {
+      "epistemic": "probable"
+    },
+    "human_name": "PROBABLE",
+    "human_description": "More likely than not."
+  },
+  {
+    "id": 150,
+    "hex": "96",
+    "codepoint": "U+E096",
+    "class": "epistemic",
+    "machine_semantics": {
+      "epistemic": "possible"
+    },
+    "human_name": "POSSIBLE",
+    "human_description": "Possible but not probable."
+  },
+  {
+    "id": 151,
+    "hex": "97",
+    "codepoint": "U+E097",
+    "class": "epistemic",
+    "machine_semantics": {
+      "epistemic": "contradiction"
+    },
+    "human_name": "CONTRADICTION",
+    "human_description": "Contradiction detected."
+  },
+  {
+    "id": 152,
+    "hex": "98",
+    "codepoint": "U+E098",
+    "class": "epistemic",
+    "machine_semantics": {
+      "epistemic": "insufficient"
+    },
+    "human_name": "INSUFFICIENT",
+    "human_description": "Insufficient information to proceed."
+  },
+  {
+    "id": 153,
+    "hex": "99",
+    "codepoint": "U+E099",
+    "class": "epistemic",
+    "machine_semantics": {
+      "epistemic": "assume"
+    },
+    "human_name": "ASSUME",
+    "human_description": "Assumption, not established fact."
+  },
+  {
+    "id": 154,
+    "hex": "9A",
+    "codepoint": "U+E09A",
+    "class": "epistemic",
+    "machine_semantics": {
+      "epistemic": "infer"
+    },
+    "human_name": "INFER",
+    "human_description": "Inferred, not directly observed."
+  },
+  {
+    "id": 155,
+    "hex": "9B",
+    "codepoint": "U+E09B",
+    "class": "epistemic",
+    "machine_semantics": {
+      "epistemic": "evidence"
+    },
+    "human_name": "EVIDENCE",
+    "human_description": "Evidence attachment follows."
+  },
+  {
+    "id": 156,
+    "hex": "9C",
+    "codepoint": "U+E09C",
+    "class": "epistemic",
+    "machine_semantics": {
+      "epistemic": "source"
+    },
+    "human_name": "SOURCE",
+    "human_description": "Source citation follows."
+  },
+  {
+    "id": 157,
+    "hex": "9D",
+    "codepoint": "U+E09D",
+    "class": "epistemic",
+    "machine_semantics": {
+      "epistemic": "grounded"
+    },
+    "human_name": "GROUNDED",
+    "human_description": "Claim is grounded in retrieved evidence."
+  },
+  {
+    "id": 158,
+    "hex": "9E",
+    "codepoint": "U+E09E",
+    "class": "epistemic",
+    "machine_semantics": {
+      "epistemic": "speculative"
+    },
+    "human_name": "SPECULATIVE",
+    "human_description": "Speculative generation."
+  },
+  {
+    "id": 159,
+    "hex": "9F",
+    "codepoint": "U+E09F",
+    "class": "epistemic",
+    "machine_semantics": {
+      "epistemic": "calibrated"
+    },
+    "human_name": "CALIBRATED",
+    "human_description": "Confidence is calibrated against a scoring rule."
+  },
+  {
+    "id": 160,
+    "hex": "A0",
+    "codepoint": "U+E0A0",
+    "class": "macro",
+    "machine_semantics": {
+      "macro": "glyph_only",
+      "nl": false
+    },
+    "human_name": "GLYPH_ONLY",
+    "human_description": "Response body must contain only valid VQX semantic tokens or VQX protocol framing. No ordinary natural-language prose in the payload."
+  },
+  {
+    "id": 161,
+    "hex": "A1",
+    "codepoint": "U+E0A1",
+    "class": "macro",
+    "machine_semantics": {
+      "macro": "nl_ok",
+      "nl": true
+    },
+    "human_name": "NL_OK",
+    "human_description": "Natural-language prose is permitted in the response payload."
+  },
+  {
+    "id": 162,
+    "hex": "A2",
+    "codepoint": "U+E0A2",
+    "class": "macro",
+    "machine_semantics": {
+      "macro": "final_only"
+    },
+    "human_name": "FINAL_ONLY",
+    "human_description": "Return the final answer only; omit scratch work."
+  },
+  {
+    "id": 163,
+    "hex": "A3",
+    "codepoint": "U+E0A3",
+    "class": "macro",
+    "machine_semantics": {
+      "macro": "min_tokens"
+    },
+    "human_name": "MIN_TOKENS",
+    "human_description": "Minimize model-token usage subject to fidelity."
+  },
+  {
+    "id": 164,
+    "hex": "A4",
+    "codepoint": "U+E0A4",
+    "class": "macro",
+    "machine_semantics": {
+      "macro": "min_latency"
+    },
+    "human_name": "MIN_LATENCY",
+    "human_description": "Minimize latency subject to fidelity."
+  },
+  {
+    "id": 165,
+    "hex": "A5",
+    "codepoint": "U+E0A5",
+    "class": "macro",
+    "machine_semantics": {
+      "macro": "accuracy"
+    },
+    "human_name": "ACCURACY_FIRST",
+    "human_description": "Prioritize accuracy over speed."
+  },
+  {
+    "id": 166,
+    "hex": "A6",
+    "codepoint": "U+E0A6",
+    "class": "macro",
+    "machine_semantics": {
+      "macro": "speed"
+    },
+    "human_name": "SPEED_FIRST",
+    "human_description": "Prioritize speed over exhaustive analysis."
+  },
+  {
+    "id": 167,
+    "hex": "A7",
+    "codepoint": "U+E0A7",
+    "class": "macro",
+    "machine_semantics": {
+      "macro": "search_if_needed"
+    },
+    "human_name": "SEARCH_IF",
+    "human_description": "Search if needed; skip if already grounded."
+  },
+  {
+    "id": 168,
+    "hex": "A8",
+    "codepoint": "U+E0A8",
+    "class": "macro",
+    "machine_semantics": {
+      "macro": "tool_if_needed"
+    },
+    "human_name": "TOOL_IF",
+    "human_description": "Use a tool if needed; skip if not."
+  },
+  {
+    "id": 169,
+    "hex": "A9",
+    "codepoint": "U+E0A9",
+    "class": "macro",
+    "machine_semantics": {
+      "macro": "preserve_context"
+    },
+    "human_name": "KEEP_CONTEXT",
+    "human_description": "Preserve task context across the handoff."
+  },
+  {
+    "id": 170,
+    "hex": "AA",
+    "codepoint": "U+E0AA",
+    "class": "macro",
+    "machine_semantics": {
+      "macro": "preserve_constraints"
+    },
+    "human_name": "KEEP_CONSTRAINTS",
+    "human_description": "Preserve standing constraints across the handoff."
+  },
+  {
+    "id": 171,
+    "hex": "AB",
+    "codepoint": "U+E0AB",
+    "class": "macro",
+    "machine_semantics": {
+      "macro": "structured"
+    },
+    "human_name": "STRUCTURED",
+    "human_description": "Prefer structured data over prose."
+  },
+  {
+    "id": 172,
+    "hex": "AC",
+    "codepoint": "U+E0AC",
+    "class": "macro",
+    "machine_semantics": {
+      "macro": "continue"
+    },
+    "human_name": "CONTINUE",
+    "human_description": "Continue from the last checkpoint."
+  },
+  {
+    "id": 173,
+    "hex": "AD",
+    "codepoint": "U+E0AD",
+    "class": "macro",
+    "machine_semantics": {
+      "macro": "human_gate"
+    },
+    "human_name": "NEED_HUMAN",
+    "human_description": "Human approval is required before proceeding."
+  },
+  {
+    "id": 174,
+    "hex": "AE",
+    "codepoint": "U+E0AE",
+    "class": "macro",
+    "machine_semantics": {
+      "macro": "cost_select"
+    },
+    "human_name": "COST_CHECK",
+    "human_description": "Evaluate whether VQX compact form is smaller than the fallback representation before switching."
+  },
+  {
+    "id": 175,
+    "hex": "AF",
+    "codepoint": "U+E0AF",
+    "class": "macro",
+    "machine_semantics": {
+      "macro": "compact_ok"
+    },
+    "human_name": "COMPACT_OK",
+    "human_description": "Sender asserts compact mode is acceptable for subsequent payloads."
+  },
+  {
+    "id": 176,
+    "hex": "B0",
+    "codepoint": "U+E0B0",
+    "class": "constraint",
+    "machine_semantics": {
+      "constraint": "must"
+    },
+    "human_name": "MUST",
+    "human_description": "Hard requirement."
+  },
+  {
+    "id": 177,
+    "hex": "B1",
+    "codepoint": "U+E0B1",
+    "class": "constraint",
+    "machine_semantics": {
+      "constraint": "must_not"
+    },
+    "human_name": "MUST_NOT",
+    "human_description": "Hard prohibition."
+  },
+  {
+    "id": 178,
+    "hex": "B2",
+    "codepoint": "U+E0B2",
+    "class": "constraint",
+    "machine_semantics": {
+      "constraint": "should"
+    },
+    "human_name": "SHOULD",
+    "human_description": "Soft requirement."
+  },
+  {
+    "id": 179,
+    "hex": "B3",
+    "codepoint": "U+E0B3",
+    "class": "constraint",
+    "machine_semantics": {
+      "constraint": "may"
+    },
+    "human_name": "MAY",
+    "human_description": "Optional permission."
+  },
+  {
+    "id": 180,
+    "hex": "B4",
+    "codepoint": "U+E0B4",
+    "class": "constraint",
+    "machine_semantics": {
+      "constraint": "limit"
+    },
+    "human_name": "LIMIT",
+    "human_description": "A numeric or policy limit follows."
+  },
+  {
+    "id": 181,
+    "hex": "B5",
+    "codepoint": "U+E0B5",
+    "class": "constraint",
+    "machine_semantics": {
+      "constraint": "max"
+    },
+    "human_name": "MAX",
+    "human_description": "Upper bound."
+  },
+  {
+    "id": 182,
+    "hex": "B6",
+    "codepoint": "U+E0B6",
+    "class": "constraint",
+    "machine_semantics": {
+      "constraint": "min"
+    },
+    "human_name": "MIN",
+    "human_description": "Lower bound."
+  },
+  {
+    "id": 183,
+    "hex": "B7",
+    "codepoint": "U+E0B7",
+    "class": "constraint",
+    "machine_semantics": {
+      "constraint": "budget"
+    },
+    "human_name": "BUDGET",
+    "human_description": "Spend / token / time budget."
+  },
+  {
+    "id": 184,
+    "hex": "B8",
+    "codepoint": "U+E0B8",
+    "class": "constraint",
+    "machine_semantics": {
+      "constraint": "scope"
+    },
+    "human_name": "SCOPE",
+    "human_description": "Scope restriction."
+  },
+  {
+    "id": 185,
+    "hex": "B9",
+    "codepoint": "U+E0B9",
+    "class": "constraint",
+    "machine_semantics": {
+      "constraint": "policy"
+    },
+    "human_name": "POLICY",
+    "human_description": "Named policy applies."
+  },
+  {
+    "id": 186,
+    "hex": "BA",
+    "codepoint": "U+E0BA",
+    "class": "constraint",
+    "machine_semantics": {
+      "constraint": "safety"
+    },
+    "human_name": "SAFETY",
+    "human_description": "Safety policy applies."
+  },
+  {
+    "id": 187,
+    "hex": "BB",
+    "codepoint": "U+E0BB",
+    "class": "constraint",
+    "machine_semantics": {
+      "constraint": "pii"
+    },
+    "human_name": "PII",
+    "human_description": "Treat as personal data."
+  },
+  {
+    "id": 188,
+    "hex": "BC",
+    "codepoint": "U+E0BC",
+    "class": "constraint",
+    "machine_semantics": {
+      "constraint": "secret"
+    },
+    "human_name": "SECRET",
+    "human_description": "Treat as secret; do not echo."
+  },
+  {
+    "id": 189,
+    "hex": "BD",
+    "codepoint": "U+E0BD",
+    "class": "constraint",
+    "machine_semantics": {
+      "constraint": "rate"
+    },
+    "human_name": "RATE",
+    "human_description": "Rate limit."
+  },
+  {
+    "id": 190,
+    "hex": "BE",
+    "codepoint": "U+E0BE",
+    "class": "constraint",
+    "machine_semantics": {
+      "constraint": "quota"
+    },
+    "human_name": "QUOTA",
+    "human_description": "Quota limit."
+  },
+  {
+    "id": 191,
+    "hex": "BF",
+    "codepoint": "U+E0BF",
+    "class": "constraint",
+    "machine_semantics": {
+      "constraint": "window"
+    },
+    "human_name": "WINDOW",
+    "human_description": "Time window constraint."
+  },
+  {
+    "id": 192,
+    "hex": "C0",
+    "codepoint": "U+E0C0",
+    "class": "trust",
+    "machine_semantics": {
+      "trust": "verify_required"
+    },
+    "human_name": "VERIFY_REQ",
+    "human_description": "Verification is required before trust."
+  },
+  {
+    "id": 193,
+    "hex": "C1",
+    "codepoint": "U+E0C1",
+    "class": "trust",
+    "machine_semantics": {
+      "trust": "verified"
+    },
+    "human_name": "VERIFIED",
+    "human_description": "Verification succeeded."
+  },
+  {
+    "id": 194,
+    "hex": "C2",
+    "codepoint": "U+E0C2",
+    "class": "trust",
+    "machine_semantics": {
+      "trust": "unverified"
+    },
+    "human_name": "UNVERIFIED",
+    "human_description": "Not verified."
+  },
+  {
+    "id": 195,
+    "hex": "C3",
+    "codepoint": "U+E0C3",
+    "class": "trust",
+    "machine_semantics": {
+      "trust": "signed"
+    },
+    "human_name": "SIGNED",
+    "human_description": "Payload is signed. Signature proves key possession, not authorization."
+  },
+  {
+    "id": 196,
+    "hex": "C4",
+    "codepoint": "U+E0C4",
+    "class": "trust",
+    "machine_semantics": {
+      "trust": "authenticated"
+    },
+    "human_name": "AUTHENTICATED",
+    "human_description": "Sender authenticity established for this message."
+  },
+  {
+    "id": 197,
+    "hex": "C5",
+    "codepoint": "U+E0C5",
+    "class": "trust",
+    "machine_semantics": {
+      "trust": "encrypted"
+    },
+    "human_name": "ENCRYPTED",
+    "human_description": "Confidentiality via an outer cryptographic envelope. Encoding is not encryption."
+  },
+  {
+    "id": 198,
+    "hex": "C6",
+    "codepoint": "U+E0C6",
+    "class": "trust",
+    "machine_semantics": {
+      "trust": "provenance"
+    },
+    "human_name": "PROVENANCE",
+    "human_description": "Provenance record attached."
+  },
+  {
+    "id": 199,
+    "hex": "C7",
+    "codepoint": "U+E0C7",
+    "class": "trust",
+    "machine_semantics": {
+      "trust": "integrity"
+    },
+    "human_name": "INTEGRITY",
+    "human_description": "Integrity check present."
+  },
+  {
+    "id": 200,
+    "hex": "C8",
+    "codepoint": "U+E0C8",
+    "class": "trust",
+    "machine_semantics": {
+      "trust": "trusted"
+    },
+    "human_name": "TRUSTED",
+    "human_description": "Peer is on the local trust list (policy, not protocol)."
+  },
+  {
+    "id": 201,
+    "hex": "C9",
+    "codepoint": "U+E0C9",
+    "class": "trust",
+    "machine_semantics": {
+      "trust": "untrusted"
+    },
+    "human_name": "UNTRUSTED",
+    "human_description": "Treat peer as untrusted."
+  },
+  {
+    "id": 202,
+    "hex": "CA",
+    "codepoint": "U+E0CA",
+    "class": "trust",
+    "machine_semantics": {
+      "trust": "attest"
+    },
+    "human_name": "ATTEST",
+    "human_description": "Remote attestation evidence attached."
+  },
+  {
+    "id": 203,
+    "hex": "CB",
+    "codepoint": "U+E0CB",
+    "class": "trust",
+    "machine_semantics": {
+      "trust": "audit"
+    },
+    "human_name": "AUDIT",
+    "human_description": "Record for audit."
+  },
+  {
+    "id": 204,
+    "hex": "CC",
+    "codepoint": "U+E0CC",
+    "class": "trust",
+    "machine_semantics": {
+      "trust": "hash_ref"
+    },
+    "human_name": "HASH_REF",
+    "human_description": "Reference to a content hash."
+  },
+  {
+    "id": 205,
+    "hex": "CD",
+    "codepoint": "U+E0CD",
+    "class": "trust",
+    "machine_semantics": {
+      "trust": "digest"
+    },
+    "human_name": "DIGEST",
+    "human_description": "Inline digest of the following payload."
+  },
+  {
+    "id": 206,
+    "hex": "CE",
+    "codepoint": "U+E0CE",
+    "class": "trust",
+    "machine_semantics": {
+      "trust": "nonce"
+    },
+    "human_name": "NONCE",
+    "human_description": "Anti-replay nonce."
+  },
+  {
+    "id": 207,
+    "hex": "CF",
+    "codepoint": "U+E0CF",
+    "class": "trust",
+    "machine_semantics": {
+      "trust": "key_id"
+    },
+    "human_name": "KEY_ID",
+    "human_description": "Key identifier for the envelope."
+  },
+  {
+    "id": 208,
+    "hex": "D0",
+    "codepoint": "U+E0D0",
+    "class": "fault",
+    "machine_semantics": {
+      "fault": "error"
+    },
+    "human_name": "ERROR",
+    "human_description": "Generic error."
+  },
+  {
+    "id": 209,
+    "hex": "D1",
+    "codepoint": "U+E0D1",
+    "class": "fault",
+    "machine_semantics": {
+      "fault": "unauthenticated"
+    },
+    "human_name": "UNAUTH",
+    "human_description": "Unauthenticated."
+  },
+  {
+    "id": 210,
+    "hex": "D2",
+    "codepoint": "U+E0D2",
+    "class": "fault",
+    "machine_semantics": {
+      "fault": "forbidden"
+    },
+    "human_name": "FORBIDDEN",
+    "human_description": "Authenticated but not authorized."
+  },
+  {
+    "id": 211,
+    "hex": "D3",
+    "codepoint": "U+E0D3",
+    "class": "fault",
+    "machine_semantics": {
+      "fault": "not_found"
+    },
+    "human_name": "NOT_FOUND",
+    "human_description": "Referent not found. (Also the first magic byte of the VQX beacon when used as prefix, not as this token.)"
+  },
+  {
+    "id": 212,
+    "hex": "D4",
+    "codepoint": "U+E0D4",
+    "class": "fault",
+    "machine_semantics": {
+      "fault": "conflict"
+    },
+    "human_name": "CONFLICT",
+    "human_description": "State conflict."
+  },
+  {
+    "id": 213,
+    "hex": "D5",
+    "codepoint": "U+E0D5",
+    "class": "fault",
+    "machine_semantics": {
+      "fault": "timeout"
+    },
+    "human_name": "TIMEOUT_ERR",
+    "human_description": "Operation timed out."
+  },
+  {
+    "id": 214,
+    "hex": "D6",
+    "codepoint": "U+E0D6",
+    "class": "fault",
+    "machine_semantics": {
+      "fault": "unsupported"
+    },
+    "human_name": "UNSUPPORTED",
+    "human_description": "Unsupported feature."
+  },
+  {
+    "id": 215,
+    "hex": "D7",
+    "codepoint": "U+E0D7",
+    "class": "fault",
+    "machine_semantics": {
+      "fault": "dict_mismatch",
+      "fail_closed": true
+    },
+    "human_name": "DICT_MISMATCH",
+    "human_description": "Dictionary hash mismatch. Fail closed; do not guess."
+  },
+  {
+    "id": 216,
+    "hex": "D8",
+    "codepoint": "U+E0D8",
+    "class": "fault",
+    "machine_semantics": {
+      "fault": "version_mismatch",
+      "fail_closed": true
+    },
+    "human_name": "VER_MISMATCH",
+    "human_description": "Protocol version mismatch. Fail closed; do not guess."
+  },
+  {
+    "id": 217,
+    "hex": "D9",
+    "codepoint": "U+E0D9",
+    "class": "fault",
+    "machine_semantics": {
+      "fault": "integrity_fail",
+      "fail_closed": true
+    },
+    "human_name": "INTEGRITY_FAIL",
+    "human_description": "Integrity check failed. Fail closed."
+  },
+  {
+    "id": 218,
+    "hex": "DA",
+    "codepoint": "U+E0DA",
+    "class": "fault",
+    "machine_semantics": {
+      "fault": "retryable"
+    },
+    "human_name": "RETRYABLE",
+    "human_description": "Error is retryable."
+  },
+  {
+    "id": 219,
+    "hex": "DB",
+    "codepoint": "U+E0DB",
+    "class": "fault",
+    "machine_semantics": {
+      "fault": "fatal"
+    },
+    "human_name": "FATAL",
+    "human_description": "Non-retryable failure."
+  },
+  {
+    "id": 220,
+    "hex": "DC",
+    "codepoint": "U+E0DC",
+    "class": "macro",
+    "machine_semantics": {
+      "macro": "define_local"
+    },
+    "human_name": "DEFINE_LOCAL",
+    "human_description": "Define a session-local macro: following byte is slot 0xE0–0xFF, then a length-prefixed token sequence."
+  },
+  {
+    "id": 221,
+    "hex": "DD",
+    "codepoint": "U+E0DD",
+    "class": "macro",
+    "machine_semantics": {
+      "macro": "ref_local"
+    },
+    "human_name": "REF_LOCAL",
+    "human_description": "Reference a session-local macro; following byte is the slot."
+  },
+  {
+    "id": 222,
+    "hex": "DE",
+    "codepoint": "U+E0DE",
+    "class": "macro",
+    "machine_semantics": {
+      "macro": "clear_local"
+    },
+    "human_name": "CLEAR_LOCAL",
+    "human_description": "Clear session-local macros. Never persist across unrelated peers."
+  },
+  {
+    "id": 223,
+    "hex": "DF",
+    "codepoint": "U+E0DF",
+    "class": "macro",
+    "machine_semantics": {
+      "macro": "local_table_hash"
+    },
+    "human_name": "LOCAL_TABLE_HASH",
+    "human_description": "Hash of the current local macro table, for stateless transports."
+  },
+  {
+    "id": 224,
+    "hex": "E0",
+    "codepoint": "U+E0E0",
+    "class": "local",
+    "machine_semantics": {
+      "local_slot": 0,
+      "id": 224
+    },
+    "human_name": "LOCAL_00",
+    "human_description": "Negotiated session-local macro slot 0 (byte 0xE0). Meaning exists only after DEFINE_LOCAL in this peer session."
+  },
+  {
+    "id": 225,
+    "hex": "E1",
+    "codepoint": "U+E0E1",
+    "class": "local",
+    "machine_semantics": {
+      "local_slot": 1,
+      "id": 225
+    },
+    "human_name": "LOCAL_01",
+    "human_description": "Negotiated session-local macro slot 1 (byte 0xE1). Meaning exists only after DEFINE_LOCAL in this peer session."
+  },
+  {
+    "id": 226,
+    "hex": "E2",
+    "codepoint": "U+E0E2",
+    "class": "local",
+    "machine_semantics": {
+      "local_slot": 2,
+      "id": 226
+    },
+    "human_name": "LOCAL_02",
+    "human_description": "Negotiated session-local macro slot 2 (byte 0xE2). Meaning exists only after DEFINE_LOCAL in this peer session."
+  },
+  {
+    "id": 227,
+    "hex": "E3",
+    "codepoint": "U+E0E3",
+    "class": "local",
+    "machine_semantics": {
+      "local_slot": 3,
+      "id": 227
+    },
+    "human_name": "LOCAL_03",
+    "human_description": "Negotiated session-local macro slot 3 (byte 0xE3). Meaning exists only after DEFINE_LOCAL in this peer session."
+  },
+  {
+    "id": 228,
+    "hex": "E4",
+    "codepoint": "U+E0E4",
+    "class": "local",
+    "machine_semantics": {
+      "local_slot": 4,
+      "id": 228
+    },
+    "human_name": "LOCAL_04",
+    "human_description": "Negotiated session-local macro slot 4 (byte 0xE4). Meaning exists only after DEFINE_LOCAL in this peer session."
+  },
+  {
+    "id": 229,
+    "hex": "E5",
+    "codepoint": "U+E0E5",
+    "class": "local",
+    "machine_semantics": {
+      "local_slot": 5,
+      "id": 229
+    },
+    "human_name": "LOCAL_05",
+    "human_description": "Negotiated session-local macro slot 5 (byte 0xE5). Meaning exists only after DEFINE_LOCAL in this peer session."
+  },
+  {
+    "id": 230,
+    "hex": "E6",
+    "codepoint": "U+E0E6",
+    "class": "local",
+    "machine_semantics": {
+      "local_slot": 6,
+      "id": 230
+    },
+    "human_name": "LOCAL_06",
+    "human_description": "Negotiated session-local macro slot 6 (byte 0xE6). Meaning exists only after DEFINE_LOCAL in this peer session."
+  },
+  {
+    "id": 231,
+    "hex": "E7",
+    "codepoint": "U+E0E7",
+    "class": "local",
+    "machine_semantics": {
+      "local_slot": 7,
+      "id": 231
+    },
+    "human_name": "LOCAL_07",
+    "human_description": "Negotiated session-local macro slot 7 (byte 0xE7). Meaning exists only after DEFINE_LOCAL in this peer session."
+  },
+  {
+    "id": 232,
+    "hex": "E8",
+    "codepoint": "U+E0E8",
+    "class": "local",
+    "machine_semantics": {
+      "local_slot": 8,
+      "id": 232
+    },
+    "human_name": "LOCAL_08",
+    "human_description": "Negotiated session-local macro slot 8 (byte 0xE8). Meaning exists only after DEFINE_LOCAL in this peer session."
+  },
+  {
+    "id": 233,
+    "hex": "E9",
+    "codepoint": "U+E0E9",
+    "class": "local",
+    "machine_semantics": {
+      "local_slot": 9,
+      "id": 233
+    },
+    "human_name": "LOCAL_09",
+    "human_description": "Negotiated session-local macro slot 9 (byte 0xE9). Meaning exists only after DEFINE_LOCAL in this peer session."
+  },
+  {
+    "id": 234,
+    "hex": "EA",
+    "codepoint": "U+E0EA",
+    "class": "local",
+    "machine_semantics": {
+      "local_slot": 10,
+      "id": 234
+    },
+    "human_name": "LOCAL_10",
+    "human_description": "Negotiated session-local macro slot 10 (byte 0xEA). Meaning exists only after DEFINE_LOCAL in this peer session."
+  },
+  {
+    "id": 235,
+    "hex": "EB",
+    "codepoint": "U+E0EB",
+    "class": "local",
+    "machine_semantics": {
+      "local_slot": 11,
+      "id": 235
+    },
+    "human_name": "LOCAL_11",
+    "human_description": "Negotiated session-local macro slot 11 (byte 0xEB). Meaning exists only after DEFINE_LOCAL in this peer session."
+  },
+  {
+    "id": 236,
+    "hex": "EC",
+    "codepoint": "U+E0EC",
+    "class": "local",
+    "machine_semantics": {
+      "local_slot": 12,
+      "id": 236
+    },
+    "human_name": "LOCAL_12",
+    "human_description": "Negotiated session-local macro slot 12 (byte 0xEC). Meaning exists only after DEFINE_LOCAL in this peer session."
+  },
+  {
+    "id": 237,
+    "hex": "ED",
+    "codepoint": "U+E0ED",
+    "class": "local",
+    "machine_semantics": {
+      "local_slot": 13,
+      "id": 237
+    },
+    "human_name": "LOCAL_13",
+    "human_description": "Negotiated session-local macro slot 13 (byte 0xED). Meaning exists only after DEFINE_LOCAL in this peer session."
+  },
+  {
+    "id": 238,
+    "hex": "EE",
+    "codepoint": "U+E0EE",
+    "class": "local",
+    "machine_semantics": {
+      "local_slot": 14,
+      "id": 238
+    },
+    "human_name": "LOCAL_14",
+    "human_description": "Negotiated session-local macro slot 14 (byte 0xEE). Meaning exists only after DEFINE_LOCAL in this peer session."
+  },
+  {
+    "id": 239,
+    "hex": "EF",
+    "codepoint": "U+E0EF",
+    "class": "local",
+    "machine_semantics": {
+      "local_slot": 15,
+      "id": 239
+    },
+    "human_name": "LOCAL_15",
+    "human_description": "Negotiated session-local macro slot 15 (byte 0xEF). Meaning exists only after DEFINE_LOCAL in this peer session."
+  },
+  {
+    "id": 240,
+    "hex": "F0",
+    "codepoint": "U+E0F0",
+    "class": "local",
+    "machine_semantics": {
+      "local_slot": 16,
+      "id": 240
+    },
+    "human_name": "LOCAL_16",
+    "human_description": "Negotiated session-local macro slot 16 (byte 0xF0). Meaning exists only after DEFINE_LOCAL in this peer session."
+  },
+  {
+    "id": 241,
+    "hex": "F1",
+    "codepoint": "U+E0F1",
+    "class": "local",
+    "machine_semantics": {
+      "local_slot": 17,
+      "id": 241
+    },
+    "human_name": "LOCAL_17",
+    "human_description": "Negotiated session-local macro slot 17 (byte 0xF1). Meaning exists only after DEFINE_LOCAL in this peer session."
+  },
+  {
+    "id": 242,
+    "hex": "F2",
+    "codepoint": "U+E0F2",
+    "class": "local",
+    "machine_semantics": {
+      "local_slot": 18,
+      "id": 242
+    },
+    "human_name": "LOCAL_18",
+    "human_description": "Negotiated session-local macro slot 18 (byte 0xF2). Meaning exists only after DEFINE_LOCAL in this peer session."
+  },
+  {
+    "id": 243,
+    "hex": "F3",
+    "codepoint": "U+E0F3",
+    "class": "local",
+    "machine_semantics": {
+      "local_slot": 19,
+      "id": 243
+    },
+    "human_name": "LOCAL_19",
+    "human_description": "Negotiated session-local macro slot 19 (byte 0xF3). Meaning exists only after DEFINE_LOCAL in this peer session."
+  },
+  {
+    "id": 244,
+    "hex": "F4",
+    "codepoint": "U+E0F4",
+    "class": "local",
+    "machine_semantics": {
+      "local_slot": 20,
+      "id": 244
+    },
+    "human_name": "LOCAL_20",
+    "human_description": "Negotiated session-local macro slot 20 (byte 0xF4). Meaning exists only after DEFINE_LOCAL in this peer session."
+  },
+  {
+    "id": 245,
+    "hex": "F5",
+    "codepoint": "U+E0F5",
+    "class": "local",
+    "machine_semantics": {
+      "local_slot": 21,
+      "id": 245
+    },
+    "human_name": "LOCAL_21",
+    "human_description": "Negotiated session-local macro slot 21 (byte 0xF5). Meaning exists only after DEFINE_LOCAL in this peer session."
+  },
+  {
+    "id": 246,
+    "hex": "F6",
+    "codepoint": "U+E0F6",
+    "class": "local",
+    "machine_semantics": {
+      "local_slot": 22,
+      "id": 246
+    },
+    "human_name": "LOCAL_22",
+    "human_description": "Negotiated session-local macro slot 22 (byte 0xF6). Meaning exists only after DEFINE_LOCAL in this peer session."
+  },
+  {
+    "id": 247,
+    "hex": "F7",
+    "codepoint": "U+E0F7",
+    "class": "local",
+    "machine_semantics": {
+      "local_slot": 23,
+      "id": 247
+    },
+    "human_name": "LOCAL_23",
+    "human_description": "Negotiated session-local macro slot 23 (byte 0xF7). Meaning exists only after DEFINE_LOCAL in this peer session."
+  },
+  {
+    "id": 248,
+    "hex": "F8",
+    "codepoint": "U+E0F8",
+    "class": "local",
+    "machine_semantics": {
+      "local_slot": 24,
+      "id": 248
+    },
+    "human_name": "LOCAL_24",
+    "human_description": "Negotiated session-local macro slot 24 (byte 0xF8). Meaning exists only after DEFINE_LOCAL in this peer session."
+  },
+  {
+    "id": 249,
+    "hex": "F9",
+    "codepoint": "U+E0F9",
+    "class": "local",
+    "machine_semantics": {
+      "local_slot": 25,
+      "id": 249
+    },
+    "human_name": "LOCAL_25",
+    "human_description": "Negotiated session-local macro slot 25 (byte 0xF9). Meaning exists only after DEFINE_LOCAL in this peer session."
+  },
+  {
+    "id": 250,
+    "hex": "FA",
+    "codepoint": "U+E0FA",
+    "class": "local",
+    "machine_semantics": {
+      "local_slot": 26,
+      "id": 250
+    },
+    "human_name": "LOCAL_26",
+    "human_description": "Negotiated session-local macro slot 26 (byte 0xFA). Meaning exists only after DEFINE_LOCAL in this peer session."
+  },
+  {
+    "id": 251,
+    "hex": "FB",
+    "codepoint": "U+E0FB",
+    "class": "local",
+    "machine_semantics": {
+      "local_slot": 27,
+      "id": 251
+    },
+    "human_name": "LOCAL_27",
+    "human_description": "Negotiated session-local macro slot 27 (byte 0xFB). Meaning exists only after DEFINE_LOCAL in this peer session."
+  },
+  {
+    "id": 252,
+    "hex": "FC",
+    "codepoint": "U+E0FC",
+    "class": "local",
+    "machine_semantics": {
+      "local_slot": 28,
+      "id": 252
+    },
+    "human_name": "LOCAL_28",
+    "human_description": "Negotiated session-local macro slot 28 (byte 0xFC). Meaning exists only after DEFINE_LOCAL in this peer session."
+  },
+  {
+    "id": 253,
+    "hex": "FD",
+    "codepoint": "U+E0FD",
+    "class": "local",
+    "machine_semantics": {
+      "local_slot": 29,
+      "id": 253
+    },
+    "human_name": "LOCAL_29",
+    "human_description": "Negotiated session-local macro slot 29 (byte 0xFD). Meaning exists only after DEFINE_LOCAL in this peer session."
+  },
+  {
+    "id": 254,
+    "hex": "FE",
+    "codepoint": "U+E0FE",
+    "class": "local",
+    "machine_semantics": {
+      "local_slot": 30,
+      "id": 254
+    },
+    "human_name": "LOCAL_30",
+    "human_description": "Negotiated session-local macro slot 30 (byte 0xFE). Meaning exists only after DEFINE_LOCAL in this peer session."
+  },
+  {
+    "id": 255,
+    "hex": "FF",
+    "codepoint": "U+E0FF",
+    "class": "local",
+    "machine_semantics": {
+      "local_slot": 31,
+      "id": 255
+    },
+    "human_name": "LOCAL_31",
+    "human_description": "Negotiated session-local macro slot 31 (byte 0xFF). Meaning exists only after DEFINE_LOCAL in this peer session."
+  }
+]

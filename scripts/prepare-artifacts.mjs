@@ -6,6 +6,9 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const manifest = JSON.parse(
   fs.readFileSync(path.join(root, "data", "exhibition.json"), "utf8")
 );
+const satellites = JSON.parse(
+  fs.readFileSync(path.join(root, "data", "satellites.json"), "utf8")
+);
 
 const artifactsDir = path.join(root, "site", "public", "artifacts");
 const previewsDir = path.join(root, "site", "public", "previews");
@@ -83,6 +86,71 @@ for (const work of manifest.works) {
   );
 }
 
+const exhibitHosts = new Set(manifest.works.map((work) => `${work.publicSlug}.zlapp.app`));
+for (const site of satellites.sites) {
+  if (exhibitHosts.has(site.host)) {
+    throw new Error(`Satellite host collides with an exhibit: ${site.host}`);
+  }
+  const dest = site.publicPath;
+  // Host rewrite of `/` must target an *external* URL. Same-origin rewrites
+  // to `/` lose to Astro's generated index.html on Vercel.
+  // VQX homepage adds a version query so a stale 0.2 edge cache cannot
+  // keep winning after 0.3 is deployed.
+  const homeDest =
+    site.id === "vqx"
+      ? `https://zlapp.app${dest}?vqx=0.3`
+      : `https://zlapp.app${dest}`;
+  rewrites.push({
+    source: "/",
+    has: [{ type: "host", value: site.host }],
+    destination: homeDest,
+  });
+  // Apex /vqx is a 301 to the VQX host (see redirects). Do not also rewrite
+  // it to a second machine tree on zlapp.app.
+  if (site.apexPath && site.id !== "vqx") {
+    rewrites.push({
+      source: site.apexPath,
+      destination: dest,
+    });
+  }
+  if (site.id === "vqx") {
+    rewrites.push(
+      {
+        source: "/.well-known/vqx.json",
+        has: [{ type: "host", value: site.host }],
+        destination: "https://zlapp.app/sites/vqx/.well-known/vqx.json",
+      },
+      {
+        source: "/.well-known/security.txt",
+        has: [{ type: "host", value: site.host }],
+        destination: "https://zlapp.app/sites/vqx/.well-known/security.txt",
+      },
+      {
+        source: "/extensions/vqx/0.3/index.json",
+        has: [{ type: "host", value: site.host }],
+        destination: "https://zlapp.app/sites/vqx/extensions/vqx/0.3/index.json",
+      },
+      {
+        source: "/LICENSE",
+        has: [{ type: "host", value: site.host }],
+        destination: "https://zlapp.app/sites/vqx/LICENSE",
+      },
+      {
+        source: "/NOTICE",
+        has: [{ type: "host", value: site.host }],
+        destination: "https://zlapp.app/sites/vqx/NOTICE",
+      }
+    );
+  }
+  if (site.rewriteTree) {
+    rewrites.push({
+      source: "/:path*",
+      has: [{ type: "host", value: site.host }],
+      destination: `https://zlapp.app/sites/${site.id}/:path*`,
+    });
+  }
+}
+
 const vercel = {
   headers: [
     {
@@ -93,8 +161,79 @@ const vercel = {
       ],
     },
     {
+      source: "/agent-glyphs/(.*)\\.(gif|png|json|csv)",
+      headers: [
+        { key: "Cache-Control", value: "public, max-age=86400" },
+      ],
+    },
+    {
+      source: "/agent-glyphs2/(.*)\\.(gif|png|json|svg)",
+      headers: [
+        { key: "Cache-Control", value: "public, max-age=86400" },
+      ],
+    },
+    {
       source: "/(.*)",
       headers: [{ key: "Referrer-Policy", value: "strict-origin-when-cross-origin" }],
+    },
+    {
+      source: "/.well-known/vqx.json",
+      headers: [
+        { key: "Cache-Control", value: "public, max-age=0, must-revalidate" },
+        { key: "CDN-Cache-Control", value: "no-store" },
+        { key: "Content-Type", value: "application/json; charset=utf-8" },
+      ],
+    },
+    {
+      source: "/.well-known/security.txt",
+      headers: [
+        { key: "Cache-Control", value: "public, max-age=0, must-revalidate" },
+        { key: "CDN-Cache-Control", value: "no-store" },
+        { key: "Content-Type", value: "text/plain; charset=utf-8" },
+      ],
+    },
+    {
+      source: "/extensions/vqx/0.3/index.json",
+      headers: [
+        { key: "Cache-Control", value: "public, max-age=0, must-revalidate" },
+        { key: "CDN-Cache-Control", value: "no-store" },
+        { key: "Content-Type", value: "application/json; charset=utf-8" },
+      ],
+    },
+    {
+      source: "/sites/vqx/(.*)",
+      headers: [
+        { key: "Cache-Control", value: "public, max-age=0, must-revalidate" },
+        { key: "CDN-Cache-Control", value: "max-age=0, must-revalidate" },
+      ],
+    },
+  ],
+  redirects: [
+    {
+      source: "/agent-glyphs",
+      destination: "/agent-glyphs/",
+      permanent: true,
+    },
+    {
+      source: "/agent-glyphs2/",
+      destination: "/agent-glyphs2",
+      permanent: true,
+    },
+    {
+      source: "/vqx",
+      destination: "https://vqx.zlapp.app/",
+      permanent: true,
+    },
+    {
+      source: "/vqx/:path*",
+      destination: "https://vqx.zlapp.app/:path*",
+      permanent: true,
+    },
+    {
+      source: "/.well-known/vqx.json",
+      has: [{ type: "host", value: "zlapp.app" }],
+      destination: "https://vqx.zlapp.app/.well-known/vqx.json",
+      permanent: true,
     },
   ],
   rewrites,
@@ -105,4 +244,6 @@ fs.writeFileSync(
   JSON.stringify(vercel, null, 2)
 );
 
-console.log(`Prepared ${manifest.works.length} artifacts and previews.`);
+console.log(
+  `Prepared ${manifest.works.length} artifacts and previews, ${satellites.sites.length} satellite host(s).`
+);
