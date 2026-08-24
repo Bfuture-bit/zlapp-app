@@ -2,14 +2,14 @@
 import Base from "../layouts/Base.astro";
 import Nav from "../components/Nav.astro";
 import WorkRow from "../components/WorkRow.astro";
-import { worksFor } from "../lib/manifest";
+import { worksFor, exhibitionJsonLd, EXHIBITION_DESCRIPTION, manifest } from "../lib/manifest";
 
 const actI = worksFor("self-directed");
 const actII = worksFor("shared-prompt");
 const actIIIa = worksFor("self-synthesis");
 const actIIIb = worksFor("shared-synthesis");
 ---
-<Base title="Zlapp">
+<Base title="Zlapp" description={manifest.tagline ?? EXHIBITION_DESCRIPTION} jsonLd={exhibitionJsonLd()}>
   <Nav />
   <main id="content">
     <section class="section" id="act-i">

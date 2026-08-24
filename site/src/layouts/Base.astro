@@ -1,19 +1,29 @@
 ---
 import "../styles/global.css";
+import { EXHIBITION_DESCRIPTION } from "../lib/manifest";
 
 interface Props {
   title: string;
   description?: string;
   noindex?: boolean;
+  image?: string;
+  imageAlt?: string;
+  jsonLd?: unknown;
 }
 
 const {
   title,
-  description = "Interactive works by frontier models.",
+  description = EXHIBITION_DESCRIPTION,
   noindex = false,
+  image,
+  imageAlt,
+  jsonLd,
 } = Astro.props;
 
 const canonical = new URL(Astro.url.pathname.replace(/\/$/, "") || "/", Astro.site);
+const absoluteImage = image
+  ? new URL(image, Astro.site ?? "https://zlapp.app").href
+  : undefined;
 ---
 <!DOCTYPE html>
 <html lang="en">
@@ -35,6 +45,16 @@ const canonical = new URL(Astro.url.pathname.replace(/\/$/, "") || "/", Astro.si
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
     <meta property="og:url" content={canonical} />
+    {absoluteImage && <meta property="og:image" content={absoluteImage} />}
+    {absoluteImage && <meta property="og:image:type" content="image/svg+xml" />}
+    {imageAlt && <meta property="og:image:alt" content={imageAlt} />}
+    <meta name="twitter:card" content={absoluteImage ? "summary_large_image" : "summary"} />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    {absoluteImage && <meta name="twitter:image" content={absoluteImage} />}
+    {jsonLd && (
+      <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+    )}
   </head>
   <body>
     <a class="skip" href="#content">Skip to content</a>
