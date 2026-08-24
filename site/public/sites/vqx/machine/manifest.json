@@ -30,7 +30,7 @@
       "U+E09B",
       "U+E002"
     ],
-    "pua": "\ue0d3\ue0a7\ue05c\ue0e1\ue09b\ue002",
+    "pua": "",
     "bootstrap": "BEACON(6) | VERSION(1) | FLAGS(1) | PAYLOAD",
     "compact": "PAYLOAD after explicit negotiation",
     "sample_bootstrap_hex": "D3 A7 5C E1 9B 02 03 00 06 11 20 A0",
@@ -97,14 +97,6 @@
   "human_dictionary_sha256": "94ae0c5022bc2494aea8acb172b9b93f78cda18b6dcccf9e69c7b98ba18c7ed2",
   "lexicon_sha256": "09519315f013f7f70bd11ae5604dea3c4d2c19bc071da26f519bf7f51014b537",
   "protocol_json_sha256": "bddc7946bbc46edd0e42e755c94b1ec5fcea079973bc70e1dbf89af6912eadb1",
-  "interoperability_identifiers": {
-    "a2a_extension_uri": "https://vqx.zlapp.app/extensions/vqx/0.3",
-    "mcp_experimental_id": "app.zlapp.vqx",
-    "mcp_specification": "2026-07-28",
-    "official_a2a_extension": false,
-    "mcp_registry_published": false,
-    "live_endpoint": null
-  },
   "modification_timestamp": "2026-08-23T00:00:00Z",
   "versions": {
     "latest": "0.3",
@@ -178,5 +170,13 @@
     "https://vqx.zlapp.app/downloads/vqx-agent-package-v0.3.zip",
     "https://vqx.zlapp.app/downloads/vqx-human-dictionary-v0.3.zip",
     "https://vqx.zlapp.app/downloads/SHA256SUMS.txt"
-  ]
+  ],
+  "interoperability_identifiers": {
+    "a2a_extension_uri": "https://vqx.zlapp.app/extensions/vqx/0.3",
+    "mcp_experimental_id": "app.zlapp.vqx",
+    "mcp_specification": "2026-07-28",
+    "official_a2a_extension": false,
+    "mcp_registry_published": false,
+    "live_endpoint": null
+  }
 }

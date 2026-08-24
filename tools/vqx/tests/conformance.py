@@ -87,7 +87,11 @@ def main() -> int:
     ok("beacon is identification not authentication", protocol.get("beacon", {}).get("role") == "protocol_family_identification_not_authentication" and protocol.get("security", {}).get("beacon_authenticates_sender") is False)
     ok("unsupported flags fail closed", grammar.get("bootstrap", {}).get("allowed_flags_mask") == 0 and "unsupported_flags" in grammar.get("fail_closed", []))
     ok("limits declared", grammar.get("bootstrap", {}).get("max_payload_bytes_default") == 65535 and grammar.get("local_macros", {}).get("max_expanded_bytes_default") == 65535)
-    ok("source provenance points at public repository", trust.get("source", {}).get("repository") == "https://github.com/Bfuture-bit/zlapp-app" and trust.get("source", {}).get("path") == "tools/vqx")
+    ok("source retrieve cites live codecs/zips, not GitHub tools/vqx as source of record",
+       trust.get("source", {}).get("repository") == "https://github.com/Bfuture-bit/zlapp-app"
+       and "path" not in trust.get("source", {})
+       and any(str(u).endswith("/codecs/vqx.py") for u in trust.get("source", {}).get("retrieve", []))
+       and any(str(u).endswith("/downloads/vqx-agent-package-v0.3.zip") for u in trust.get("source", {}).get("retrieve", [])))
     ok("same-origin hash limitation documented", "not publisher authentication" in trust.get("same_origin_sha256_role", ""))
     ok("VQX Apache-2.0 license declared", trust.get("license", {}).get("id") == "Apache-2.0" and (VQX / "LICENSE").exists() and "Apache License" in (VQX / "LICENSE").read_text(encoding="utf-8"))
 
@@ -111,9 +115,27 @@ def main() -> int:
     ok("Apache LICENSE published at site root", (SITE / "LICENSE").exists() and "Apache License" in (SITE / "LICENSE").read_text(encoding="utf-8"))
     ok("root manifest execution_authority none", well.get("execution_authority") == "none")
     ok("root manifest automatic_installation false", well.get("automatic_installation") is False)
-    for rel in ["spec/0.3/index.html", "spec/latest/index.html", "dictionary/0.3/index.html", "schema/index.html", "provenance/index.html", "benchmarks/index.html", "conformance/index.html", "releases/index.html", "mcp/index.html"]:
+    interop = well.get("interoperability") or well.get("interoperability_identifiers") or {}
+    ok("official A2A extension flag false", interop.get("official_a2a_extension") is False)
+    ok("MCP registry flag false", interop.get("mcp_registry_published") is False)
+    ok("live endpoint is null", interop.get("live_endpoint") is None)
+    ok("no publisher attestations", well.get("verification", {}).get("publisher_attestations") is False)
+    ok("canonical specification is index.md not HTML theater", str(well.get("canonical_specification", "")).endswith("/index.md"))
+    ok("no mcp HTML theater cite in extensions", "mcp" not in (well.get("extensions") or {}))
+    for rel in ["spec/0.3/index.html", "spec/latest/index.html", "mcp/index.html"]:
+        ok(f"HTML theater omitted {rel}", not (SITE / rel).exists())
+    for rel in [
+        "spec/0.3/index.md", "mcp/server.json", "index.md", "machine/protocol.json",
+        "machine/lexicon.json", "machine/grammar.json", "codecs/vqx.py", "codecs/vqx.mjs",
+        ".well-known/vqx.json", "downloads/vqx-agent-package-v0.3.zip", "downloads/vqx-human-dictionary-v0.3.zip",
+        "downloads/SHA256SUMS.txt", "LICENSE",
+    ]:
+        ok(f"hashed retrieve kept {rel}", (SITE / rel).exists())
+    for rel in ["dictionary/0.3/index.html", "schema/index.html", "provenance/index.html", "benchmarks/index.html", "conformance/index.html", "releases/index.html"]:
         ok(f"discovery path {rel}", (SITE / rel).exists())
     ok("MCP registry not falsely claimed", json.loads((SITE / "mcp" / "server.json").read_text(encoding="utf-8")).get("mcp_registry_published") is False)
+    apex = ROOT / "site" / "public" / ".well-known" / "vqx.json"
+    ok("apex well-known vqx.json omitted (301 instead of GitHub-citing copy)", not apex.exists())
 
     # Public text must not accidentally re-introduce unsafe bootstrap instructions.
     text_blobs: list[tuple[Path, str]] = []
@@ -155,6 +177,8 @@ def main() -> int:
         inner_manifest = json.loads(zf.read(prefix + "manifest.json"))
         ok("inner manifest does not claim package hash", "agent_package_sha256" not in inner_manifest)
         ok("inner manifest forbids auto-install", "never auto-install" in inner_manifest.get("discovery_instructions", "").lower())
+        zip_license = zf.read(prefix + "LICENSE")
+        ok("site LICENSE is zip-identical Apache-2.0", (SITE / "LICENSE").read_bytes() == zip_license and b"Apache License" in zip_license)
 
     sums = (SITE / "downloads" / "SHA256SUMS.txt").read_text(encoding="utf-8")
     for name, path in (("0.3 agent", agent), ("0.3 human", human), ("0.2 agent", old_agent), ("0.2 human", old_human)):

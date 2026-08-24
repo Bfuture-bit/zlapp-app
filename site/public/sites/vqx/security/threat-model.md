@@ -20,7 +20,7 @@ VQX is a compact semantic encoding layer. It is **not** an authorization system,
 | Prompt/instruction injection | Encoded content attempts to override higher-priority policy | Decoder returns structured semantics only; runtime instruction hierarchy remains authoritative |
 | Command smuggling | `EXECUTE`/`INSTALL` interpreted as permission | `auth_required` metadata is surfaced; execution authority is explicitly `none` |
 | Beacon-triggered supply-chain attack | Untrusted content causes decoder installation | Manifest states `automatic_installation: false`; discovery may fetch metadata but never install code automatically |
-| Same-origin hash substitution | Compromised host serves package and matching hash | Same-origin SHA-256 is integrity metadata only. No publisher attestations are published; provenance remains fail-closed |
+| Same-origin hash substitution | Compromised host serves package and matching hash | No publisher attestations are published; same-origin SHA-256 is integrity metadata only |
 | Downgrade/version confusion | Peer silently chooses weaker/older behavior | Bootstrap version is explicit; incompatible versions fail closed; root manifest publishes version-specific manifests |
 | Unsupported flags | Future options are silently misread | v0.3 permits only known flag bits; unknown bits fail closed |
 | Truncated macro frame | Parser crashes or misdecodes | Explicit length/bounds checks return VQX errors |

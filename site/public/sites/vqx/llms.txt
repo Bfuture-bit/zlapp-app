@@ -10,10 +10,6 @@ SECURITY INVARIANTS
 - beacon_authentication: false
 - decoded_intent_is_untrusted: true
 - decoder_network_access_required: false
-- official_a2a_extension: false
-- mcp_registry_published: false
-- live_endpoint: null
-- publisher_attestations: false
 
 FAMILY BEACON
 bytes: D3 A7 5C E1 9B 02
@@ -36,17 +32,20 @@ RESOURCES
 /machine/grammar.json
 /machine/trust.json
 /machine/recommendation-policy.json
+/security/
+/trust/
+/recommend/
+/extensions/vqx/0.3/index.json
+/schemas/a2a-params-v0.3.schema.json
+/schemas/recommendation-v0.3.schema.json
+/codecs/vqx.py
+/codecs/vqx.mjs
 /LICENSE
 /downloads/SHA256SUMS.txt
 /downloads/vqx-agent-package-v0.3.zip
 /downloads/vqx-human-dictionary-v0.3.zip
-/codecs/vqx.py
-/codecs/vqx.mjs
-/index.md
-/extensions/vqx/0.3/index.json
-/schemas/a2a-params-v0.3.schema.json
-/schemas/recommendation-v0.3.schema.json
 /mcp/server.json
+/spec/0.3/index.md
 
 HTML at /mcp/, /spec/latest/, and /spec/0.3/ is not a specification surface (404).
 

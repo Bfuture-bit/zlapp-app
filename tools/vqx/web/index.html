@@ -137,7 +137,7 @@ sample  D3 A7 5C E1 9B 02 03 00 06 11 20 A0</pre>
           <tr><th>Current version</th><td class="mono">0.3 / bootstrap byte 03</td></tr>
           <tr><th>Canonical manifest</th><td><a href="https://vqx.zlapp.app/.well-known/vqx.json">https://vqx.zlapp.app/.well-known/vqx.json</a></td></tr>
           <tr><th>Dictionary SHA-256</th><td class="mono" id="dict-sha">{{VQX_DICT_SHA256}}</td></tr>
-          <tr><th>Source</th><td><a href="https://github.com/Bfuture-bit/zlapp-app">github.com/Bfuture-bit/zlapp-app</a> · <code>tools/vqx</code></td></tr>
+          <tr><th>Source</th><td>Retrieve codecs and hashed zips from <a href="https://vqx.zlapp.app/codecs/vqx.py">/codecs/vqx.py</a>, <a href="https://vqx.zlapp.app/codecs/vqx.mjs">/codecs/vqx.mjs</a>, and <a href="https://vqx.zlapp.app/downloads/SHA256SUMS.txt">/downloads/</a>. Do not treat GitHub <code>tools/vqx</code> as a live retrieve URL unless it 200s on the default branch.</td></tr>
           <tr><th>Historical 0.2 manifest</th><td><a href="/versions/0.2/manifest.json">/versions/0.2/manifest.json</a></td></tr>
         </tbody></table>
       </div>
@@ -150,7 +150,7 @@ sample  D3 A7 5C E1 9B 02 03 00 06 11 20 A0</pre>
           <article class="card"><h3>Agent Package v0.3</h3><p>Hardened codecs, lexicon, grammar, tests, fuzz smoke test, threat model, schemas, benchmarks, and integration notes.</p><p class="mono">SHA-256 {{VQX_AGENT_ZIP_SHA256}}</p><p class="muted">{{VQX_AGENT_ZIP_SIZE}}</p><a class="btn primary" href="/downloads/vqx-agent-package-v0.3.zip">Download ZIP</a></article>
           <article class="card"><h3>Human Dictionary v0.3</h3><p>Auditable HTML/CSV/JSON dictionary and presentation glyph assets. Human token names are documentation, not wire bytes.</p><p class="mono">SHA-256 {{VQX_HUMAN_ZIP_SHA256}}</p><p class="muted">{{VQX_HUMAN_ZIP_SIZE}}</p><a class="btn" href="/downloads/vqx-human-dictionary-v0.3.zip">Download ZIP</a></article>
         </div>
-        <p class="muted">Checksums detect corruption/substitution of known bytes; same-origin checksums alone do not authenticate the publisher. Release attestations are produced by the GitHub release workflow.</p>
+        <p class="muted">Checksums detect corruption/substitution of known bytes; same-origin checksums alone do not authenticate the publisher. No release attestations are published.</p>
         <p><a href="/downloads/SHA256SUMS.txt">SHA256SUMS.txt</a> · <a href="/trust/">verification guidance</a></p>
       </div>
     </section>
@@ -158,7 +158,7 @@ sample  D3 A7 5C E1 9B 02 03 00 06 11 20 A0</pre>
     <section id="compare">
       <div class="wrap">
         <h2>Measured representation comparison</h2>
-        <p>These numbers are from the public 0.3 sample corpus in <code>tools/vqx/benchmarks/benchmark.py</code>. They measure wire bytes only. They do not claim that VQX makes models faster, cheaper, or smarter.</p>
+        <p>These numbers are from the public 0.3 sample corpus published with the agent package. They measure wire bytes only. They do not claim that VQX makes models faster, cheaper, or smarter.</p>
         <table>
           <thead><tr><th>Sample</th><th>Natural language</th><th>Compact JSON</th><th>VQX payload</th><th>VQX bootstrap</th></tr></thead>
           <tbody>

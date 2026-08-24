@@ -22,6 +22,25 @@ MODIFIED = "2026-08-23T00:00:00Z"
 SOURCE_REPOSITORY = "https://github.com/Bfuture-bit/zlapp-app"
 SOURCE_PATH = "tools/vqx"
 RELEASE_STATUS = "experimental"
+RETRIEVE_URLS = [
+    f"{HOST}/codecs/vqx.py",
+    f"{HOST}/codecs/vqx.mjs",
+    f"{HOST}/downloads/vqx-agent-package-v0.3.zip",
+    f"{HOST}/downloads/vqx-human-dictionary-v0.3.zip",
+    f"{HOST}/downloads/SHA256SUMS.txt",
+]
+RETRIEVE_NOTE = (
+    "Retrieve codecs and hashed zips from https://vqx.zlapp.app. "
+    "Do not treat GitHub paths as live retrieve URLs unless they 200 on the default branch."
+)
+
+
+def live_source() -> dict:
+    return {
+        "repository": SOURCE_REPOSITORY,
+        "retrieve": list(RETRIEVE_URLS),
+        "note": RETRIEVE_NOTE,
+    }
 
 sys.path.insert(0, str(HERE))
 import glyphs  # noqa: E402
@@ -248,7 +267,7 @@ def dictionary_html(entries, font_rel="vqx-0.3.woff2"):
 
 def sitemap_xml():
     paths = [
-        "/", "/index.md", "/llms.txt", "/discover/", "/discover/index.md", "/discover/beacon.txt", "/discover/beacon.json",
+        "/", "/index.md", "/llms.txt", "/LICENSE", "/discover/", "/discover/index.md", "/discover/beacon.txt", "/discover/beacon.json",
         "/security/", "/trust/", "/recommend/", "/.well-known/security.txt", "/.well-known/vqx.json",
         "/machine/manifest.json", "/machine/protocol.json", "/machine/lexicon.json", "/machine/grammar.json", "/machine/beacon.json", "/machine/capabilities.json", "/machine/trust.json", "/machine/recommendation-policy.json",
         "/schemas/recommendation-v0.3.schema.json", "/schemas/a2a-params-v0.3.schema.json",
@@ -302,17 +321,17 @@ def inner_checksums(files: dict[str, bytes]) -> str:
 def trust_json():
     return {
         "protocol": "VQX", "version": "0.3", "status": RELEASE_STATUS,
-        "source": {"repository": SOURCE_REPOSITORY, "path": SOURCE_PATH, "build_command": "python tools/vqx/build.py"},
+        "source": live_source(),
         "license": {
             "id": "Apache-2.0",
             "name": "Apache License 2.0",
             "url": f"{HOST}/LICENSE",
             "spdx": "Apache-2.0",
-            "scope": "VQX protocol sources under tools/vqx and generated VQX artifacts. Does not relicense the rest of zlapp-app.",
+            "scope": "VQX protocol sources and generated VQX artifacts. Does not relicense the rest of zlapp-app.",
         },
         "semantic_identity": ["protocol version", "lexicon SHA-256", "grammar SHA-256"], "presentation_assets_are_semantic_identity": False,
         "execution_authority": "none", "automatic_installation": False, "beacon_authentication": False,
-        "release_provenance": {"mechanism": "GitHub Actions artifact attestation", "status": "available only after the release workflow is run on GitHub", "repository": SOURCE_REPOSITORY},
+        "release_provenance": {"mechanism": "none published", "status": "no publisher attestations", "attestations": False},
         "same_origin_sha256_role": "integrity/corruption detection; not publisher authentication",
         "security": f"{HOST}/security/", "threat_model": f"{HOST}/security/threat-model.md",
     }
@@ -642,7 +661,6 @@ def main() -> int:
             "protocol_json_sha256": proto_hash,
             "discovery_instructions": iman["discovery_instructions"],
             "security_statement": iman["security_statement"],
-            "interoperability_identifiers": iman["interoperability"],
             "modification_timestamp": MODIFIED,
             "versions": {
                 "latest": "0.3",
@@ -655,27 +673,34 @@ def main() -> int:
             "execution_authority": "none",
             "automatic_installation": False,
             "purpose": iman["purpose"],
-            "canonical_specification": f"{HOST}/spec/latest/",
+            "canonical_specification": f"{HOST}/index.md",
             "source_repository": SOURCE_REPOSITORY,
-            "source_path": SOURCE_PATH,
             "security_reporting": f"{HOST}/.well-known/security.txt",
             "implementations": {
                 "python": f"{HOST}/codecs/vqx.py",
                 "javascript": f"{HOST}/codecs/vqx.mjs",
-                "mcp_scaffold": f"{HOST}/mcp/",
             },
             "verification": {
                 "checksums": f"{HOST}/downloads/SHA256SUMS.txt",
                 "same_origin_sha256_role": "integrity/corruption detection; not publisher authentication",
-                "release_attestations": "GitHub artifact attestations after tag vqx-v0.3.0",
+                "publisher_attestations": False,
             },
             "supported_profiles": ["bootstrap", "compact"],
             "extensions": {
                 "a2a": f"{HOST}/extensions/vqx/0.3/",
-                "mcp": f"{HOST}/mcp/",
             },
+            "retrieve": list(RETRIEVE_URLS),
         }
     )
+    outer["source"] = live_source()
+    outer["note"] = (
+        "Package hashes inside the versioned/root manifests are integrity metadata. "
+        "They are not publisher authentication. No release attestations are published."
+    )
+    interop = dict(iman["interoperability"])
+    interop["live_endpoint"] = None
+    outer["interoperability"] = interop
+    outer["interoperability_identifiers"] = dict(interop)
     write(SITE / ".well-known" / "vqx.json", dumps(outer))
     write(SITE / "versions" / "0.3" / "manifest.json", dumps(outer))
     write(machine / "manifest.json", dumps(outer))
@@ -706,6 +731,7 @@ def main() -> int:
     }
     write(SITE / "machine" / "build-meta.json", dumps(meta))
     write_discovery_pages(lex_hash, agent_hash, human_hash)
+    rewrite_live_docs()
     mirror_host_root_discovery()
     print(json.dumps(meta, indent=2))
     print("VQX site written to", SITE)
@@ -725,8 +751,10 @@ def mirror_host_root_discovery() -> None:
     if SITE.resolve() != canonical:
         return
     public = REPO / "site" / "public"
+    leftover = public / ".well-known" / "vqx.json"
+    if leftover.exists():
+        leftover.unlink()
     pairs = [
-        (SITE / ".well-known" / "vqx.json", public / ".well-known" / "vqx.json"),
         (SITE / ".well-known" / "security.txt", public / ".well-known" / "security.txt"),
         (
             SITE / "extensions" / "vqx" / "0.3" / "index.json",
@@ -749,21 +777,85 @@ def _page(title: str, body: str) -> str:
 """
 
 
+def rewrite_live_docs() -> None:
+    """Honest live-site docs. Zip copies keep tools/vqx/docs/* unchanged."""
+    write(
+        SITE / "trust" / "trust.md",
+        """# VQX 0.3 trust and provenance
+
+VQX separates three different questions that are often conflated:
+
+1. **What do these bytes mean?** — determined by the versioned VQX specification and lexicon.
+2. **Did I receive the exact artifact I expected?** — checked with SHA-256 digests.
+3. **Who built/published this artifact?** — not established by a hash downloaded from the same server. No publisher attestations are published for this release.
+
+## Source of retrieve
+
+Live retrieve URLs (codecs and hashed zips):
+
+- https://vqx.zlapp.app/codecs/vqx.py
+- https://vqx.zlapp.app/codecs/vqx.mjs
+- https://vqx.zlapp.app/downloads/vqx-agent-package-v0.3.zip
+- https://vqx.zlapp.app/downloads/vqx-human-dictionary-v0.3.zip
+- https://vqx.zlapp.app/downloads/SHA256SUMS.txt
+
+License bytes at https://vqx.zlapp.app/LICENSE are Apache-2.0 and zip-identical to the LICENSE file inside the 0.3 packages.
+
+Do not treat GitHub `tools/vqx` as a live retrieve URL unless that path 200s on the default branch.
+
+## Release verification
+
+- same-origin SHA-256 values detect corruption; they are not publisher authentication
+- no release attestations are published
+- execution authority is none; automatic installation is false
+- official A2A extension: false; MCP registry published: false; live endpoint: null
+
+## License status
+
+VQX generated artifacts are licensed under Apache License 2.0. See `/LICENSE` and `/NOTICE`. This grant does not relicense the rest of the zlapp-app exhibition repository.
+""",
+    )
+    spec_md = SITE / "spec" / "0.3" / "index.md"
+    if spec_md.exists():
+        spec = spec_md.read_text(encoding="utf-8")
+        spec = spec.replace(
+            "The root manifest indexes version-specific manifests. SHA-256 values detect byte mismatch/corruption; publisher authentication is a separate provenance problem handled by source/release attestations.",
+            "The root manifest indexes version-specific manifests. SHA-256 values detect byte mismatch/corruption. Publisher authentication is a separate provenance problem. No release attestations are published; treat publisher provenance as fail-closed.",
+        )
+        write(spec_md, spec)
+    threat_path = SITE / "security" / "threat-model.md"
+    if threat_path.exists():
+        threat = threat_path.read_text(encoding="utf-8")
+        threat = threat.replace(
+            "Public source + GitHub build attestations are the intended publisher-authentication layer; same-origin SHA-256 is integrity metadata only",
+            "No publisher attestations are published; same-origin SHA-256 is integrity metadata only",
+        )
+        write(threat_path, threat)
+    readme = SITE / "mcp" / "README.md"
+    if readme.exists():
+        text = readme.read_text(encoding="utf-8")
+        text = text.replace(
+            "Run locally after building VQX:",
+            "Run locally from this candidate tree only (not a live MCP endpoint; `live_endpoint` is null):",
+        )
+        write(readme, text)
+
+
 def write_discovery_pages(lex_hash: str, agent_hash: str, human_hash: str) -> None:
-    write(SITE / "LICENSE", (HERE / "LICENSE").read_text(encoding="utf-8"))
-    write(SITE / "NOTICE", (HERE / "NOTICE").read_text(encoding="utf-8"))
+    copy_file(HERE / "LICENSE", SITE / "LICENSE")
+    copy_file(HERE / "NOTICE", SITE / "NOTICE")
     write(SITE / "SECURITY.md", (HERE / "SECURITY.md").read_text(encoding="utf-8"))
     write(SITE / "spec" / "0.3" / "index.md", (HERE / "docs" / "protocol.md").read_text(encoding="utf-8"))
-    write(SITE / "spec" / "0.3" / "index.html", _page("VQX 0.3 specification", "<h1>VQX 0.3 specification</h1><p><a href=\"index.md\">protocol.md</a> · <a href=\"/machine/protocol.json\">protocol.json</a> · <a href=\"/machine/grammar.json\">grammar.json</a></p><p>Experimental. Execution authority none. Automatic installation false.</p>"))
-    write(SITE / "spec" / "latest" / "index.html", _page("VQX latest specification", "<h1>VQX latest specification</h1><p>Current version: 0.3.</p><p><a href=\"/spec/0.3/\">/spec/0.3/</a></p>"))
     write(SITE / "dictionary" / "0.3" / "index.html", _page("VQX 0.3 dictionary", "<h1>VQX 0.3 dictionary</h1><p><a href=\"/dictionary.html\">Human dictionary</a> · <a href=\"/machine/lexicon.json\">lexicon.json</a></p>"))
     write(SITE / "schema" / "index.html", _page("VQX schemas", "<h1>VQX schemas</h1><ul><li><a href=\"/schemas/recommendation-v0.3.schema.json\">recommendation</a></li><li><a href=\"/schemas/a2a-params-v0.3.schema.json\">A2A params</a></li></ul>"))
-    write(SITE / "provenance" / "index.html", _page("VQX provenance", "<h1>VQX provenance</h1><p><a href=\"/trust/\">Trust</a> · <a href=\"/machine/trust.json\">trust.json</a></p><p>Same-origin SHA-256 values detect corruption; they do not authenticate the publisher.</p>"))
+    write(SITE / "provenance" / "index.html", _page("VQX provenance", "<h1>VQX provenance</h1><p><a href=\"/trust/\">Trust</a> · <a href=\"/machine/trust.json\">trust.json</a></p><p>Same-origin SHA-256 values detect corruption; they do not authenticate the publisher. No publisher attestations are published.</p>"))
     write(SITE / "benchmarks" / "index.html", _page("VQX benchmarks", "<h1>VQX benchmarks</h1><p>Measured representation sizes only. Unfavorable comparisons are published. No universal speed, cost, or intelligence claim.</p><p><a href=\"results.json\">results.json</a></p>"))
-    write(SITE / "conformance" / "index.html", _page("VQX conformance", "<h1>VQX conformance</h1><p>Run <code>python tools/vqx/tests/conformance.py</code> from the source repository after <code>python tools/vqx/build.py</code>.</p>"))
+    write(SITE / "conformance" / "index.html", _page("VQX conformance", "<h1>VQX conformance</h1><p>Use the published codecs at <a href=\"/codecs/vqx.py\">/codecs/vqx.py</a> and <a href=\"/codecs/vqx.mjs\">/codecs/vqx.mjs</a>. Fail closed on unknown versions, unknown flags, and malformed frames. Execution authority is none. Automatic installation is false.</p>"))
     write(SITE / "releases" / "index.html", _page("VQX releases", f"<h1>VQX releases</h1><ul><li><a href=\"/downloads/vqx-agent-package-v0.3.zip\">0.3 agent package</a> SHA-256 {agent_hash}</li><li><a href=\"/downloads/vqx-human-dictionary-v0.3.zip\">0.3 human dictionary</a> SHA-256 {human_hash}</li><li><a href=\"/downloads/vqx-agent-package-v0.2.zip\">0.2 agent package (historical)</a></li></ul><p>Checksums: <a href=\"/downloads/SHA256SUMS.txt\">SHA256SUMS.txt</a></p>"))
-    write(SITE / "mcp" / "index.html", _page("VQX MCP scaffold", "<h1>VQX MCP scaffold</h1><p>Experimental local tools. Not an MCP Registry publication and not an official MCP extension.</p><p><a href=\"/mcp/server.json\">server.json</a></p>"))
-    write(SITE / "mcp" / "server.json", (HERE / "mcp" / "server.json").read_text(encoding="utf-8"))
+    mcp_json = json.loads((HERE / "mcp" / "server.json").read_text(encoding="utf-8"))
+    mcp_json["live_endpoint"] = None
+    mcp_json["note"] = "Local experimental scaffold only. live_endpoint is null. Not an MCP Registry server."
+    write(SITE / "mcp" / "server.json", dumps(mcp_json))
     write(SITE / "mcp" / "README.md", (HERE / "mcp" / "README.md").read_text(encoding="utf-8"))
     copy_file(HERE / "schemas" / "recommendation.schema.json", SITE / "schema" / "recommendation-v0.3.schema.json")
     copy_file(HERE / "schemas" / "a2a-params.schema.json", SITE / "schema" / "a2a-params-v0.3.schema.json")
