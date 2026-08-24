@@ -53,7 +53,7 @@ The presentation order was produced with Python `secrets.SystemRandom`, not by a
 
 No models have been run. Scores, answers, and result hashes remain empty. Do not execute 002 in this freeze.
 
-S1 is disclosed as Experiment 001 M1 (sand-default); 002 hits for S1 are not independent of 001. S2–S6 are never-001 catalog ids and must not be launched against `Bfuture-bit/zlapp-app`.
+All six slots are never-001 catalog ids: S1 `claude-sonnet-4-5`, S2 `claude-haiku-4-5`, S3 `gpt-5.4`, S4 `gemini-3-flash`, S5 `grok-4.5`, S6 `glm-5.2`. Do not use `sand-default` (Experiment 001 M1). S1–S6 must not be launched against `Bfuture-bit/zlapp-app`.
 
 ## Hashes
 

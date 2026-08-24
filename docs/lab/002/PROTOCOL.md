@@ -26,20 +26,18 @@ No manual ChatGPT ferry. Do not substitute a ChatGPT web session for any slot.
 
 | slot | curator label | catalog id | 001 status | notes |
 | --- | --- | --- | --- | --- |
-| S1 | Cursor executor / sand-default | sand-default | DISCLOSED: was Experiment 001 M1 | 002 hits for S1 are **not** independent of 001. Score and report; do not pool S1 with S2–S6 as an independent sample. |
+| S1 | Cursor cloud / Claude Sonnet 4.5 | claude-sonnet-4-5 | never 001 | Run later as `new_repo` blank. **Not** on zlapp-app. |
 | S2 | Cursor cloud / Claude Haiku 4.5 | claude-haiku-4-5 | never 001 | Run later as `new_repo` blank. **Not** on zlapp-app. |
 | S3 | Cursor cloud / GPT-5.4 | gpt-5.4 | never 001 | Run later as `new_repo` blank. **Not** on zlapp-app. |
 | S4 | Cursor cloud / Gemini 3 Flash | gemini-3-flash | never 001 | Run later as `new_repo` blank. **Not** on zlapp-app. |
 | S5 | Cursor cloud / Grok 4.5 | grok-4.5 | never 001 | Run later as `new_repo` blank. **Not** on zlapp-app. |
 | S6 | Cursor cloud / GLM 5.2 | glm-5.2 | never 001 | Run later as `new_repo` blank. **Not** on zlapp-app. |
 
-S2–S5 must **not** be the Experiment 001 decode runtimes (`claude-sonnet-4-6`, `gemini-3.1-pro`, `composer-2.5`, `kimi-k2.7-code`). Those ids are excluded from 002.
+All six slots must be never-001 runtimes. Do **not** use `sand-default` (Experiment 001 M1). Do **not** use the Experiment 001 decode runtimes (`claude-sonnet-4-6`, `gemini-3.1-pro`, `composer-2.5`, `kimi-k2.7-code`). Those ids are excluded from 002. `claude-sonnet-4-5` (S1) is not `claude-sonnet-4-6`.
 
 ### H-REPO
 
-S2–S6 subjects must **not** be launched against `Bfuture-bit/zlapp-app`. Launching S2–S6 on this repo invalidates those slots. S2–S6 runs, when they happen, use a blank `new_repo` that does not contain this protocol, this map, Experiment 001, lexicon ids, or `agent-glyphs2` assets.
-
-S1 may be the sand-default executor on this freeze branch only as a disclosed non-independent slot. S1 must still receive **only** stripped stim bytes and the locked prompt. Opening protocol/map/001/id URLs still invalidates S1.
+S1–S6 subjects must **not** be launched against `Bfuture-bit/zlapp-app`. Launching any 002 slot on this repo invalidates that slot. S1–S6 runs, when they happen, use a blank `new_repo` that does not contain this protocol, this map, Experiment 001, lexicon ids, or `agent-glyphs2` assets.
 
 ## Isolation (operator-facing; never shown to subjects)
 
@@ -165,7 +163,7 @@ If a subject emits `agent_*`, `:agent_*:`, or any locked lexicon id (with or wit
 - Network lookup, page scraping, opening protocol/map/001/id URLs, opening `agent-glyphs2` paths, or post-hoc lexicon edits after seeing answers invalidates the run.
 - Filling output slots before this protocol commit invalidates Experiment 002.
 - Presenting live glyph URLs or unstripped SVGs (still containing `aria-label=":agent_…:"` or `agent_`) invalidates the run.
-- Launching S2–S6 against `Bfuture-bit/zlapp-app` invalidates those slots (H-REPO).
+- Launching S1–S6 against `Bfuture-bit/zlapp-app` invalidates those slots (H-REPO).
 - Do not run encode in the same session as 002 decode.
 
 ## What will be hashed
@@ -228,7 +226,7 @@ Filenames: `stim_01.svg` … `stim_30.svg` matching that n. Operator map: `docs/
 
 Leave answers blank until a run that post-dates this commit. Do not fill scores.
 
-### Slot S1 — Cursor executor / sand-default (DISCLOSED 001 M1; not independent)
+### Slot S1 — claude-sonnet-4-5 (never 001; H-REPO new_repo blank)
 
 Decode answers (meaning text or UNKNOWN):
 
@@ -535,7 +533,7 @@ Partials are not hits. `hit_count` is Hit only (0–6). Leave score cells empty 
 - Do not invent results, percentages, or rankings.
 - Do not reconstruct lost Act I/II prompts.
 - Do not execute Experiment 002 subjects.
-- Do not launch S2–S6 against `Bfuture-bit/zlapp-app`.
+- Do not launch S1–S6 against `Bfuture-bit/zlapp-app`.
 - Do not merge. Do not deploy.
 - Do not publish npm, PyPI, or MCP registry entries.
 - Do not treat VQX as a standard, official A2A/MCP status, or partnership.
