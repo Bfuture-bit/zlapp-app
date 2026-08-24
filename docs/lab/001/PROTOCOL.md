@@ -166,13 +166,71 @@ Do not hash “results” that were never produced. Empty output slots below hav
 Encode presentation order (30 ids or “meaning keys”; fill before running, not after):
 
 ```text
-
+agent_human_gate
+agent_tool_latency
+agent_attention_drift
+agent_schema_drift
+agent_lock_starve
+agent_instruction_intrusion
+agent_context_fold
+agent_dependency_invalidation
+agent_retry_backoff
+agent_call_cycle
+agent_branch_rewind
+agent_confidence_low
+agent_cache_stale
+agent_side_effect_uncertain
+agent_verification_fail
+agent_decision_entropy
+agent_fanout_barrier
+agent_plan_divergence
+agent_memory_gc
+agent_commit_race
+agent_context_pressure
+agent_grounding_loss
+agent_io_await
+agent_consensus_pending
+agent_irreversible_write
+agent_goal_anchored
+agent_quota_clamp
+agent_perm_revoke
+agent_state_handoff
+agent_stream_emit
 ```
 
 Decode presentation order (30 ids; fill before running, not after):
 
 ```text
-
+agent_side_effect_uncertain
+agent_confidence_low
+agent_dependency_invalidation
+agent_goal_anchored
+agent_tool_latency
+agent_cache_stale
+agent_stream_emit
+agent_commit_race
+agent_grounding_loss
+agent_instruction_intrusion
+agent_io_await
+agent_context_fold
+agent_consensus_pending
+agent_memory_gc
+agent_lock_starve
+agent_schema_drift
+agent_attention_drift
+agent_call_cycle
+agent_irreversible_write
+agent_plan_divergence
+agent_retry_backoff
+agent_perm_revoke
+agent_verification_fail
+agent_fanout_barrier
+agent_branch_rewind
+agent_context_pressure
+agent_human_gate
+agent_quota_clamp
+agent_state_handoff
+agent_decision_entropy
 ```
 
 ## Empty output slots
