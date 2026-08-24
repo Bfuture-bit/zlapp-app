@@ -170,16 +170,16 @@ If a subject emits `agent_*`, `:agent_*:`, or any locked lexicon id (with or wit
 
 Before judging, hash (SHA-256) these committed artifacts:
 
-| artifact | sha256 (fill after commit; leave empty until hashed) |
+| artifact | sha256 (four cells filled from freeze tree 5af9a020; transcripts and scored table remain empty) |
 | --- | --- |
-| this protocol file `docs/lab/002/PROTOCOL.md` | |
-| presentation map `docs/lab/002/PRESENTATION_MAP.tsv` | |
-| presentation order (n, filename, id) | |
-| stripped stims tree `docs/lab/002/stims/` | |
+| this protocol file `docs/lab/002/PROTOCOL.md` | 716d0142a4e3dfaa51f596f99f00769789ad70ecd815773a7c58b8cc5f1a79e4 |
+| presentation map `docs/lab/002/PRESENTATION_MAP.tsv` | 20dd80430544fa6a50a74481662711187cd0cb3dc22ea20bc67c846a1d012c8e |
+| presentation order (n, filename, id) | d7f05216c5d344cbb6518c112eaee24c3000667ead2f444bd9dded30ebebcc42 |
+| stripped stims tree `docs/lab/002/stims/` | 8ca504d8f24ce6eefae374a843466710b7f5ae3503f13458a385f36980599548 |
 | raw model transcripts (per slot, after a run) | |
 | scored table (after a run) | |
 
-Do not hash “results” that were never produced. Empty output slots below have no result hash. Do not invent hashes in this freeze commit.
+These four filled cells are hashes of freeze tree `5af9a020` (`PROTOCOL.md` with empty hash cells). The H-ARCHIVE fill commit is separate and must not be used as the `PROTOCOL.md` blob hash. Do not hash “results” that were never produced. Empty output slots below have no result hash.
 
 `PRESENTATION_MAP.tsv` already records per-stim SHA-256 of stripped bytes. That column is a freeze artifact, not a result hash.
 

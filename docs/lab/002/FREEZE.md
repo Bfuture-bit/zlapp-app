@@ -57,8 +57,17 @@ All six slots are never-001 catalog ids: S1 `claude-sonnet-4-5`, S2 `claude-haik
 
 ## Hashes
 
-SHA-256 cells in PROTOCOL.md stay empty in this freeze commit.
+Recorded from freeze tree commit `5af9a020` on branch `cursor/lab-002-archive-freeze-39c9`. PR #9 remains unmerged. No models have been run.
 
-Hashes of `docs/lab/002/PROTOCOL.md` and of `docs/lab/002/PRESENTATION_MAP.tsv` must be filled only after this commit lands on the archive. Do not invent hashes. Do not hash results that were never produced.
+The four hashes below are hashes of `5af9a020` blobs (`PROTOCOL.md` with empty hash cells). This H-ARCHIVE fill commit is separate and must **not** be used as the `PROTOCOL.md` blob hash.
 
-Per-stim `svg_sha256` values in `PRESENTATION_MAP.tsv` are SHA-256 of the stripped stim file bytes in this freeze tree, not protocol-file hashes and not result hashes.
+| artifact | sha256 |
+| --- | --- |
+| `docs/lab/002/PROTOCOL.md` (freeze tree `5af9a020`, empty hash cells) | 716d0142a4e3dfaa51f596f99f00769789ad70ecd815773a7c58b8cc5f1a79e4 |
+| `docs/lab/002/PRESENTATION_MAP.tsv` (freeze tree `5af9a020`) | 20dd80430544fa6a50a74481662711187cd0cb3dc22ea20bc67c846a1d012c8e |
+| presentation order (`n filename id` lines from that map) | d7f05216c5d344cbb6518c112eaee24c3000667ead2f444bd9dded30ebebcc42 |
+| stripped stims tree `docs/lab/002/stims/` (GNU sha256sum listing at `5af9a020`) | 8ca504d8f24ce6eefae374a843466710b7f5ae3503f13458a385f36980599548 |
+
+Do not invent hashes. Do not hash results that were never produced. Raw transcripts and scored-table cells remain empty.
+
+Per-stim `svg_sha256` values in `PRESENTATION_MAP.tsv` are SHA-256 of the stripped stim file bytes in freeze tree `5af9a020`, not protocol-file hashes and not result hashes.
