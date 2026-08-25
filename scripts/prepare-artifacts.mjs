@@ -161,6 +161,14 @@ const vercel = {
       ],
     },
     {
+      source: "/research/(.*)",
+      headers: [
+        { key: "Cache-Control", value: "public, max-age=0, must-revalidate" },
+        { key: "CDN-Cache-Control", value: "no-store" },
+        { key: "X-Robots-Tag", value: "noindex, nofollow, noarchive" },
+      ],
+    },
+    {
       source: "/agent-glyphs/(.*)\\.(gif|png|json|csv)",
       headers: [
         { key: "Cache-Control", value: "public, max-age=86400" },
@@ -212,6 +220,11 @@ const vercel = {
     {
       source: "/agent-glyphs",
       destination: "/agent-glyphs/",
+      permanent: true,
+    },
+    {
+      source: "/research/vqx-rc2",
+      destination: "/research/vqx-rc2/",
       permanent: true,
     },
     {
