@@ -235,6 +235,11 @@ const vercel = {
       destination: "https://vqx.zlapp.app/.well-known/vqx.json",
       permanent: true,
     },
+    {
+      source: "/.well-known/llms.txt",
+      destination: "/llms.txt",
+      permanent: true,
+    },
   ],
   rewrites,
 };
