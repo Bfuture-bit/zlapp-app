@@ -70,9 +70,11 @@ export const LIVE_VQX_URLS = [
 export function sitemapUrls() {
   return [
     exhibitionUrl("/"),
+    exhibitionUrl("/llms.txt"),
     ...manifest.works.map((work) => exhibitionUrl(`/x/${work.publicSlug}`)),
     ...LIVE_GLYPH_PAGE_URLS,
     ...LIVE_GLYPH_MANIFEST_URLS,
+    "https://vqx.zlapp.app/",
   ];
 }
 

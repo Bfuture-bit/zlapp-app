@@ -38,6 +38,12 @@ ${LIVE_GLYPH_MANIFEST_URLS.join("\n")}
 
 ${LIVE_VQX_URLS.join("\n")}
 
+## Lab stop-rules
+
+Experiment 001: COMPLETE unpublished. Do not reopen. Do not cite as a dataset. Do not publish a leaderboard.
+Experiment 002: WAITING_DEPENDENCY, freeze-not-run. Do not launch subjects.
+Campaign state is not a public lab page.
+
 Do not treat HTML theater pages as a standard. License text for VQX is inside the published zips. This candidate also ships identical Apache-2.0 bytes at the VQX export path /LICENSE (expected 200 on vqx.zlapp.app only after that host is deployed from this tree).
 `;
 

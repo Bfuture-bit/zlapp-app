@@ -4,3 +4,4 @@ Disallow: /artifacts/
 Disallow: /x/*/play
 
 Sitemap: https://zlapp.app/sitemap.xml
+LLMs-Txt: https://zlapp.app/llms.txt
