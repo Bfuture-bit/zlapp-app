@@ -22,6 +22,9 @@ export default function middleware(request) {
   if (url.hostname === "vqx.zlapp.app") {
     if (url.pathname.startsWith("/sites/vqx")) return;
     let p = url.pathname || "/";
+    if (p === "/rc2") {
+      return Response.redirect(new URL("/rc2/", url), 308);
+    }
     const extensionlessFiles = new Set(["/LICENSE", "/NOTICE"]);
     if (p === "/extensions/vqx/0.3" || p === "/extensions/vqx/0.3/") {
       p = "/extensions/vqx/0.3/index.json";

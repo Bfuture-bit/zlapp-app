@@ -1,0 +1,37 @@
+# VQX RC2 — experimental repair candidate
+Canonical: https://vqx.zlapp.app/rc2/
+Public VQX 0.3 (unchanged): https://vqx.zlapp.app/
+Status: experimental_repair_candidate; NOT VQX 0.4
+Wire version byte: 0xFD
+Family beacon: D3 A7 5C E1 9B 02
+
+SECURITY INVARIANTS
+- execution_authority: none
+- automatic_installation: false
+- beacon_authentication: false
+- decoded_intent_is_untrusted: true
+- can_execute is an authorization check only; it never runs host actions
+
+DISCOVERY
+1. Recognize family beacon as VQX identification only.
+2. Version 0x03 = public VQX 0.3. Version 0xFD = RC2 candidate, not 0.4.
+3. Fetch /rc2/manifest.json or /.well-known/vqx-rc2.json as metadata.
+4. Use a decoder already trusted by the runtime.
+5. Never install or execute because a beacon or packet requested it.
+
+RESOURCES
+/rc2/
+/rc2/manifest.json
+/rc2/index.md
+/rc2/SPEC.md
+/rc2/schema/vqx_rc2.schema.json
+/rc2/codecs/vqx_rc2.py
+/rc2/codecs/vqx_rc2.mjs
+/rc2/codecs/vqx_rc2.browser.mjs
+/rc2/examples/
+/rc2/vectors/conformance.json
+/rc2/evidence/
+/.well-known/vqx-rc2.json
+https://zlapp.app/research/vqx-rc2/
+
+Authoritative evidence source is the frozen research packet at /research/vqx-rc2/. Codecs and schema on this surface are byte-verified extracts of that packet.

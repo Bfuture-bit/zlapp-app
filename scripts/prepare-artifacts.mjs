@@ -121,6 +121,11 @@ for (const site of satellites.sites) {
         destination: "https://zlapp.app/sites/vqx/.well-known/vqx.json",
       },
       {
+        source: "/.well-known/vqx-rc2.json",
+        has: [{ type: "host", value: site.host }],
+        destination: "https://zlapp.app/sites/vqx/.well-known/vqx-rc2.json",
+      },
+      {
         source: "/.well-known/security.txt",
         has: [{ type: "host", value: site.host }],
         destination: "https://zlapp.app/sites/vqx/.well-known/security.txt",
@@ -193,6 +198,21 @@ const vercel = {
       ],
     },
     {
+      source: "/.well-known/vqx-rc2.json",
+      headers: [
+        { key: "Cache-Control", value: "public, max-age=0, must-revalidate" },
+        { key: "CDN-Cache-Control", value: "no-store" },
+        { key: "Content-Type", value: "application/json; charset=utf-8" },
+      ],
+    },
+    {
+      source: "/rc2/(.*)",
+      headers: [
+        { key: "Cache-Control", value: "public, max-age=0, must-revalidate" },
+        { key: "CDN-Cache-Control", value: "no-store" },
+      ],
+    },
+    {
       source: "/.well-known/security.txt",
       headers: [
         { key: "Cache-Control", value: "public, max-age=0, must-revalidate" },
@@ -228,6 +248,12 @@ const vercel = {
       permanent: true,
     },
     {
+      source: "/rc2",
+      has: [{ type: "host", value: "vqx.zlapp.app" }],
+      destination: "/rc2/",
+      permanent: true,
+    },
+    {
       source: "/agent-glyphs2/",
       destination: "/agent-glyphs2",
       permanent: true,
@@ -246,6 +272,12 @@ const vercel = {
       source: "/.well-known/vqx.json",
       has: [{ type: "host", value: "zlapp.app" }],
       destination: "https://vqx.zlapp.app/.well-known/vqx.json",
+      permanent: true,
+    },
+    {
+      source: "/.well-known/vqx-rc2.json",
+      has: [{ type: "host", value: "zlapp.app" }],
+      destination: "https://vqx.zlapp.app/.well-known/vqx-rc2.json",
       permanent: true,
     },
     {

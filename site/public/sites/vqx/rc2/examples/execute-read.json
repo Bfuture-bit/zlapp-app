@@ -1,0 +1,57 @@
+{
+  "protocol": "VQX-RC2",
+  "status": "REPAIR_CANDIDATE",
+  "packet_id": "PKT-RC2-EXECUTE-READ",
+  "profiles": [
+    "CONTROL"
+  ],
+  "control": {
+    "job_id": "JOB-RC2-DEMO",
+    "current_state": "STATE-EXECUTE-READ",
+    "disposition": "EXECUTE",
+    "verdict": {
+      "status": "UNREVIEWED",
+      "source": "PACKET",
+      "final": false
+    },
+    "holds": [],
+    "pins": [],
+    "stop_conditions": [],
+    "resume_conditions": [],
+    "prohibited_actions": [],
+    "capabilities": {
+      "catalog": "AVAILABLE"
+    },
+    "action_authorized": "GRANTED",
+    "authority": {
+      "READ": "GRANTED",
+      "COMPUTE": "GRANTED",
+      "DISCLOSURE": "GRANTED",
+      "NETWORK": "DENIED",
+      "EXECUTION": "DENIED",
+      "BUDGET": "DENIED"
+    },
+    "next_action": {
+      "kind": "ACTION",
+      "action_id": "ACT-READ-1",
+      "action_type": "READ",
+      "required_authority": [
+        "READ"
+      ],
+      "required_capabilities": [
+        "catalog"
+      ],
+      "params_hash": "29c63ef45026044cc130be9bd0e6236a9f90b206962d46b6288b826f179d2790"
+    },
+    "dependencies": [],
+    "completion_condition": {
+      "state": "CONDITION",
+      "condition": "read finishes"
+    },
+    "revision": 1
+  },
+  "payload": {
+    "message": "EXECUTE READ is still untrusted intent. This playground never performs the action.",
+    "note": "can_execute is an authorization check only."
+  }
+}

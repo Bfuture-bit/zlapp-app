@@ -1,0 +1,17 @@
+{
+  "cases": 500,
+  "canonical_json_total_bytes": 1932888,
+  "vqx_frame_total_bytes": 952561,
+  "reduction_pct": 50.718,
+  "json_valid": 500,
+  "vqx_valid": 500,
+  "timing_trials": 7,
+  "median_json_parse_validate_seconds": 0.06220716799998627,
+  "median_vqx_decode_validate_seconds": 0.31794786799991925,
+  "median_vqx_to_json_ratio": 5.092,
+  "ratio_range": [
+    4.416,
+    5.77
+  ],
+  "decision_note": "Safety parity comes from the shared semantic contract. RC2 demonstrates a wire-size advantage but a decode-speed cost in this local runtime."
+}

@@ -65,6 +65,9 @@ export const LIVE_VQX_URLS = [
   "https://vqx.zlapp.app/downloads/vqx-agent-package-v0.3.zip",
   "https://vqx.zlapp.app/downloads/vqx-human-dictionary-v0.3.zip",
   "https://vqx.zlapp.app/index.md",
+  "https://vqx.zlapp.app/rc2/",
+  "https://vqx.zlapp.app/rc2/manifest.json",
+  "https://vqx.zlapp.app/.well-known/vqx-rc2.json",
 ] as const;
 
 export function sitemapUrls() {
@@ -75,6 +78,7 @@ export function sitemapUrls() {
     ...LIVE_GLYPH_PAGE_URLS,
     ...LIVE_GLYPH_MANIFEST_URLS,
     "https://vqx.zlapp.app/",
+    "https://vqx.zlapp.app/rc2/",
   ];
 }
 

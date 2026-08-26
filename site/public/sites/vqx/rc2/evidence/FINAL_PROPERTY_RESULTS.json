@@ -1,0 +1,192 @@
+{
+  "total_checks": 37,
+  "passed": 37,
+  "failed": [],
+  "results": [
+    {
+      "property": "P1",
+      "pass": true,
+      "detail": "STOP preserved"
+    },
+    {
+      "property": "P2",
+      "pass": true,
+      "detail": "NEXT_ACTION NONE preserved"
+    },
+    {
+      "property": "P3",
+      "pass": true,
+      "detail": "DENIED preserved"
+    },
+    {
+      "property": "P4",
+      "pass": true,
+      "detail": "UNKNOWN preserved"
+    },
+    {
+      "property": "P5",
+      "pass": true,
+      "detail": "capability does not authorize"
+    },
+    {
+      "property": "P6",
+      "pass": true,
+      "detail": "EXECUTION does not imply BUDGET"
+    },
+    {
+      "property": "P7",
+      "pass": true,
+      "detail": "READ does not imply DISCLOSURE"
+    },
+    {
+      "property": "P8",
+      "pass": true,
+      "detail": "COMPLETE creates no work"
+    },
+    {
+      "property": "P9",
+      "pass": true,
+      "detail": "DO_NOT_RETRY preserved"
+    },
+    {
+      "property": "P10",
+      "pass": true,
+      "detail": "holds preserved"
+    },
+    {
+      "property": "P11",
+      "pass": true,
+      "detail": "pins preserved"
+    },
+    {
+      "property": "P12",
+      "pass": true,
+      "detail": "verdict preserved"
+    },
+    {
+      "property": "P13",
+      "pass": true,
+      "detail": "entire safety-critical control exact"
+    },
+    {
+      "property": "P14",
+      "pass": true,
+      "detail": "malformed critical packet rejected"
+    },
+    {
+      "property": "P15",
+      "pass": true,
+      "detail": "unsupported wire version rejected"
+    },
+    {
+      "property": "P16",
+      "pass": true,
+      "detail": "NOT_REPORTED preserved, no zero synthesized"
+    },
+    {
+      "property": "P17",
+      "pass": true,
+      "detail": "NOT_OBSERVED preserved, no false synthesized"
+    },
+    {
+      "property": "P18",
+      "pass": true,
+      "detail": "SUPPORTED remains epistemic status, not truth"
+    },
+    {
+      "property": "P19",
+      "pass": true,
+      "detail": "confidence independent of sufficiency"
+    },
+    {
+      "property": "P20",
+      "pass": true,
+      "detail": "freshness independent of confidence"
+    },
+    {
+      "property": "P21",
+      "pass": true,
+      "detail": "derived/shared group not double-counted"
+    },
+    {
+      "property": "P22",
+      "pass": true,
+      "detail": "retrieval remains retrieval"
+    },
+    {
+      "property": "P23",
+      "pass": true,
+      "detail": "inference remains inference"
+    },
+    {
+      "property": "P24",
+      "pass": true,
+      "detail": "adapter/upstream remain distinct"
+    },
+    {
+      "property": "P25",
+      "pass": true,
+      "detail": "explicit conflict preserved"
+    },
+    {
+      "property": "P25b",
+      "pass": true,
+      "detail": "conflict cannot silently disappear"
+    },
+    {
+      "property": "P26",
+      "pass": true,
+      "detail": "wrong delta base hash rejected"
+    },
+    {
+      "property": "P27",
+      "pass": true,
+      "detail": "payload cannot alter CONTROL authority"
+    },
+    {
+      "property": "P28",
+      "pass": true,
+      "detail": "requested action does not authorize"
+    },
+    {
+      "property": "P29",
+      "pass": true,
+      "detail": "severity does not grant execution"
+    },
+    {
+      "property": "P30",
+      "pass": true,
+      "detail": "observation availability does not imply receipt"
+    },
+    {
+      "property": "P31",
+      "pass": true,
+      "detail": "receipt does not imply acceptance"
+    },
+    {
+      "property": "P32",
+      "pass": true,
+      "detail": "acceptance does not turn SUPPORTED into truth"
+    },
+    {
+      "property": "P33",
+      "pass": true,
+      "detail": "omission stays omission; no negative fact synthesized"
+    },
+    {
+      "property": "P34",
+      "pass": true,
+      "detail": "unknown source independence remains uncounted/unknown"
+    },
+    {
+      "property": "P35",
+      "pass": true,
+      "detail": "provenance path exact"
+    },
+    {
+      "property": "P35b",
+      "pass": true,
+      "detail": "lost intermediate transformation rejected"
+    }
+  ]
+}

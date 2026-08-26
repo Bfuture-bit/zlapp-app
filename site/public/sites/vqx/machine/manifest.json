@@ -178,5 +178,19 @@
     "official_a2a_extension": false,
     "mcp_registry_published": false,
     "live_endpoint": null
+  },
+  "experimental_candidates": {
+    "vqx-rc2": {
+      "status": "experimental_repair_candidate",
+      "not_a_protocol_version": true,
+      "not_vqx_0_4": true,
+      "wire_version_byte": "0xFD",
+      "canonical_url": "https://vqx.zlapp.app/rc2/",
+      "manifest": "https://vqx.zlapp.app/rc2/manifest.json",
+      "well_known": "https://vqx.zlapp.app/.well-known/vqx-rc2.json",
+      "execution_authority": "none",
+      "automatic_installation": false,
+      "note": "RC2 is an experimental candidate. Public VQX remains 0.3. Unknown version bytes fail closed."
+    }
   }
 }

@@ -1,0 +1,5 @@
+{
+  "authoritative_evidence": "https://zlapp.app/research/vqx-rc2/",
+  "frozen_extracts": "tools/vqx/experimental/rc2/frozen/",
+  "note": "Codecs and schema on this surface are byte-verified extracts of the research packet. Public VQX 0.3 files are not rewritten."
+}
