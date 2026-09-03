@@ -173,6 +173,18 @@ const vercel = {
       ],
     },
     {
+      source: "/weekly-ads",
+      headers: [
+        { key: "Cache-Control", value: "public, max-age=0, must-revalidate" },
+      ],
+    },
+    {
+      source: "/weekly-ads/",
+      headers: [
+        { key: "Cache-Control", value: "public, max-age=0, must-revalidate" },
+      ],
+    },
+    {
       source: "/(.*)",
       headers: [{ key: "Referrer-Policy", value: "strict-origin-when-cross-origin" }],
     },
