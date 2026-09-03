@@ -74,6 +74,7 @@ export function sitemapUrls() {
     ...manifest.works.map((work) => exhibitionUrl(`/x/${work.publicSlug}`)),
     ...LIVE_GLYPH_PAGE_URLS,
     ...LIVE_GLYPH_MANIFEST_URLS,
+    exhibitionUrl("/weekly-ads"),
     "https://vqx.zlapp.app/",
   ];
 }

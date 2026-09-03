@@ -1,0 +1,24 @@
+---
+import Base from "../layouts/Base.astro";
+import Nav from "../components/Nav.astro";
+import "../styles/weekly-ads.css";
+
+const pageTitle = "Weekly Ads | Zlapp";
+const description =
+  "Physical page-1 grocery circulars for H-E-B, Kroger, and Market Street. Current promotions, flyer evidence, and historical weeks.";
+---
+<Base title={pageTitle} description={description} canonicalUrl="https://zlapp.app/weekly-ads">
+  <Nav current="weekly-ads" />
+  <main id="content" class="wa-page">
+    <div id="weekly-ads-root"></div>
+  </main>
+  <footer class="site-foot">
+    <span>Weekly Ads</span>
+    <a href="/">Exhibition</a>
+  </footer>
+</Base>
+
+<script>
+  import { mountWeeklyAdsApp } from "../scripts/weekly-ads-app";
+  mountWeeklyAdsApp();
+</script>
