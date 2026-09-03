@@ -1,4 +1,5 @@
 name: Deploy production (Vercel)
+# Closeout redeploy marker: bake PUBLIC_WEEKLY_ADS_API_URL
 
 # GitHub → Vercel production path.
 # The Vercel project currently has no GitHub App link, so master merges do not
