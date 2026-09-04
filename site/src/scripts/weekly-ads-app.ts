@@ -32,6 +32,8 @@ type WeeklyAdPromotion = {
   verification_method: string;
   page_membership_method: string;
   page1_image_url: string | null;
+  archived_image_url?: string | null;
+  history_image_url?: string | null;
   source_url: string | null;
   source_evidence: string[];
   valid_from: string | null;
@@ -47,6 +49,8 @@ type WeeklyAdFlyer = {
   valid_from: string | null;
   valid_to: string | null;
   page1_image_url: string | null;
+  archived_image_url?: string | null;
+  history_image_url?: string | null;
   page1_image_checksum: string | null;
   verification_mode: string | null;
   page_truth_method: string | null;
@@ -84,6 +88,17 @@ type Overview = {
     no_coverage_count?: number;
     degraded_count?: number;
     quarantine_count?: number;
+    archive_storage?: {
+      unique_images?: number;
+      total_bytes?: number;
+      average_bytes?: number;
+      largest_bytes?: number;
+      dedup_hits?: number;
+      new_images_this_run?: number;
+      zip_references_this_run?: number;
+      warning?: string | null;
+      warning_threshold_bytes?: number;
+    };
   };
   runs?: Array<{
     started_at?: string;
@@ -133,6 +148,21 @@ function safeHttpUrl(value: string | null | undefined, base: string): string | n
     return null;
   }
   return null;
+}
+
+function pageImageUrl(
+  row: { archived_image_url?: string | null; history_image_url?: string | null; page1_image_url?: string | null },
+  base: string,
+): string | null {
+  return safeHttpUrl(row.archived_image_url || row.history_image_url || row.page1_image_url || null, base);
+}
+
+function formatBytes(value?: number | null): string {
+  const bytes = Number(value || 0);
+  if (bytes <= 0) return "0 B";
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 function el<K extends keyof HTMLElementTagNameMap>(
@@ -562,7 +592,7 @@ export function mountWeeklyAdsApp(target?: HTMLElement | null) {
         tr.append(verify);
         const evidence = el("td");
         evidence.className = "wa-xs";
-        const pageUrl = safeHttpUrl(row.page1_image_url, apiBase);
+        const pageUrl = pageImageUrl(row, apiBase);
         if (pageUrl) {
           const a = el("a", "wa-link", "Page 1 image");
           a.href = pageUrl;
@@ -682,7 +712,7 @@ export function mountWeeklyAdsApp(target?: HTMLElement | null) {
       } else {
         const body = el("div", "wa-flyer-body");
         const media = el("div");
-        const imgUrl = safeHttpUrl(flyer.page1_image_url, apiBase);
+        const imgUrl = pageImageUrl(flyer, apiBase);
         const sha =
           flyer.page1_image_checksum ||
           flyer.page_truth_diagnostics?.page1_image_sha256 ||
@@ -846,6 +876,19 @@ export function mountWeeklyAdsApp(target?: HTMLElement | null) {
           `ZIP cells processed ${crawler.zip_cells_processed ?? 0} · OK ${crawler.ok_count ?? 0} · NO_COVERAGE ${crawler.no_coverage_count ?? 0} · DEGRADED ${crawler.degraded_count ?? 0} · QUARANTINE ${crawler.quarantine_count ?? 0}`,
         ),
       );
+      const archive = crawler.archive_storage;
+      if (archive) {
+        runCard.append(
+          el(
+            "p",
+            "wa-xs",
+            `Page archive ${archive.unique_images ?? 0} unique · ${formatBytes(archive.total_bytes)} · avg ${formatBytes(archive.average_bytes)} · dedup ${archive.dedup_hits ?? 0} · new ${archive.new_images_this_run ?? 0}`,
+          ),
+        );
+        if (archive.warning) {
+          runCard.append(el("p", "wa-xs wa-status-warn", `${archive.warning} — Weekly Ads archive storage is at or above 750 MB. Historical images were not deleted.`));
+        }
+      }
     }
     wrap.append(runCard);
     for (const [key, item] of Object.entries(state.overview?.source_health || {})) {
