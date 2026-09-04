@@ -86,7 +86,20 @@ for (const work of manifest.works) {
   );
 }
 
+const unlistedHosts = [
+  {
+    id: "nb-fait8h6d3a",
+    host: "nb-fait8h6d3a.zlapp.app",
+    prefix: "/sites/nb-fait8h6d3a",
+  },
+];
+
 const exhibitHosts = new Set(manifest.works.map((work) => `${work.publicSlug}.zlapp.app`));
+for (const site of unlistedHosts) {
+  if (exhibitHosts.has(site.host)) {
+    throw new Error(`Unlisted host collides with an exhibit: ${site.host}`);
+  }
+}
 for (const site of satellites.sites) {
   if (exhibitHosts.has(site.host)) {
     throw new Error(`Satellite host collides with an exhibit: ${site.host}`);
@@ -151,8 +164,37 @@ for (const site of satellites.sites) {
   }
 }
 
+for (const site of unlistedHosts) {
+  if (satellites.sites.some((s) => s.host === site.host || s.id === site.id)) {
+    throw new Error(`Unlisted host collides with a satellite: ${site.host}`);
+  }
+  const indexFile = path.join(root, "site", "public", site.prefix.slice(1), "index.html");
+  const robotsFile = path.join(root, "site", "public", site.prefix.slice(1), "robots.txt");
+  if (!fs.existsSync(indexFile) || !fs.existsSync(robotsFile)) {
+    throw new Error(`Missing unlisted host files for ${site.host}`);
+  }
+  // Do not rewrite `/` to zlapp.app — that would expose the secret path.
+  // Edge middleware rewrites the unlisted host onto this prefix in-place.
+  rewrites.push({
+    source: "/robots.txt",
+    has: [{ type: "host", value: site.host }],
+    destination: `${site.prefix}/robots.txt`,
+  });
+}
+
 const vercel = {
   headers: [
+    ...unlistedHosts.flatMap((site) => [
+      {
+        source: "/(.*)",
+        has: [{ type: "host", value: site.host }],
+        headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }],
+      },
+      {
+        source: `${site.prefix}/(.*)`,
+        headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }],
+      },
+    ]),
     {
       source: "/artifacts/(.*)",
       headers: [
@@ -258,9 +300,9 @@ const vercel = {
 
 fs.writeFileSync(
   path.join(root, "site", "vercel.json"),
-  JSON.stringify(vercel, null, 2)
+  JSON.stringify(vercel, null, 2) + "\n"
 );
 
 console.log(
-  `Prepared ${manifest.works.length} artifacts and previews, ${satellites.sites.length} satellite host(s).`
+  `Prepared ${manifest.works.length} artifacts and previews, ${satellites.sites.length} satellite host(s), ${unlistedHosts.length} unlisted host(s).`
 );

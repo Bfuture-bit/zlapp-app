@@ -1,6 +1,30 @@
 {
   "headers": [
     {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "nb-fait8h6d3a.zlapp.app"
+        }
+      ],
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
+    },
+    {
+      "source": "/sites/nb-fait8h6d3a/(.*)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
+    },
+    {
       "source": "/artifacts/(.*)",
       "headers": [
         {
@@ -875,6 +899,16 @@
         }
       ],
       "destination": "https://zlapp.app/sites/vqx/:path*"
+    },
+    {
+      "source": "/robots.txt",
+      "has": [
+        {
+          "type": "host",
+          "value": "nb-fait8h6d3a.zlapp.app"
+        }
+      ],
+      "destination": "/sites/nb-fait8h6d3a/robots.txt"
     }
   ]
 }
