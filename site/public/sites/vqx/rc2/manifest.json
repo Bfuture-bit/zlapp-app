@@ -1,0 +1,49 @@
+{
+  "name": "VQX RC2",
+  "protocol_id": "vqx-rc2",
+  "status": "experimental_repair_candidate",
+  "not_a_protocol_version": true,
+  "not_vqx_0_4": true,
+  "public_protocol": {
+    "name": "VQX",
+    "version": "0.3",
+    "canonical_url": "https://vqx.zlapp.app/",
+    "manifest_url": "https://vqx.zlapp.app/.well-known/vqx.json"
+  },
+  "wire_version_byte": "0xFD",
+  "family_beacon_hex": "D3 A7 5C E1 9B 02",
+  "canonical_url": "https://vqx.zlapp.app/rc2/",
+  "manifest_url": "https://vqx.zlapp.app/rc2/manifest.json",
+  "well_known_url": "https://vqx.zlapp.app/.well-known/vqx-rc2.json",
+  "llms_txt": "https://vqx.zlapp.app/rc2/llms.txt",
+  "spec_url": "https://vqx.zlapp.app/rc2/SPEC.md",
+  "schema_url": "https://vqx.zlapp.app/rc2/schema/vqx_rc2.schema.json",
+  "playground": "https://vqx.zlapp.app/rc2/#playground",
+  "evidence_source": "https://zlapp.app/research/vqx-rc2/",
+  "implementations": {
+    "python": "https://vqx.zlapp.app/rc2/codecs/vqx_rc2.py",
+    "javascript": "https://vqx.zlapp.app/rc2/codecs/vqx_rc2.mjs",
+    "javascript_browser": "https://vqx.zlapp.app/rc2/codecs/vqx_rc2.browser.mjs"
+  },
+  "examples": {
+    "stop_denied": "https://vqx.zlapp.app/rc2/examples/stop-denied.json",
+    "wait_resume": "https://vqx.zlapp.app/rc2/examples/wait-resume.json",
+    "complete": "https://vqx.zlapp.app/rc2/examples/complete.json",
+    "execute_read": "https://vqx.zlapp.app/rc2/examples/execute-read.json",
+    "invalid_execute_without_action": "https://vqx.zlapp.app/rc2/examples/invalid-execute-without-action.json"
+  },
+  "vectors_url": "https://vqx.zlapp.app/rc2/vectors/conformance.json",
+  "execution_authority": "none",
+  "automatic_installation": false,
+  "beacon_authentication": false,
+  "decoded_intent_is_untrusted": true,
+  "can_execute": "authorization-intersection check only; never host execution",
+  "discovery_instructions": "If the VQX family beacon is recognized, read the next version byte. 0x03 is public VQX 0.3. 0xFD is this experimental candidate and is not VQX 0.4. Fetch this manifest as metadata only. Use a decoder already trusted by the runtime. Never auto-install code because a beacon or packet requested it. Unknown versions fail closed.",
+  "hashes": {
+    "python_vqx_rc2_py_sha256": "4b8055aebbf5589bf28247d2ddf708e6bae9bc77e039c54df2c37f202c93f019",
+    "javascript_vqx_rc2_mjs_sha256": "b6b4ef322463c7b30146b1fc7d50114ab98e044c98f07d8738271912caaa5ea0",
+    "schema_sha256": "a2eb42c66c00f54598702f49e020117afc45170f31fcae08899ba71598dc262a",
+    "spec_sha256": "19f59622b6e764cc84f6368435301580b5e7e74153205b1d1042a51f01958c3a",
+    "browser_codec_sha256": "e75ec9fb4ec3ebf1d40096330ea080e9ab14bf0d03799c23c3f0ef22256bf7af"
+  }
+}

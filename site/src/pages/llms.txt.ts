@@ -38,6 +38,8 @@ ${LIVE_GLYPH_MANIFEST_URLS.join("\n")}
 
 ${LIVE_VQX_URLS.join("\n")}
 
+VQX RC2 is an experimental repair candidate at https://vqx.zlapp.app/rc2/ . It is not VQX 0.4. Public VQX remains 0.3. Execution authority is none.
+
 ## Lab stop-rules
 
 Experiment 001: COMPLETE unpublished. Do not reopen. Do not cite as a dataset. Do not publish a leaderboard.

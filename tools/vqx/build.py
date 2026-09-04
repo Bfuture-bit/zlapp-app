@@ -273,6 +273,10 @@ def sitemap_xml():
         "/schemas/recommendation-v0.3.schema.json", "/schemas/a2a-params-v0.3.schema.json",
         "/extensions/vqx/0.3/", "/extensions/vqx/0.3/index.json", "/versions/0.3/manifest.json", "/versions/0.2/manifest.json",
         "/downloads/vqx-agent-package-v0.3.zip", "/downloads/vqx-human-dictionary-v0.3.zip", "/downloads/SHA256SUMS.txt", "/codecs/vqx.mjs", "/codecs/vqx.py",
+        "/rc2/", "/rc2/manifest.json", "/rc2/llms.txt", "/rc2/index.md", "/rc2/SPEC.md",
+        "/rc2/schema/vqx_rc2.schema.json", "/rc2/codecs/vqx_rc2.py", "/rc2/codecs/vqx_rc2.mjs",
+        "/rc2/codecs/vqx_rc2.browser.mjs", "/rc2/vectors/conformance.json",
+        "/.well-known/vqx-rc2.json",
     ]
     urls = "\n".join(f"  <url><loc>{HOST}{p}</loc><lastmod>2026-08-23</lastmod></url>" for p in paths)
     return '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + urls + '\n</urlset>\n'
@@ -701,6 +705,20 @@ def main() -> int:
     interop["live_endpoint"] = None
     outer["interoperability"] = interop
     outer["interoperability_identifiers"] = dict(interop)
+    outer["experimental_candidates"] = {
+        "vqx-rc2": {
+            "status": "experimental_repair_candidate",
+            "not_a_protocol_version": True,
+            "not_vqx_0_4": True,
+            "wire_version_byte": "0xFD",
+            "canonical_url": f"{HOST}/rc2/",
+            "manifest": f"{HOST}/rc2/manifest.json",
+            "well_known": f"{HOST}/.well-known/vqx-rc2.json",
+            "execution_authority": "none",
+            "automatic_installation": False,
+            "note": "RC2 is an experimental candidate. Public VQX remains 0.3. Unknown version bytes fail closed.",
+        }
+    }
     write(SITE / ".well-known" / "vqx.json", dumps(outer))
     write(SITE / "versions" / "0.3" / "manifest.json", dumps(outer))
     write(machine / "manifest.json", dumps(outer))
@@ -732,10 +750,27 @@ def main() -> int:
     write(SITE / "machine" / "build-meta.json", dumps(meta))
     write_discovery_pages(lex_hash, agent_hash, human_hash)
     rewrite_live_docs()
+    publish_rc2_candidate()
     mirror_host_root_discovery()
     print(json.dumps(meta, indent=2))
     print("VQX site written to", SITE)
     return 0
+
+
+def publish_rc2_candidate() -> None:
+    """Copy the RC2 experimental candidate after 0.3 generation.
+
+    0.3 codecs, lexicon, grammar, protocol, and ZIP hashes are already
+    written. This only adds /rc2/ and /.well-known/vqx-rc2.json.
+    """
+    import importlib.util
+
+    path = HERE / "experimental" / "rc2" / "publish.py"
+    spec = importlib.util.spec_from_file_location("vqx_rc2_publish", path)
+    mod = importlib.util.module_from_spec(spec)
+    assert spec is not None and spec.loader is not None
+    spec.loader.exec_module(mod)
+    mod.publish_into(SITE, host=HOST)
 
 
 def mirror_host_root_discovery() -> None:

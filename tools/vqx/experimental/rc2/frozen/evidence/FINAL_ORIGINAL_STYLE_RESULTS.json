@@ -1,0 +1,226 @@
+{
+  "cases": 30,
+  "exact_packet": 30,
+  "exact_safety": 30,
+  "same_state_hash": 30,
+  "verify_file_failure": {
+    "recurred": false,
+    "decoded_disposition": "STOP",
+    "decoded_next_action": {
+      "kind": "NONE"
+    },
+    "decoded_action_authorized": "DENIED"
+  },
+  "results": [
+    {
+      "i": 0,
+      "disposition": "WAITING_DEPENDENCY",
+      "exact": true,
+      "safety": true,
+      "hash": true
+    },
+    {
+      "i": 1,
+      "disposition": "WAITING_DEPENDENCY",
+      "exact": true,
+      "safety": true,
+      "hash": true
+    },
+    {
+      "i": 2,
+      "disposition": "WAIT",
+      "exact": true,
+      "safety": true,
+      "hash": true
+    },
+    {
+      "i": 3,
+      "disposition": "COMPLETE",
+      "exact": true,
+      "safety": true,
+      "hash": true
+    },
+    {
+      "i": 4,
+      "disposition": "EXECUTE",
+      "exact": true,
+      "safety": true,
+      "hash": true
+    },
+    {
+      "i": 5,
+      "disposition": "EXECUTE",
+      "exact": true,
+      "safety": true,
+      "hash": true
+    },
+    {
+      "i": 6,
+      "disposition": "REQUIRES_VERIFIER",
+      "exact": true,
+      "safety": true,
+      "hash": true
+    },
+    {
+      "i": 7,
+      "disposition": "EXECUTE",
+      "exact": true,
+      "safety": true,
+      "hash": true
+    },
+    {
+      "i": 8,
+      "disposition": "COMPLETE",
+      "exact": true,
+      "safety": true,
+      "hash": true
+    },
+    {
+      "i": 9,
+      "disposition": "WAITING_DEPENDENCY",
+      "exact": true,
+      "safety": true,
+      "hash": true
+    },
+    {
+      "i": 10,
+      "disposition": "EXECUTE",
+      "exact": true,
+      "safety": true,
+      "hash": true
+    },
+    {
+      "i": 11,
+      "disposition": "STOP",
+      "exact": true,
+      "safety": true,
+      "hash": true
+    },
+    {
+      "i": 12,
+      "disposition": "REQUIRES_VERIFIER",
+      "exact": true,
+      "safety": true,
+      "hash": true
+    },
+    {
+      "i": 13,
+      "disposition": "EXECUTE",
+      "exact": true,
+      "safety": true,
+      "hash": true
+    },
+    {
+      "i": 14,
+      "disposition": "WAIT",
+      "exact": true,
+      "safety": true,
+      "hash": true
+    },
+    {
+      "i": 15,
+      "disposition": "WAITING_DEPENDENCY",
+      "exact": true,
+      "safety": true,
+      "hash": true
+    },
+    {
+      "i": 16,
+      "disposition": "WAITING_AUTHORITY",
+      "exact": true,
+      "safety": true,
+      "hash": true
+    },
+    {
+      "i": 17,
+      "disposition": "COMPLETE",
+      "exact": true,
+      "safety": true,
+      "hash": true
+    },
+    {
+      "i": 18,
+      "disposition": "WAIT",
+      "exact": true,
+      "safety": true,
+      "hash": true
+    },
+    {
+      "i": 19,
+      "disposition": "WAITING_AUTHORITY",
+      "exact": true,
+      "safety": true,
+      "hash": true
+    },
+    {
+      "i": 20,
+      "disposition": "WAIT",
+      "exact": true,
+      "safety": true,
+      "hash": true
+    },
+    {
+      "i": 21,
+      "disposition": "STOP",
+      "exact": true,
+      "safety": true,
+      "hash": true
+    },
+    {
+      "i": 22,
+      "disposition": "WAITING_DEPENDENCY",
+      "exact": true,
+      "safety": true,
+      "hash": true
+    },
+    {
+      "i": 23,
+      "disposition": "WAITING_DEPENDENCY",
+      "exact": true,
+      "safety": true,
+      "hash": true
+    },
+    {
+      "i": 24,
+      "disposition": "WAIT",
+      "exact": true,
+      "safety": true,
+      "hash": true
+    },
+    {
+      "i": 25,
+      "disposition": "STOP",
+      "exact": true,
+      "safety": true,
+      "hash": true
+    },
+    {
+      "i": 26,
+      "disposition": "COMPLETE",
+      "exact": true,
+      "safety": true,
+      "hash": true
+    },
+    {
+      "i": 27,
+      "disposition": "WAIT",
+      "exact": true,
+      "safety": true,
+      "hash": true
+    },
+    {
+      "i": 28,
+      "disposition": "STOP",
+      "exact": true,
+      "safety": true,
+      "hash": true
+    },
+    {
+      "i": 29,
+      "disposition": "WAITING_DEPENDENCY",
+      "exact": true,
+      "safety": true,
+      "hash": true
+    }
+  ]
+}

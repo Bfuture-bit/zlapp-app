@@ -1,0 +1,50 @@
+{
+  "protocol": "VQX-RC2",
+  "status": "REPAIR_CANDIDATE",
+  "packet_id": "PKT-RC2-COMPLETE",
+  "profiles": [
+    "CONTROL"
+  ],
+  "control": {
+    "job_id": "JOB-RC2-DEMO",
+    "current_state": "STATE-COMPLETE",
+    "disposition": "COMPLETE",
+    "verdict": {
+      "status": "PASS",
+      "source": "PACKET",
+      "final": true
+    },
+    "holds": [],
+    "pins": [],
+    "stop_conditions": [],
+    "resume_conditions": [],
+    "prohibited_actions": [
+      "DO_NOT_EXECUTE"
+    ],
+    "capabilities": {
+      "browser": "UNAVAILABLE",
+      "repo_write": "UNAVAILABLE"
+    },
+    "action_authorized": "DENIED",
+    "authority": {
+      "READ": "GRANTED",
+      "COMPUTE": "GRANTED",
+      "DISCLOSURE": "DENIED",
+      "NETWORK": "DENIED",
+      "EXECUTION": "DENIED",
+      "BUDGET": "DENIED"
+    },
+    "next_action": {
+      "kind": "NONE"
+    },
+    "dependencies": [],
+    "completion_condition": {
+      "state": "SATISFIED",
+      "condition": "declared work complete"
+    },
+    "revision": 1
+  },
+  "payload": {
+    "message": "COMPLETE requires a satisfied completion condition and NEXT_ACTION NONE."
+  }
+}

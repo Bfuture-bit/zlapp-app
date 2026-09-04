@@ -1,0 +1,106 @@
+{
+  "artifact": "VQX RC2 Evidence / World-State Repair Candidate",
+  "status": "PRIVATE_REPAIR_CANDIDATE_NOT_VQX_0_4",
+  "freeze_date": "2026-08-25 America/Chicago",
+  "public_vqx_0_3_unchanged": true,
+  "transport_out_of_scope": true,
+  "purpose": "Freeze the repaired RC2 implementation after final numeric canonicalization and harder falsification. Subsequent changes require a new candidate revision and new evidence.",
+  "candidate_files": [
+    {
+      "path": "python/vqx_rc2.py",
+      "sha256": "4b8055aebbf5589bf28247d2ddf708e6bae9bc77e039c54df2c37f202c93f019",
+      "bytes": 55304
+    },
+    {
+      "path": "js/vqx_rc2.mjs",
+      "sha256": "b6b4ef322463c7b30146b1fc7d50114ab98e044c98f07d8738271912caaa5ea0",
+      "bytes": 23418
+    },
+    {
+      "path": "SPEC.md",
+      "sha256": "19f59622b6e764cc84f6368435301580b5e7e74153205b1d1042a51f01958c3a",
+      "bytes": 8010
+    },
+    {
+      "path": "schema/vqx_rc2.schema.json",
+      "sha256": "a2eb42c66c00f54598702f49e020117afc45170f31fcae08899ba71598dc262a",
+      "bytes": 33208
+    },
+    {
+      "path": "rc2_research.html",
+      "sha256": "6206876ab59858514eae982bbad88ff203096d090ddf8808fa088c37fdb2925d",
+      "bytes": 20055
+    }
+  ],
+  "final_evidence": [
+    {
+      "path": "evidence/FINAL_PROPERTY_RESULTS.json",
+      "sha256": "912d310218263de3da68786e0b1657de74e1ff8fa8c1aa08dd83c3768408df92",
+      "bytes": 4094
+    },
+    {
+      "path": "evidence/FINAL_ORIGINAL_STYLE_RESULTS.json",
+      "sha256": "18ffecf9381738ed06a89b24c73abab178326c10ab8fdacd62c55bc81690feb3",
+      "bytes": 4035
+    },
+    {
+      "path": "evidence/FINAL_CORE_RESULTS.json",
+      "sha256": "cf40d1e6cd22b6be6cb5a66b30dd2e907326ae2d0b6cbd968b274addb7d91664",
+      "bytes": 411
+    },
+    {
+      "path": "evidence/FINAL_STRUCTURAL_RESULTS.json",
+      "sha256": "b1e36557c33bf2441bc5bba56e6b24f17260a13158ee7a74241cf15e62b1fe50",
+      "bytes": 1333
+    },
+    {
+      "path": "evidence/FINAL_CROSS_LANGUAGE_RESULTS.json",
+      "sha256": "8de07f8a28fc6021793da14f7a6edf8e81fdfd84733b5db4c28edd87db1c64b8",
+      "bytes": 928
+    },
+    {
+      "path": "evidence/NONCANONICAL_NUMERIC_FRAME.json",
+      "sha256": "663ca0e9f4edd6a2abcb33570198600040914a8903d42f6173136ca3333f6a90",
+      "bytes": 4168
+    },
+    {
+      "path": "evidence/FINAL_PLAIN_CONTROL_COMPARISON.json",
+      "sha256": "a36163c4d13a93172eb50ea9e06f1842e8fe6adeace90183d8c11bc5bec7fb1e",
+      "bytes": 550
+    }
+  ],
+  "superseded_known_defects": [
+    {
+      "id": "RC2-JS-SEMANTIC-PARITY",
+      "state": "REPAIRED_AND_RETESTED",
+      "description": "JavaScript validator previously enforced a shallower semantic contract than Python."
+    },
+    {
+      "id": "RC2-NUMERIC-CANON-PERSISTED",
+      "state": "REPAIRED_AND_RETESTED",
+      "description": "Persisted Python reference still distinguished integral float 1.0 from integer 1 in the wire encoding; both runtimes now use a shared JSON-compatible semantic number domain and reject noncanonical numeric frames."
+    }
+  ],
+  "completed_gates": {
+    "P1_P35_plus_negative_controls": "PASS",
+    "original_style_30_unit_retest": "PASS",
+    "known_verify_file_failure_mechanism": "PASS_NO_RECURRENCE",
+    "hard_hostile_roundtrip_corpus": "PASS",
+    "blinded_vqx_vs_json_execution_parity": "PASS",
+    "multi_hop_handoff": "PASS",
+    "delta_exact_base_pinning": "PASS",
+    "loss_accounting": "PASS",
+    "python_js_validator_conformance": "PASS",
+    "python_js_wire_and_hash_conformance": "PASS",
+    "noncanonical_numeric_wire_rejection": "PASS",
+    "plain_json_safety_parity": "PASS"
+  },
+  "open_gates": [
+    "Exact frozen original guardian-review-packet source artifact is unavailable; exact replay not executed.",
+    "Exact frozen original PR #10 assignment source artifact is unavailable; exact replay not executed.",
+    "Independent multi-model receiver validation is unavailable in this runtime and has not been simulated as independent evidence.",
+    "Independent Guardian verdict has not been issued."
+  ],
+  "ship_state": "DO_NOT_SHIP_AS_PUBLIC_VQX_0_4",
+  "change_rule": "Any modification to a candidate file after this freeze invalidates this manifest and requires a new candidate identifier plus rerun evidence."
+}

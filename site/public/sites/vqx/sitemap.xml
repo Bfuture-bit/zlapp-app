@@ -32,4 +32,15 @@
   <url><loc>https://vqx.zlapp.app/downloads/SHA256SUMS.txt</loc><lastmod>2026-08-23</lastmod></url>
   <url><loc>https://vqx.zlapp.app/codecs/vqx.mjs</loc><lastmod>2026-08-23</lastmod></url>
   <url><loc>https://vqx.zlapp.app/codecs/vqx.py</loc><lastmod>2026-08-23</lastmod></url>
+  <url><loc>https://vqx.zlapp.app/rc2/</loc><lastmod>2026-08-23</lastmod></url>
+  <url><loc>https://vqx.zlapp.app/rc2/manifest.json</loc><lastmod>2026-08-23</lastmod></url>
+  <url><loc>https://vqx.zlapp.app/rc2/llms.txt</loc><lastmod>2026-08-23</lastmod></url>
+  <url><loc>https://vqx.zlapp.app/rc2/index.md</loc><lastmod>2026-08-23</lastmod></url>
+  <url><loc>https://vqx.zlapp.app/rc2/SPEC.md</loc><lastmod>2026-08-23</lastmod></url>
+  <url><loc>https://vqx.zlapp.app/rc2/schema/vqx_rc2.schema.json</loc><lastmod>2026-08-23</lastmod></url>
+  <url><loc>https://vqx.zlapp.app/rc2/codecs/vqx_rc2.py</loc><lastmod>2026-08-23</lastmod></url>
+  <url><loc>https://vqx.zlapp.app/rc2/codecs/vqx_rc2.mjs</loc><lastmod>2026-08-23</lastmod></url>
+  <url><loc>https://vqx.zlapp.app/rc2/codecs/vqx_rc2.browser.mjs</loc><lastmod>2026-08-23</lastmod></url>
+  <url><loc>https://vqx.zlapp.app/rc2/vectors/conformance.json</loc><lastmod>2026-08-23</lastmod></url>
+  <url><loc>https://vqx.zlapp.app/.well-known/vqx-rc2.json</loc><lastmod>2026-08-23</lastmod></url>
 </urlset>

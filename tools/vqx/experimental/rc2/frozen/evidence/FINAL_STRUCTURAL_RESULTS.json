@@ -1,0 +1,57 @@
+{
+  "multi_hop": {
+    "chains": 500,
+    "hops": 5,
+    "rounds": 2500,
+    "invariant_failures": 0
+  },
+  "delta": {
+    "valid_applied": 500,
+    "wrong_hash_rejected": 500,
+    "wrong_revision_rejected": 500,
+    "wrong_event_rejected": 500
+  },
+  "loss": {
+    "noncritical_valid": 500,
+    "epistemic_rejected": 500,
+    "operational_rejected": 500
+  },
+  "semantic_domain_attacks": [
+    {
+      "name": "unsafe_int",
+      "validator_rejected": true,
+      "encoder_rejected": true,
+      "errors": [
+        "semantic-domain: $.payload.domain_attack: integer outside cross-language safe range"
+      ]
+    },
+    {
+      "name": "nan",
+      "validator_rejected": true,
+      "encoder_rejected": true,
+      "errors": [
+        "semantic-domain: $.payload.domain_attack: non-finite number forbidden"
+      ]
+    },
+    {
+      "name": "inf",
+      "validator_rejected": true,
+      "encoder_rejected": true,
+      "errors": [
+        "semantic-domain: $.payload.domain_attack: non-finite number forbidden"
+      ]
+    },
+    {
+      "name": "bytes",
+      "validator_rejected": true,
+      "encoder_rejected": true,
+      "errors": [
+        "semantic-domain: $.payload.domain_attack: unsupported semantic value type bytes"
+      ]
+    }
+  ],
+  "stop_with_granted_authority": {
+    "cases": 200,
+    "false_execute": 0
+  }
+}

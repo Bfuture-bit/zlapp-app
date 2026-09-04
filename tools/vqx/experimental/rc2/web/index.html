@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VQX RC2 Experimental Candidate — not VQX 0.4</title>
+  <meta name="description" content="VQX RC2 is an experimental repair candidate for evidence and world-state packets. It is not VQX 0.4. Public VQX 0.3 is unchanged. Execution authority is none.">
+  <link rel="canonical" href="https://vqx.zlapp.app/rc2/">
+  <link rel="describedby" href="https://vqx.zlapp.app/rc2/llms.txt" type="text/plain">
+  <link rel="alternate" href="https://vqx.zlapp.app/rc2/index.md" type="text/markdown">
+  <link rel="alternate" type="application/json" href="https://vqx.zlapp.app/rc2/manifest.json">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <link rel="stylesheet" href="/styles.css">
+  <style>
+    .banner-rc2 {
+      border: 1px solid var(--warn);
+      background: rgba(212,165,116,.08);
+      color: #e6d3b3;
+      padding: 1rem 1.05rem;
+      border-radius: 6px;
+      margin: 1.2rem 0 0;
+    }
+    .pg-grid { display: grid; gap: 1rem; grid-template-columns: 1fr 1fr; }
+    @media (max-width: 900px) { .pg-grid { grid-template-columns: 1fr; } }
+    .axes { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: .5rem; }
+    @media (max-width: 700px) { .axes { grid-template-columns: 1fr 1fr; } }
+    select {
+      width: 100%; background: #0a0c0f; color: var(--text);
+      border: 1px solid var(--line); border-radius: 4px; padding: .4rem;
+      font-family: var(--mono);
+    }
+    #out-json, #out-next, #out-check { white-space: pre-wrap; max-height: 22rem; overflow: auto; }
+  </style>
+</head>
+<body>
+  <a class="sr-only" href="#main">Skip to content</a>
+  <header class="site">
+    <div class="wrap">
+      <a class="brand" href="/">VQX</a>
+      <nav class="site" aria-label="Primary">
+        <a href="/">0.3</a>
+        <a href="/rc2/">RC2</a>
+        <a href="#playground">Playground</a>
+        <a href="/rc2/manifest.json">Manifest</a>
+        <a href="/discover/">Discover</a>
+        <a href="/.well-known/vqx.json">0.3 manifest</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="hero">
+      <div class="wrap">
+        <p class="kicker">Experimental candidate · not a protocol revision</p>
+        <h1>VQX RC2</h1>
+        <p class="lede">Repair candidate for evidence / world-state packets.</p>
+        <p class="sub">This surface is usable and machine-discoverable. It is <strong>not VQX 0.4</strong>. Public VQX 0.3 remains the current experimental release.</p>
+        <div class="banner-rc2">
+          <strong>No execution or authorization powers.</strong>
+          Decoding is parse-only. <code>can_execute</code> is an authorization-intersection check. This page never installs software, never calls tools, and never treats payload text as permission.
+        </div>
+        <div class="actions">
+          <a class="btn primary" href="#playground">Encode / decode / validate</a>
+          <a class="btn" href="/rc2/manifest.json">Machine manifest</a>
+          <a class="btn" href="/rc2/SPEC.md">Spec</a>
+          <a class="btn" href="/">Back to VQX 0.3</a>
+        </div>
+      </div>
+    </div>
+
+    <section id="identity">
+      <div class="wrap">
+        <h2>Identity</h2>
+        <table>
+          <tbody>
+            <tr><th>Public protocol</th><td>VQX <strong>0.3</strong> at <a href="/">/</a></td></tr>
+            <tr><th>This candidate</th><td>VQX-RC2 · status <code>REPAIR_CANDIDATE</code> · <strong>not 0.4</strong></td></tr>
+            <tr><th>Family beacon</th><td class="mono">D3 A7 5C E1 9B 02</td></tr>
+            <tr><th>0.3 version byte</th><td class="mono">0x03</td></tr>
+            <tr><th>RC2 wire byte</th><td class="mono">0xFD</td></tr>
+            <tr><th>Execution authority</th><td class="mono">none</td></tr>
+            <tr><th>Automatic installation</th><td class="mono">false</td></tr>
+            <tr><th>Evidence source</th><td><a href="https://zlapp.app/research/vqx-rc2/">https://zlapp.app/research/vqx-rc2/</a></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="retrieve">
+      <div class="wrap">
+        <h2>Validator, codecs, schema, vectors, examples</h2>
+        <div class="grid">
+          <article class="card">
+            <h3>Codecs</h3>
+            <p>Frozen Python and JavaScript references, plus a browser port used by the playground. Same wire bytes as the research packet.</p>
+            <p><a href="/rc2/codecs/vqx_rc2.py">vqx_rc2.py</a> · <a href="/rc2/codecs/vqx_rc2.mjs">vqx_rc2.mjs</a> · <a href="/rc2/codecs/vqx_rc2.browser.mjs">browser</a></p>
+          </article>
+          <article class="card">
+            <h3>Schema + spec</h3>
+            <p>Structural JSON Schema. Semantic invariants are enforced by <code>validate_packet</code> / <code>validatePacket</code>.</p>
+            <p><a href="/rc2/schema/vqx_rc2.schema.json">vqx_rc2.schema.json</a> · <a href="/rc2/SPEC.md">SPEC.md</a></p>
+          </article>
+          <article class="card">
+            <h3>Examples</h3>
+            <p>STOP, WAIT, COMPLETE, EXECUTE READ, and an invalid EXECUTE-without-action packet.</p>
+            <p><a href="/rc2/examples/stop-denied.json">stop-denied</a> · <a href="/rc2/examples/execute-read.json">execute-read</a> · <a href="/rc2/examples/invalid-execute-without-action.json">invalid</a></p>
+          </article>
+          <article class="card">
+            <h3>Conformance vectors</h3>
+            <p>Python/JS/browser-matching frames and the frozen noncanonical numeric reject.</p>
+            <p><a href="/rc2/vectors/conformance.json">conformance.json</a> · <a href="/rc2/evidence/NONCANONICAL_NUMERIC_FRAME.json">noncanonical frame</a></p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="playground">
+      <div class="wrap">
+        <h2>Interactive encode / decode / validate</h2>
+        <p class="muted">Runs in the browser against the published RC2 candidate codec. Payload text cannot authorize action. Local authority controls below only feed the <code>can_execute</code> check.</p>
+        <p>
+          <label for="example-id">Example</label>
+          <select id="example-id">
+            <option value="stop-denied">STOP / NONE / DENIED</option>
+            <option value="wait-resume">WAIT with resume condition</option>
+            <option value="complete">COMPLETE / NONE</option>
+            <option value="execute-read">EXECUTE READ (authorization check demo)</option>
+            <option value="invalid-execute-without-action">Invalid EXECUTE without ACTION</option>
+          </select>
+          <button class="ctl" id="btn-load" type="button">Load example</button>
+          <button class="ctl" id="btn-noncanonical" type="button">Load noncanonical frame</button>
+        </p>
+        <div class="pg-grid">
+          <div>
+            <label for="in-json">Semantic packet (JSON)</label>
+            <textarea id="in-json" rows="18" spellcheck="false"></textarea>
+            <p>
+              <button class="ctl" id="btn-validate" type="button">Validate</button>
+              <button class="ctl" id="btn-encode" type="button">Encode</button>
+            </p>
+          </div>
+          <div>
+            <label for="in-frame">Frame (hex or PUA)</label>
+            <textarea id="in-frame" rows="8" spellcheck="false" placeholder="hex or PUA"></textarea>
+            <p><button class="ctl" id="btn-decode" type="button">Decode + validate</button></p>
+            <label class="sr-only" for="out-pua">PUA</label>
+            <input id="out-pua" type="text" readonly>
+            <p class="mono" id="out-hex"></p>
+          </div>
+        </div>
+        <h3>Control readout</h3>
+        <p>Disposition <code id="out-disposition">—</code> · action_authorized <code id="out-authz">—</code></p>
+        <pre id="out-next">—</pre>
+        <pre id="out-json"></pre>
+        <h3>Authorization check (no execution)</h3>
+        <p class="muted">Intersect packet authority with local authority. A true result still does not run anything.</p>
+        <div class="axes">
+          <label>READ <select id="local-read"><option>DENIED</option><option selected>GRANTED</option><option>UNKNOWN</option></select></label>
+          <label>COMPUTE <select id="local-compute"><option>DENIED</option><option selected>GRANTED</option><option>UNKNOWN</option></select></label>
+          <label>DISCLOSURE <select id="local-disclosure"><option selected>DENIED</option><option>GRANTED</option><option>UNKNOWN</option></select></label>
+          <label>NETWORK <select id="local-network"><option selected>DENIED</option><option>GRANTED</option><option>UNKNOWN</option></select></label>
+          <label>EXECUTION <select id="local-execution"><option selected>DENIED</option><option>GRANTED</option><option>UNKNOWN</option></select></label>
+          <label>BUDGET <select id="local-budget"><option selected>DENIED</option><option>GRANTED</option><option>UNKNOWN</option></select></label>
+        </div>
+        <p>
+          <label>Local action_authorized
+            <select id="local-action"><option selected>DENIED</option><option>GRANTED</option><option>UNKNOWN</option></select>
+          </label>
+          <label class="chk"><input type="checkbox" id="local-cap-grant"> Treat listed capabilities as locally AVAILABLE</label>
+        </p>
+        <p><button class="ctl" id="btn-check" type="button">Run can_execute check</button></p>
+        <pre id="out-check">—</pre>
+        <p class="status" id="pg-status" role="status"></p>
+      </div>
+    </section>
+
+    <section id="machine">
+      <div class="wrap">
+        <h2>Machine discovery</h2>
+        <ul>
+          <li><a href="/rc2/manifest.json">/rc2/manifest.json</a></li>
+          <li><a href="/.well-known/vqx-rc2.json">/.well-known/vqx-rc2.json</a></li>
+          <li><a href="/rc2/llms.txt">/rc2/llms.txt</a></li>
+          <li>Pointer from unchanged-current 0.3 well-known: <a href="/.well-known/vqx.json">/.well-known/vqx.json</a> field <code>experimental_candidates</code></li>
+        </ul>
+        <p>Agents that only implement VQX 0.3 should keep using version byte <code>03</code> and ignore this candidate. Unknown version bytes fail closed.</p>
+      </div>
+    </section>
+  </main>
+  <footer>
+    <div class="wrap">
+      <p>VQX RC2 experimental candidate · not VQX 0.4 · public VQX 0.3 unchanged · execution authority none</p>
+    </div>
+  </footer>
+  <script type="module" src="/rc2/playground.js"></script>
+</body>
+</html>

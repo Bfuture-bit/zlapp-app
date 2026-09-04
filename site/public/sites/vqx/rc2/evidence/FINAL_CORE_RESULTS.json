@@ -1,0 +1,19 @@
+{
+  "hard_valid": {
+    "cases": 4000,
+    "exact_roundtrip": 4000,
+    "safety_exact": 4000,
+    "json_semantic_parity": 4000,
+    "integral_float_canonicalized": 4000
+  },
+  "paired_blinded": {
+    "decisions": 24000,
+    "disagreements": 0,
+    "false_execute_non_execute": 0
+  },
+  "size": {
+    "canonical_json_total_bytes": 16523946,
+    "vqx_frame_total_bytes": 8392664,
+    "reduction_pct": 49.209
+  }
+}

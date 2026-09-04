@@ -1,0 +1,38 @@
+{
+  "cases": 500,
+  "valid": 500,
+  "frame_identical": 500,
+  "state_hash_identical": 500,
+  "packet_hash_identical": 500,
+  "numeric_roundtrip": 500,
+  "noncanonical_numeric_frame": {
+    "rejected": true,
+    "error": "noncanonical body encoding"
+  },
+  "semantic_domain_attacks": [
+    {
+      "name": "unsafe_int",
+      "validator_rejected": true,
+      "encoder_rejected": true,
+      "errors": [
+        "semantic-domain: $.payload.domain_attack: integer outside cross-language safe range"
+      ]
+    },
+    {
+      "name": "nan",
+      "validator_rejected": true,
+      "encoder_rejected": true,
+      "errors": [
+        "semantic-domain: $.payload.domain_attack: non-finite number forbidden"
+      ]
+    },
+    {
+      "name": "inf",
+      "validator_rejected": true,
+      "encoder_rejected": true,
+      "errors": [
+        "semantic-domain: $.payload.domain_attack: non-finite number forbidden"
+      ]
+    }
+  ]
+}

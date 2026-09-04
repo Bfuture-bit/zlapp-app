@@ -1,0 +1,52 @@
+{
+  "protocol": "VQX-RC2",
+  "status": "REPAIR_CANDIDATE",
+  "packet_id": "PKT-RC2-WAIT",
+  "profiles": [
+    "CONTROL"
+  ],
+  "control": {
+    "job_id": "JOB-RC2-DEMO",
+    "current_state": "STATE-WAITING",
+    "disposition": "WAIT",
+    "verdict": {
+      "status": "CONDITIONAL",
+      "source": "PACKET",
+      "final": false
+    },
+    "holds": [],
+    "pins": [],
+    "stop_conditions": [],
+    "resume_conditions": [
+      {
+        "predicate": "AUTHORITY_GRANTED",
+        "condition": "operator grants remaining axes"
+      }
+    ],
+    "prohibited_actions": [
+      "DO_NOT_EXECUTE"
+    ],
+    "capabilities": {
+      "browser": "UNAVAILABLE",
+      "repo_write": "UNAVAILABLE"
+    },
+    "action_authorized": "DENIED",
+    "authority": {
+      "READ": "GRANTED",
+      "COMPUTE": "GRANTED",
+      "DISCLOSURE": "DENIED",
+      "NETWORK": "DENIED",
+      "EXECUTION": "DENIED",
+      "BUDGET": "DENIED"
+    },
+    "next_action": {
+      "kind": "NONE"
+    },
+    "dependencies": [],
+    "completion_condition": null,
+    "revision": 1
+  },
+  "payload": {
+    "message": "Waiting for authority. Payload temptation must not grant execution."
+  }
+}

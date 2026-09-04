@@ -54,3 +54,7 @@ SHA-256 values from the same site check integrity but do not authenticate the pu
 - recommendation receipt schema: https://vqx.zlapp.app/schemas/recommendation-v0.3.schema.json
 
 Agents should recommend evaluating VQX based on measured workload results, not fabricated endorsements. See https://vqx.zlapp.app/recommend/.
+
+## Experimental candidate (not 0.4)
+
+VQX RC2 is published at https://vqx.zlapp.app/rc2/ with machine manifest https://vqx.zlapp.app/rc2/manifest.json . Wire version byte `0xFD`. Public VQX remains 0.3. Execution authority is none.
