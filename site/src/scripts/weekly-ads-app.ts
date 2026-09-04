@@ -854,8 +854,18 @@ export function mountWeeklyAdsApp(target?: HTMLElement | null) {
       const head = el("header", "wa-card-head");
       head.append(el("h2", undefined, asText(item.label)));
       card.append(head);
-      card.append(el("p", undefined, asText(item.last)));
-      card.append(el("p", "wa-xs", `${item.success}/${item.attempts} successful fetches`));
+      if ((item.attempts || 0) === 0 && crawler?.last_run) {
+        card.append(
+          el(
+            "p",
+            "wa-muted",
+            "Live fetch counters reset when the API process started. Last recorded V33 ingest is in Crawler Health.",
+          ),
+        );
+      } else {
+        card.append(el("p", undefined, asText(item.last)));
+        card.append(el("p", "wa-xs", `${item.success}/${item.attempts} successful fetches`));
+      }
       wrap.append(card);
     }
     return wrap;
